@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Código dos agentes</title>
+<style>
+:root{--bg:#1e1e1e;--fg:#d4d4d4;--hl:#264f78;--flash:#fffa70}
+body,html{margin:0;height:100%;font-family:sans-serif;background:var(--bg);color:var(--fg);}
+#container{display:flex;height:100%;flex-direction:row;}
+#file-list{width:220px;overflow:auto;background:#252526;padding:0.5rem;}
+#file-list ul{list-style:none;margin:0;padding:0;}
+#file-list li{padding:0.3rem 0.5rem;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#file-list li:hover{background:var(--hl);}
+#file-list li.new{animation:blink 2s forwards;}
+#file-list li.flash{animation:blink 1s forwards;}
+@keyframes blink{0%{background:var(--flash);}100%{background:inherit;}}
+#editor{flex:1;overflow:auto;padding:1rem;display:flex;flex-direction:column;}
+#path{font-weight:bold;margin-bottom:0.5rem;}
+.line{display:flex;align-items:flex-start;white-space:pre;tab-size:4;}
+.line:hover{background:var(--hl);}
+.ln{width:3rem;padding-right:0.5rem;text-align:right;color:#858585;user-select:none;}
+.content{flex:1;overflow:hidden;}
+.keyword{color:#569cd6;}
+.string{color:#ce9178;}
+.number{color:#b5cea8;}
+.comment{color:#6a9955;}
+@media (max-width:700px){
+  #container{flex-direction:column;}
+  #file-list{width:100%;height:160px;overflow:auto;box-sizing:border-box;}
+}
+</style>
+</head>
+<body>
+<!-- Tela do Leo (NexoDev, T056), revisada e ajustada pelo Claude. -->
+<div id="container">
+  <nav id="file-list"><ul></ul></nav>
+  <section id="editor">
+    <div id="path"></div>
+    <pre id="code"></pre>
+  </section>
+</div>
+
+<script>
+const listEl=document.querySelector('#file-list ul');
+const pathEl=document.getElementById('path');
+const codeEl=document.getElementById('code');
+let files=[], curPath='', curMod=0, known=new Set();
+
+const kw=/\b(fn|let|mut|pub|use|struct|impl|match|if|else|for|while|return|def|class|import|from|const|function|var|async|await)\b/g;
+function highlight(text){
+  const frag=document.createDocumentFragment();
+  let i=0, m;
+  const token=(t,c)=>{const s=document.createElement('span');s.textContent=t;s.className=c;frag.appendChild(s);};
+  while(i<text.length){
+    if((text[i]==='"' || text[i]==="'") && text.indexOf(text[i],i+1)>0){
+      const q=text[i]; let j=i+1;
+      while(j<text.length && text[j]!==q){ if(text[j]==='\\') j++; j++; }
+      token(text.slice(i,j+1),'string'); i=j+1;
+    }else if(text[i]==='/' && text[i+1]==='/'){
+      token(text.slice(i), 'comment'); break;
+    }else if(text[i]==='#' && text[i+1]!=='[' && text[i+1]!=='!'){
+      token(text.slice(i), 'comment'); break;
+    }else if(/[0-9]/.test(text[i])){
+      const m2=text.slice(i).match(/^\d+(\.\d+)?/);
+      token(m2[0],'number'); i+=m2[0].length;
+    }else{
+      const rest=text.slice(i);
+      const w=rest.match(/^\w+/);
+      if(w){
+        if(kw.test(w[0])) token(w[0],'keyword');
+        else token(w[0],''); 
+        kw.lastIndex=0;
+        i+=w[0].length;
+      }else{
+        token(text[i],''); i++;
+      }
+    }
+  }
+  return frag;
+}
+function renderFile(list){
+  listEl.innerHTML='';
+  list.forEach(f=>{
+    const li=document.createElement('li');
+    li.textContent=f.caminho;
+    li.dataset.mod=f.modificado;
+    if(!known.has(f.caminho)){
+      if(files.length) li.classList.add('new');
+      setTimeout(()=>li.classList.remove('new'),3000);
+      known.add(f.caminho);
+    }
+    li.onclick=()=>openFile(f.caminho);
+    listEl.appendChild(li);
+  });
+}
+async function loadList(){
+  const r=await fetch('/api/codigo/arquivos'); const data=await r.json();
+  // detectar mudanças
+  const changed=data.filter(f=>f.caminho===curPath && f.modificado!==curMod);
+  if(changed.length){ flashName(); openFile(curPath,true); }
+  renderFile(data);
+  files=data;
+}
+function flashName(){
+  const li=[...listEl.children].find(li=>li.textContent===curPath);
+  if(li){ li.classList.add('flash'); setTimeout(()=>li.classList.remove('flash'),1000); }
+}
+async function openFile(caminho,skipFlash=false){
+  curPath=caminho;
+  const r=await fetch(`/api/codigo/arquivo?caminho=${encodeURIComponent(caminho)}`);
+  const {texto,modificado}=await r.json();
+  curMod=modificado;
+  pathEl.textContent=caminho;
+  codeEl.innerHTML=''; // seguro: estamos criando nós manualmente depois
+  texto.split('\n').forEach((ln,i)=>{
+    const line=document.createElement('div');
+    line.className='line';
+    const num=document.createElement('span'); num.className='ln'; num.textContent=i+1;
+    const cnt=document.createElement('span'); cnt.className='content';
+    cnt.appendChild(highlight(ln));
+    line.appendChild(num); line.appendChild(cnt);
+    line.onmouseover=()=>line.classList.add('hover');
+    line.onmouseout=()=>line.classList.remove('hover');
+    codeEl.appendChild(line);
+  });
+  if(!skipFlash){
+    flashName();
+  }
+}
+setInterval(loadList,3000);
+loadList();
+</script>
+</body>
+</html>

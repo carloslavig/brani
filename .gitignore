@@ -1,0 +1,6 @@
+target/
+dados/
+target/
+dados/
+*.exe
+.env

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caixa de saída</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}a{color:#7db7ff}.dica{font-size:.85em;color:#8b96a3}.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere;white-space:pre-wrap}.aviso{border-color:#e6c35c}.marca{font-size:.85em;color:#8b96a3;white-space:normal}</style>
+</head><body>
+<p><a href="/">← Início</a></p>
+<h1>Caixa de saída</h1>
+<p class="caixa aviso">Nada disto foi enviado: o Braniac em Rust ainda não fala com ninguém. Aqui fica só o que ele <strong>mandaria</strong> (mensagem, áudio, resumo, recado).</p>
+<div id="lista"></div>
+<p role="status" id="status" class="dica">Carregando…</p>
+<script>
+const lista=document.getElementById('lista'),status=document.getElementById('status');
+fetch('/api/saida').then(r=>r.json()).then(l=>{
+  lista.replaceChildren(...l.map(i=>{
+    const d=document.createElement('div'),m=document.createElement('div');
+    d.className='caixa';m.className='marca';
+    m.textContent=new Date(i.ts*1000).toLocaleString('pt-BR')+' · '+i.canal+' → '+i.destino;
+    d.append(m,document.createTextNode(i.texto));
+    return d}));
+  status.textContent=l.length?l.length+' item(ns), do mais novo ao mais antigo.':'A caixa está vazia.';
+}).catch(()=>{status.textContent='Não consegui ler a caixa de saída.'});
+</script>
+</body></html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conversa</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}input,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.5rem .7rem}
+button{cursor:pointer}:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;min-height:40vh;max-height:60vh;overflow:auto;overflow-wrap:anywhere;white-space:pre-wrap}
+form{display:flex;gap:.5rem;align-items:end;flex-wrap:wrap}label{flex:1 1 14rem;display:flex;flex-direction:column;font-size:.85em;color:#8b96a3}
+#aviso{color:#e6c35c;min-height:1.5em}.origem{display:block;font-size:.8em;color:#8b96a3}
+</style>
+</head>
+<body>
+<p><a href="/">← Início</a></p>
+<h1>Conversa com o Jarvis</h1>
+<div id="falas" class="caixa" aria-live="polite"></div>
+<form id="f">
+<label>Sua mensagem<input id="texto" required autocomplete="off"></label>
+<button type="submit">Enviar</button>
+<button type="button" id="mic">🎤 Falar</button>
+</form>
+<p id="aviso" role="status"></p>
+<script>
+const falas=document.getElementById('falas'), aviso=document.getElementById('aviso'), form=document.getElementById('f'), texto=document.getElementById('texto'), mic=document.getElementById('mic');
+let gravando=false, recorder, audioPlaying=null;
+function addMsg(pref, msg){const p=document.createElement('p');p.textContent=pref+msg;falas.appendChild(p);falas.scrollTop=falas.scrollHeight;}
+function toggleBtns(dis){form.querySelectorAll('button').forEach(b=>b.disabled=dis);mic.disabled=dis;}
+form.addEventListener('submit',e=>{e.preventDefault();enviar();});
+function enviar(){const txt=texto.value.trim();if(!txt)return;addMsg('Você: ',txt);texto.value='';addMsg('Jarvis: ','pensando…');toggleBtns(true);
+fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json','X-Braniac':'1'},body:JSON.stringify({texto:txt})})
+.then(r=>r.json()).then(d=>{const p=falas.lastChild,resp=typeof d.resposta==='string'?d.resposta:'';p.textContent='Jarvis: '+(d.erro||resp||'(sem resposta)');
+if(!d.erro&&resp){const btn=document.createElement('button');btn.textContent='▶ Ouvir';btn.type='button';btn.onclick=()=>ouvir(resp);p.append(' ',btn);
+if(resp.startsWith('Braniac desligado')){const l=document.createElement('button');l.type='button';l.textContent='Ligar o Braniac';l.onclick=ligar;p.append(' ',l);}
+// de onde veio a resposta: agentes locais consultados, resposta sem IA, ou o nome da IA
+const quem=Array.isArray(d.agentes)?d.agentes.filter(a=>typeof a==='string'):[];
+const origem=quem.length?'Consultei: '+quem.join(', ')+' (sem IA)':d.provedor==='agentes'?'Respondido aqui mesmo, sem IA':typeof d.provedor==='string'&&d.provedor?'IA: '+d.provedor:'';
+if(origem){const o=document.createElement('small');o.className='origem';o.textContent=origem;p.append(o);}}
+falas.scrollTop=falas.scrollHeight;})
+.catch(()=>{falas.lastChild.textContent='Jarvis: sem resposta do Braniac.';}).finally(()=>toggleBtns(false));
+}
+function ligar(){fetch('/api/power',{method:'POST',headers:{'Content-Type':'application/json','X-Braniac':'1'},body:JSON.stringify({ligado:true})})
+.then(r=>r.json()).then(e=>{aviso.textContent=e.pausado?'Não consegui ligar. Tente pelo Painel.':'Braniac ligado. Pode mandar de novo.';}).catch(()=>{aviso.textContent='Sem resposta do Braniac.';});}
+function ouvir(txt){
+if(audioPlaying){audioPlaying.pause();}
+fetch('/api/voz',{method:'POST',headers:{'Content-Type':'application/json','X-Braniac':'1'},body:JSON.stringify({texto:txt})})
+.then(r=>r.ok?r.blob():r.json().then(j=>Promise.reject(j))).then(b=>{audioPlaying=new Audio(URL.createObjectURL(b));audioPlaying.play();})
+.catch(e=>{aviso.textContent=e.erro||'Erro ao obter áudio';});
+}
+mic.onclick=()=>{if(!gravando){
+navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{recorder=new MediaRecorder(s);const c=[];recorder.ondataavailable=e=>c.push(e.data);
+recorder.onstop=()=>{const blob=new Blob(c,{type:recorder.mimeType});aviso.textContent='Entendendo o que você falou…';toggleBtns(true);
+fetch('/api/ouvir',{method:'POST',headers:{'X-Braniac':'1'},body:blob}).then(r=>r.json()).then(d=>{toggleBtns(false);if(d.erro){aviso.textContent=d.erro}else{aviso.textContent='';texto.value=d.texto;enviar();}})
+.catch(()=>{toggleBtns(false);aviso.textContent='Não consegui mandar o áudio.';});s.getTracks().forEach(t=>t.stop());};
+recorder.start();gravando=true;mic.textContent='⏹ Parar';aviso.textContent='Gravando… toque em Parar quando terminar.';}).catch(()=>{aviso.textContent='Não consegui usar o microfone. Confira a permissão do navegador.';});
+}else{recorder.stop();gravando=false;mic.textContent='🎤 Falar';}};
+</script>
+</body>
+</html>

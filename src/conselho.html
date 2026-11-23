@@ -1,0 +1,47 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conselho de IAs</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}textarea,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .8rem}
+textarea{width:100%;box-sizing:border-box;margin:.3rem 0 .6rem}button{cursor:pointer}button:disabled{opacity:.6;cursor:wait}
+:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}
+.dica{font-size:.85em;color:#8b96a3}#aviso{color:#e6c35c}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.8rem 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.sintese{border-color:#6fd08c}.caixa h2,.caixa h3{margin:0 0 .4rem;font-size:1rem;white-space:normal}
+.caixa b{color:#6fd08c}.papel{font-size:.85em;color:#8b96a3;font-weight:normal}
+</style>
+<p><a href="/">← Início</a></p>
+<h1>Conselho de IAs</h1>
+<form id="f">
+  <label for="tema">Tema do conselho</label>
+  <textarea id="tema" rows="3" minlength="12" required></textarea>
+  <button id="ir">Reunir o conselho</button>
+  <p class="dica">Só o tema vai para as IAs. Não escreva nome de pessoa, telefone nem dado de conta.</p>
+</form>
+<p id="aviso" role="status"></p>
+<div id="resultado"></div>
+<script>
+const $=id=>document.getElementById(id);
+const caixa=(classe,...filhos)=>{const d=document.createElement('div');d.className='caixa '+classe;d.append(...filhos);return d};
+const el=(tag,texto,classe)=>{const e=document.createElement(tag);e.textContent=texto;if(classe)e.className=classe;return e};
+function mostra(d){
+  const blocos=[caixa('sintese',el('h2','Síntese'),d.sintese||'As IAs opinaram, mas a síntese não saiu.')];
+  for(const o of d.opinioes){
+    const h=document.createElement('h3');
+    h.append(el('b',o.ia),' ',el('span','· '+o.papel,'papel'));
+    blocos.push(caixa('',h,o.texto));
+  }
+  if(d.ausentes.length)blocos.push(el('p','Não responderam: '+d.ausentes.join(', '),'dica'));
+  $('resultado').replaceChildren(...blocos);
+}
+$('f').onsubmit=async ev=>{
+  ev.preventDefault();
+  $('ir').disabled=true;$('aviso').textContent='Reunindo o conselho… (pode levar até um minuto)';
+  try{
+    const r=await fetch('/api/conselho',{method:'POST',headers:{'X-Braniac':'1'},body:JSON.stringify({tema:$('tema').value})});
+    const d=await r.json();
+    if(d.erro)$('aviso').textContent=d.erro;else{$('aviso').textContent='';mostra(d)}
+  }catch(e){$('aviso').textContent='Não consegui falar com o Braniac.'}
+  $('ir').disabled=false;
+};
+</script>

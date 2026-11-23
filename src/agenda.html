@@ -1,0 +1,71 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agenda e rotinas</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}input,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.5rem .7rem}
+form{display:flex;flex-wrap:wrap;gap:.5rem;align-items:end}label{display:flex;flex-direction:column;font-size:.85em;color:#8b96a3;flex:1 1 12rem}
+button{cursor:pointer}:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}
+.dica{font-size:.85em;color:#8b96a3}#aviso{color:#e6c35c;min-height:1.5em}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;white-space:pre-wrap;overflow-wrap:anywhere}
+h2{font-size:1.1rem;margin:1.4rem 0 .2rem}.linha{display:flex;gap:.6rem;align-items:center;justify-content:space-between;padding:.3rem 0}
+</style>
+<p><a href="/">← Início</a></p>
+<h1>Agenda e rotinas</h1>
+<form id="f">
+  <label>O que é<input id="titulo" required maxlength="120"></label>
+  <label>Quando (ex.: amanhã 14h, 15/10 9:30, segunda 10h)<input id="quando"></label>
+  <button>Anotar</button>
+</form>
+<p id="aviso" role="status"></p>
+<h2>Próximos 7 dias</h2>
+<div id="agenda" class="caixa">carregando…</div>
+<h2>Rotinas do Compasso</h2>
+<p class="dica">Rotina nasce pausada. Só roda depois que você liga, das 8h às 21h, uma vez por dia.</p>
+<div id="rotinas" class="caixa">carregando…</div>
+<h2>Avisos</h2>
+<p class="dica">Por enquanto os lembretes e o bom dia aparecem só aqui. Toque em Ouvir para escutar.</p>
+<div id="avisos" class="caixa">carregando…</div>
+<script>
+const $=id=>document.getElementById(id);
+const pega=u=>fetch(u).then(r=>r.json());
+let tocando=null;
+const ouvir=async(texto,b)=>{
+  b.disabled=true;b.textContent='Preparando…';
+  try{
+    const r=await fetch('/api/voz',{method:'POST',headers:{'X-Braniac':'1'},body:JSON.stringify({texto})});
+    if(!r.ok)throw new Error((await r.json()).erro);
+    if(tocando)tocando.pause();
+    tocando=new Audio(URL.createObjectURL(await r.blob()));await tocando.play();$('aviso').textContent='';
+  }catch(e){$('aviso').textContent='Não consegui falar: '+e.message}
+  b.disabled=false;b.textContent='▶ Ouvir';
+};
+const manda=(u,corpo)=>fetch(u,{method:'POST',headers:{'X-Braniac':'1'},body:JSON.stringify(corpo)}).then(r=>r.json());
+async function carregar(){
+  try{
+    $('agenda').textContent=(await pega('/api/agenda?dias=7')).texto;
+    const rs=(await pega('/api/rotinas')).rotinas;
+    $('rotinas').replaceChildren(...(rs.length?rs.map(r=>{
+      const l=document.createElement('div');l.className='linha';
+      const t=document.createElement('span');t.textContent=`${r.ativa?'🟢':'⏸'} ${r.horario} · ${r.titulo}${r.para?' → '+r.para:''}`;
+      const b=document.createElement('button');b.textContent=r.ativa?'Pausar':'Ligar';
+      b.onclick=async()=>{const x=await manda('/api/rotinas',{acao:r.ativa?'pausar':'ativar',id:r.id});$('aviso').textContent=x.erro||'';carregar()};
+      l.append(t,b);return l}):['Nenhuma rotina guardada.']));
+    const av=await pega('/api/avisos');
+    $('avisos').replaceChildren(...(av.length?av.map(a=>{
+      const l=document.createElement('div');l.className='linha';
+      const t=document.createElement('span');t.textContent=`${a.quando} · ${a.para}: ${a.texto}`;
+      const b=document.createElement('button');b.textContent='▶ Ouvir';b.onclick=()=>ouvir(a.texto,b);
+      l.append(t,b);return l}):['Nenhum aviso ainda.']));
+  }catch(e){$('aviso').textContent='Não consegui carregar: '+e.message}
+}
+$('f').onsubmit=async e=>{
+  e.preventDefault();
+  try{
+    const r=await manda('/api/agenda',{acao:'adicionar',titulo:$('titulo').value,quando:$('quando').value});
+    $('aviso').textContent=r.resultado||r.erro;
+    if(r.resultado&&r.resultado.startsWith('📅')){$('titulo').value='';$('quando').value=''}
+  }catch(x){$('aviso').textContent='Não consegui anotar: '+x.message}
+  carregar();
+};
+carregar();setInterval(carregar,60000);
+</script>

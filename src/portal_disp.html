@@ -1,0 +1,8 @@
+<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Dispositivos</title>
+<style>body{font:15px system-ui;background:#0e1411;color:#e6efe8;max-width:720px;margin:20px auto;padding:0 16px}table{width:100%;border-collapse:collapse}
+td,th{padding:8px 6px;border-bottom:1px solid #2c3d33;text-align:left;font-size:13px}button{padding:6px 10px;border-radius:8px;border:0;background:#c0392b;color:#fff}a{color:#3ecf8e}</style>
+<h2>Dispositivos conectados</h2><p><a href="/">← Braniac</a> · <button onclick="x('/portal/api/revogar-todos')">Sair de todos</button> <button onclick="x('/portal/logout')" style="background:#555">Sair</button></p>
+<table id=t></table><script>
+async function x(u,b){await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b||{})});if(u.includes('logout'))location='/portal/login';else l()}
+async function l(){const j=await (await fetch('/portal/api/dispositivos')).json();t.innerHTML='<tr><th>Dispositivo<th>IP<th>Último acesso<th>Logins<th></tr>'+j.map(d=>
+`<tr><td>${d.nome}${d.atual?' <b>(este)</b>':''}<br><small>desde ${d.primeiro}</small><td>${d.ip}<td>${d.ultimo}<td>${d.logins}<td>${d.status=='ativo'?`<button onclick="x('/portal/api/revogar',{id:'${d.id}'})">Revogar</button>`:'revogado'}</tr>`).join('')}l()</script>

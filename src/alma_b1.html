@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR"><head><script>/* B.R.A.N.I: o servidor exige X-Braniac em todo POST */var _f=window.fetch;window.fetch=function(u,o){if(o&&o.method==="POST")o.headers=Object.assign({"X-Braniac":"1"},o.headers||{});return _f(u,o)};</script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O que a Alma sabe</title>
+<style>
+:root{--bg:#14101a;--card:#211a2b;--tx:#f1eaf7;--mut:#a899b8;--ac:#e58fc0;--ok:#6fd49a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px system-ui,sans-serif;padding:16px;max-width:760px;margin:auto}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin-bottom:16px}
+h2{font-size:14px;color:var(--mut);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.06em}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.n{background:var(--card);border-radius:14px;padding:14px;text-align:center}.n b{display:block;font-size:30px;color:var(--ac)}.n small{color:var(--mut)}
+.c{background:var(--card);border-radius:12px;padding:12px;margin-bottom:8px}
+button{background:#2e2540;color:var(--tx);border:1px solid #43365a;border-radius:99px;padding:6px 12px;margin:3px 3px 0 0;font:inherit;font-size:13px;cursor:pointer}
+button:hover{border-color:var(--ac)}button.p{border-color:#a34b4b;color:#ffb3b3}
+label{display:flex;gap:10px;align-items:center;padding:8px 0}
+</style></head><body>
+<h1>O que a Alma sabe</h1><div class="sub" id="sub">carregando…</div>
+<div class="g" id="n"></div>
+<h2>Humor agora</h2><div class="c" id="h"></div>
+<h2>Frases esperando um tema (opcional, uns 2 minutos por semana)</h2><div id="p"></div>
+<h2>Permissões</h2><div class="c" id="perm"></div>
+<h2>Apagar</h2><div class="c" id="ap"></div>
+<h2>Diário terapêutico (14 dias)</h2><div class="c" id="dia"></div>
+<h2>Agora (ALMA 2.0)</h2><div class="g" id="a2n"></div><div class="c" id="a2s"></div>
+<h2>Personalidade</h2><div class="c" id="cfg_p"></div>
+<h2>Iniciativa</h2><div class="c" id="cfg_i"></div>
+<h2>Monitoramento e sobrecarga</h2><div class="c" id="cfg_m"></div>
+<h2>Esfera de voz</h2><div class="c" id="cfg_v"></div>
+<h2>Rede de apoio</h2><div class="c" id="cfg_r"></div><div id="rede"></div>
+<script>
+const esc=s=>String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const post=(o)=>fetch("/api/alma/acao",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}).then(r=>r.json());
+const TEMAS=["saude","emocional","familia","ti","trabalho","outros"];
+const NOM={temas:"Aprender temas das minhas frases",sinais:"Observar o ritmo das mensagens (só números)",exemplos:"Guardar exemplos de como eu respondo",pausado:"PAUSAR tudo"};
+async function ler(){const d=await (await fetch("/api/alma/sabe")).json();
+ document.getElementById("sub").textContent="Tudo fica só neste PC. Você vê, corrige e apaga aqui.";
+ document.getElementById("n").innerHTML=[[d.diario,"registros no diário"],[d.sem_tema_pct+"%","sem tema"],[d.sinais,"sinais guardados"],[d.exemplos,"exemplos de resposta"]].map(x=>`<div class="n"><b>${x[0]}</b><small>${x[1]}</small></div>`).join("");
+ const h=d.humor;document.getElementById("h").innerHTML=esc(h.estado)+(h.alerta?" — a Alma pediu um tom mais calmo ao Jarvis":"")+`<div class="sub">Não é diagnóstico. Só ajusta o tom.</div>`;
+ document.getElementById("p").innerHTML=d.pendentes.length?d.pendentes.map(x=>`<div class="c">${esc(x.texto)}<div>${TEMAS.map(t=>`<button onclick="rot(${x.id},'${t}')">${t}</button>`).join("")}</div></div>`).join(""):'<div class="c">Nada esperando ✓</div>';
+ document.getElementById("perm").innerHTML=Object.keys(NOM).map(k=>`<label><input type="checkbox" ${d.consentimento[k]?"checked":""} onchange="cons('${k}',this.checked)">${NOM[k]}</label>`).join("");
+ document.getElementById("ap").innerHTML=["sinais","exemplos","rotulos","perfil","diario","tudo"].map(e=>`<button class="p" onclick="apagar('${e}')">${e}</button>`).join("");}
+async function rot(id,t){await post({acao:"rotular",id,tema:t});ler()}
+async function cons(k,v){await post({acao:"consentimento",[k]:v});ler()}
+async function apagar(e){if(confirm("Apagar "+e+"? Não tem como desfazer.")){await post({acao:"apagar",escopo:e});ler()}}
+const CFG={p:[["informalidade","Informalidade (0 contida, 3 bem solta)"],["humor","Pode brincar de leve"]],
+ i:[["iniciativa_ligada","Puxar conversa sozinha"],["iniciativas_dia","Mensagens por dia"],["iniciativa_intervalo_min","Intervalo mínimo (min)"],["iniciativa_hora_min","Das (hora)"],["iniciativa_hora_max","Até (hora)"],["nao_respondidas_max","Parar depois de quantas sem resposta"],["pausa_ocupado_h","Horas de pausa quando eu disser que estou ocupado"]],
+ m:[["monitor_ligado","Acompanhar a atividade (só números)"],["sobrecarga_ligada","Calcular sobrecarga"],["limite_atencao","Limite atenção"],["limite_elevado","Limite elevado"],["limite_alto","Limite alto"],["atividade_retencao_dias","Guardar por quantos dias"]],
+ v:[["voz_orbe","Abrir a esfera quando o Braniac liga"],["voz_iniciativa","Ela pode falar sozinha quando vê sobrecarga"],["voz_dia","Vezes por dia"],["voz_intervalo_min","Intervalo mínimo (min)"],["voz_hora_min","Das (hora)"],["voz_hora_max","Até (hora)"],["voz_nivel_max","Maior tamanho (1 cantinho, 2 conversa, 3 atenção)"],["manha_ligado","Bom dia por voz quando eu chegar no PC, com a conta do sono"],["sono_minimo_h","Sono mínimo que ela considera bom (horas)"],["tarde_ligado","Me chamar para descansar quando eu estiver no PC até tarde"],["tarde_hora","Tarde a partir de (hora)"],["tarde_vezes","Quantas vezes por noite"],["tarde_intervalo_min","Intervalo entre os avisos (min)"]],
+ r:[["rede_jana_sobrecarga","Avisar a Deusa Parceira, com discrição, em dia muito puxado (1 vez por dia, sem detalhes)"],["rede_marcia_apoio","Tia Mae: aviso carinhoso quando estou com a cabeça cheia (regra antiga)"]]};
+const NOMEST={NORMAL:"normal",ATTENTION:"atenção",ELEVATED:"elevada",HIGH:"alta"};
+async function cfg(k,v){await post({acao:"config",chave:k,valor:v});ler2()}
+async function ler2(){const d=await (await fetch("/api/alma/painel")).json();const s=d.sobrecarga,r=s.resumo||{};
+ const NE={estresse:"estresse",tristeza:"tristeza",cansaco:"cansaço",alegria:"alegria",conquista:"conquista"};
+ document.getElementById("dia").innerHTML='<div style="display:flex;gap:4px;align-items:flex-end;height:90px">'+d.diario.map(x=>`<div title="${x.dia}: ${x.bem_estar==null?"sem registro":x.bem_estar}" style="flex:1;border-radius:4px 4px 0 0;background:${x.bem_estar==null?"#2e2540":x.bem_estar>=60?"#6fd49a":x.bem_estar>=40?"#e5c07b":"#e58fc0"};height:${x.bem_estar==null?6:Math.max(8,x.bem_estar*.9)}px"></div>`).join("")+'</div><div class="sub">Bem-estar por dia, de 0 a 100 (verde bom, rosa pesado, apagado sem registro). É um palpite pelo que você contou, não é diagnóstico.</div>'
+  +d.diario.slice().reverse().filter(x=>x.bem_estar!=null||x.tecnicas.length).map(x=>`<div style="padding:8px 0;border-top:1px solid #2e2540"><b>${x.dia.slice(8)}/${x.dia.slice(5,7)}</b> ${x.bem_estar==null?"":"· bem-estar "+x.bem_estar} <span class="sub">${Object.entries(x.estados).map(e=>(NE[e[0]]||e[0])+" "+e[1]+"x").join(", ")}</span>${x.tecnicas.map(t=>`<div class="sub">${esc(t.hora)} · ${esc(({mae:"Tia Mae",pai:"Tio Pai",dono:"você"})[t.quem]||t.quem)}: ${esc(t.tecnica)}</div>`).join("")}</div>`).join("");
+ document.getElementById("a2n").innerHTML=[[s.indice,"índice de sobrecarga ("+(NOMEST[s.estado]||s.estado)+")"],[Math.round(((r.min_humano||0)+(r.min_supervisionado||0))/6)/10+" h","trabalho seu hoje"],[(r.sem_pausa_min||0)+" min","sem pausa"],[(r.min_autonomo||0)+" min","agentes sozinhos"]].map(x=>`<div class="n"><b>${x[0]}</b><small>${x[1]}</small></div>`).join("");
+ document.getElementById("a2s").innerHTML="Sinais: "+(Object.keys(s.sinais).length?Object.entries(s.sinais).map(x=>esc(x[0])+" ("+x[1]+")").join(", "):"nenhum")+(d.quieta?"<br>Ela está quieta agora: "+esc(d.quieta):"")+(d.impedida?"<br>Não falaria em voz alta agora: "+esc(d.impedida):"")+'<div class="sub">É um palpite, não é diagnóstico. Tarefa que os agentes fazem sozinhos não entra na conta.</div><button onclick="fetch(\'/api/alma/voz-acao\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({acao:\'abrir\'})})">Conversar com a Alma agora</button>';
+ for(const g in CFG)document.getElementById("cfg_"+g).innerHTML=CFG[g].map(([k,n])=>typeof d.params[k]==="boolean"?`<label><input type="checkbox" ${d.params[k]?"checked":""} onchange="cfg('${k}',this.checked)">${n}</label>`:`<label><input type="number" value="${d.params[k]}" style="width:76px" onchange="cfg('${k}',this.value)">${n}</label>`).join("");
+ document.getElementById("rede").innerHTML=d.rede.length?d.rede.slice().reverse().map(x=>`<div class="c"><b>${esc(x.contato)}</b> · ${esc(x.situacao)} · ${new Date(x.ts*1000).toLocaleString("pt-BR")}<div class="sub">${esc(x.texto)}</div></div>`).join(""):'<div class="c">Nenhum acionamento registrado ainda.</div>';}
+ler();ler2();
+</script></body></html>

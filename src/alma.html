@@ -1,0 +1,94 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alma</title>
+<style>body{font:18px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}h1{font-size:1.7rem;margin:.4rem 0}h2{font-size:1.25rem;margin:1.4rem 0 .3rem}
+input,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .9rem}
+button{cursor:pointer}button:disabled{opacity:.6}:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+summary{cursor:pointer;padding:.5rem 0}progress{width:100%;height:1.2rem}
+.dica{font-size:.9em;color:#8b96a3}.grande{font-size:1.35rem;font-weight:600;margin:.3rem 0}.pre{white-space:pre-wrap}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.6rem}.grade .caixa{margin:0}
+.ok{color:#6fd08c}.ruim{color:#ff8a80}.aten{color:#e6c35c}#st{color:#e6c35c;min-height:1.5em}
+.linha{display:flex;gap:.8rem;align-items:center;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid #2a323c}
+.linha input[type=number]{width:6rem}.linha input[type=checkbox]{width:1.6rem;height:1.6rem}
+</style></head><body>
+<p><a href="/">← Início</a></p>
+<h1>Alma</h1>
+<p id="st" role="status">Carregando…</p>
+<h2>Sobrecarga agora</h2>
+<div class="caixa">
+  <p id="indice" class="grande">…</p>
+  <progress id="barra" max="100" value="0" aria-label="Índice de sobrecarga, de 0 a 100"></progress>
+  <p id="sinais"></p>
+  <p class="aten">Não é diagnóstico. É só um palpite pelo uso do computador.</p>
+</div>
+<p id="quieta" class="caixa" hidden></p>
+<h2>Diário dos últimos dias</h2>
+<div id="diario"></div>
+<details><summary>Ajustes da Alma</summary>
+  <p class="dica">Mudou, já grava.</p>
+  <div id="ajustes"></div>
+</details>
+<script>
+const $=id=>document.getElementById(id);
+// todo texto entra por textContent: o que vem da API pode ter sido escrito por terceiros
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const json=async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw {erro:j.erro};return j;};
+const pega=async u=>json(await fetch(u));
+const manda=async(u,c)=>json(await fetch(u,{method:'POST',headers:{'X-Braniac':'1','Content-Type':'application/json'},body:JSON.stringify(c)}));
+const FAIXA={NORMAL:['Normal','ok'],ATTENTION:['Atenção','aten'],ELEVATED:['Elevado','aten'],HIGH:['Alto','ruim']};
+const HUMOR={estresse:'estresse',tristeza:'tristeza',cansaco:'cansaço',alegria:'alegria',conquista:'conquista'};
+// chave, rotulo, [minimo, maximo] ou nada para liga/desliga (igual a EDITAVEIS em alma_mente.rs)
+const AJUSTES=[['iniciativa_ligada','Puxar conversa sozinha'],['iniciativas_dia','Conversas por dia',0,8],['iniciativa_intervalo_min','Minutos entre conversas',30,600],
+['iniciativa_hora_min','Começa a falar às (hora)',0,23],['iniciativa_hora_max','Para de falar às (hora)',0,23],['nao_respondidas_max','Para depois de quantas sem resposta',1,5],
+['pausa_ocupado_h','Pausa quando você está ocupado (horas)',1,12],['informalidade','Informalidade',0,3],['humor','Humor'],
+['monitor_ligado','Monitor de atividade'],['atividade_retencao_dias','Guardar a atividade por (dias)',1,90],['sobrecarga_ligada','Medir sobrecarga'],
+['limite_atencao','Sobrecarga: limite de atenção',10,90],['limite_elevado','Sobrecarga: limite elevado',20,95],['limite_alto','Sobrecarga: limite alto',30,100],
+['voz_orbe','Esfera de voz'],['voz_iniciativa','Falar por voz sozinha'],['voz_hora_min','Voz: começa às (hora)',0,23],['voz_hora_max','Voz: para às (hora)',0,23],
+['voz_dia','Voz: falas por dia',0,8],['voz_intervalo_min','Voz: minutos entre falas',30,600],['voz_nivel_max','Voz: nível máximo da esfera',1,3],
+['manha_ligado','Bom dia por voz'],['sono_minimo_h','Sono mínimo (horas)',5,9],['tarde_ligado','Avisar quando está tarde'],['tarde_hora','Tarde a partir de (hora)',20,23],
+['tarde_vezes','Avisos de tarde por noite',1,4],['tarde_intervalo_min','Minutos entre avisos de tarde',20,180],
+['rede_parceira_sobrecarga','Rede de apoio: avisar a parceira de dia puxado'],['rede_mae_apoio','Rede de apoio: avisar a mãe']];
+async function grava(chave,valor){
+  try{const r=await manda('/api/alma',{chave,valor});$('st').textContent='Gravado.';if(r.params)ajustes(r.params);}
+  catch(e){$('st').textContent=e.erro||'O Braniac não respondeu';}
+}
+function ajustes(p){
+  $('ajustes').replaceChildren(...AJUSTES.filter(a=>a[0] in p).map(([k,rot,min,max])=>{
+    const l=el('label','linha'),i=el('input');
+    if(min===undefined){i.type='checkbox';i.checked=p[k]===true;i.onchange=()=>grava(k,i.checked);l.append(el('span','',rot),i);}
+    else{i.type='number';i.min=min;i.max=max;i.value=p[k];i.onchange=()=>grava(k,i.value);l.append(el('span','',rot+' — de '+min+' a '+max),i);}
+    return l;
+  }));
+}
+function dia(d){
+  const c=el('div','caixa'),bem=typeof d.bem_estar==='number';
+  const data=String(d.dia||'').split('-').reverse().slice(0,2).join('/');
+  c.append(el('strong','',data+' — '+(bem?'bem-estar '+d.bem_estar+' de 100':'sem registro')));
+  const est=Object.entries(d.estados||{}).map(([k,n])=>(HUMOR[k]||k)+' '+n+'×').join(', ');
+  if(est)c.append(el('div','',est));
+  (d.tecnicas||[]).forEach(t=>c.append(el('div','dica',[t.hora,t.quem,t.tecnica].filter(Boolean).join(' · '))));
+  return c;
+}
+async function sobrecarga(){
+  const a=(await pega('/api/sobrecarga')).agora||{};
+  const [nome,cls]=FAIXA[a.estado]||['dado não disponível',''];
+  $('indice').textContent=(typeof a.indice==='number'?a.indice:'?')+' de 100 — '+nome;$('indice').className='grande '+cls;
+  $('barra').value=a.indice||0;
+  const s=Object.keys(a.sinais||{});
+  $('sinais').textContent=s.length?'O que pesou: '+s.join(', ')+'.':'Nenhum sinal pesando agora.';
+}
+async function carregar(){
+  try{
+    await sobrecarga().catch(()=>{$('indice').textContent='dado não disponível';});
+    const a=await pega('/api/alma');
+    $('quieta').hidden=!a.quieta;$('quieta').textContent=a.quieta?'A Alma está quieta agora ('+a.quieta+').':'';
+    const dias=(Array.isArray(a.diario)?a.diario:[]).slice().reverse();
+    $('diario').replaceChildren(...(dias.length?dias.map(dia):[el('p','dica','Nada por aqui ainda')]));
+    ajustes(a.params||{});
+    $('st').textContent='';
+  }catch{$('st').textContent='O Braniac não respondeu';}
+}
+carregar();
+</script>
+</body></html>

@@ -1,0 +1,115 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Empresas</title>
+<style>body{font:18px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}h1{font-size:1.7rem;margin:.4rem 0}h2{font-size:1.25rem;margin:1.4rem 0 .3rem}
+input,button,select{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .9rem}
+button{cursor:pointer}button:disabled{opacity:.6}:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+summary{cursor:pointer;padding:.5rem 0}
+.dica{font-size:.9em;color:#8b96a3}.pre{white-space:pre-wrap}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}
+.caixa input,.caixa select,.caixa button{background:#11151a}
+.aten{color:#e6c35c}#st{color:#e6c35c;min-height:1.5em}
+.quadro{display:grid;grid-template-columns:repeat(auto-fill,minmax(7.5rem,1fr));gap:.5rem;margin:.5rem 0}
+.quadro div{background:#11151a;border:1px solid #2a323c;border-radius:6px;padding:.5rem;text-align:center}.quadro b{display:block;font-size:1.6rem}
+.zero{color:#8b96a3}
+form{display:flex;flex-direction:column;gap:.5rem;margin:.4rem 0}label{display:flex;flex-direction:column;font-size:.9em;color:#8b96a3}
+.botoes{display:flex;flex-wrap:wrap;gap:.6rem;margin:.6rem 0}.botoes:empty{display:none}.botoes button{flex:1 1 11rem;min-height:3rem}
+</style></head><body>
+<p><a href="/">← Início</a></p>
+<h1>Empresas</h1>
+<p class="dica">Nada aqui roda sozinho: cada passo só acontece quando você aperta o botão. Nada é publicado nem enviado.</p>
+<p id="st" role="status">Carregando…</p>
+<div id="lista"></div>
+<script>
+const $=id=>document.getElementById(id);
+// todo texto entra por textContent: o que vem da API pode ter sido escrito por terceiros
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const json=async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw {erro:j.erro};return j;};
+const pega=async u=>json(await fetch(u));
+const manda=async c=>json(await fetch('/api/empresas',{method:'POST',headers:{'X-Braniac':'1','Content-Type':'application/json'},body:JSON.stringify(c)}));
+const NOME={dev:'programação',mkt:'marketing',inv:'investimentos (só simulação)',compras:'compras (só pesquisa)',cortes:'cortes de vídeo'};
+const ROTULO={agentes:'agentes',passos_hoje:'passos hoje',claude_hoje:'revisões do Claude hoje',reprovados_semana:'reprovados na semana',modo:'modo',propostas_aguardando:'propostas esperando OK',
+  pedidos:'pedidos',aguardando_ok:'esperando OK',em_andamento:'em andamento'};
+// campos de "Abrir pedido": [nome na rota, rótulo, lista de opções ou 'n' para número]
+const FORM={
+  dev:{acao:'abrir',campos:[['projeto','Projeto'],['titulo','Título'],['descricao','O que é para fazer']]},
+  mkt:{acao:'abrir',campos:[['cliente','Cliente'],['tipo','Tipo',['imagem','carrossel','video','stories']],['briefing','O que a peça deve dizer']]},
+  inv:{acao:'propor',campos:[['perfil','Perfil',['daytrade','swing','holding']],['ticker','Papel (código)'],['entrada','Preço de entrada','n'],['stop','Preço de saída se cair','n'],['alvo','Preço alvo','n'],['tese','Por quê']]},
+  compras:{acao:'abrir',campos:[['item','O que comprar'],['uso','Para que vai usar'],['orcamento','Quanto pode gastar']]},
+  cortes:{acao:'abrir',campos:[['fonte','Vídeo de origem (arquivo ou link)'],['autor','Quem fala no vídeo'],['titulo_fonte','Título do vídeo'],['gameplay','Vídeo de fundo (arquivo)']]}};
+const celula=(n,rot)=>{const d=el('div',n?'':'zero');d.append(el('b','',n),rot.replace(/_/g,' '));return d;};
+const diz=t=>{$('st').textContent=t||'';};
+async function pedir(corpo,botao){
+  if(botao)botao.disabled=true;
+  try{const r=await manda(corpo);diz(r.resultado||'Feito.');await carregar();return true;}
+  catch(e){diz(e.erro||'O Braniac não respondeu');return false;}
+  finally{if(botao)botao.disabled=false;}
+}
+function formulario(k){
+  const f=el('form'),cfg=FORM[k],campos=[];
+  cfg.campos.forEach(([nome,rot,tipo])=>{
+    const l=el('label','',rot);let c;
+    if(Array.isArray(tipo)){c=el('select');tipo.forEach(o=>c.append(el('option','',o)));}
+    else{c=el('input');c.autocomplete='off';if(tipo==='n')c.inputMode='decimal';}
+    campos.push([nome,c,tipo]);l.append(c);f.append(l);
+  });
+  const b=el('button','','Abrir');b.type='submit';f.append(b);
+  f.addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const corpo={empresa:k,acao:cfg.acao};
+    campos.forEach(([nome,c,tipo])=>{corpo[nome]=tipo==='n'?Number(c.value.replace(',','.'))||0:c.value.trim();});
+    if(await pedir(corpo,b))campos.forEach(([,c,tipo])=>{if(!Array.isArray(tipo))c.value='';});
+  });
+  const d=el('details');d.append(el('summary','','Abrir pedido'),f);return d;
+}
+// a parte fixa de cada empresa (formulário e botões) é montada uma vez só, para não apagar o que você está digitando
+const cartoes={};
+function cartao(k){
+  const c=el('div','caixa'),titulo=el('h2','',NOME[k]),vivo=el('div'),ok=el('div','botoes'),botoes=el('div','botoes');
+  let passo=null;
+  c.append(titulo,vivo,ok,botoes);
+  if(k!=='inv'){passo=el('button','','Fazer um passo');passo.type='button';passo.onclick=()=>pedir({empresa:k,acao:'trabalhar'},null);botoes.append(passo);}
+  c.append(formulario(k));
+  cartoes[k]={titulo,vivo,ok,passo};
+  return c;
+}
+function pinta(k,e,esperando,passos){
+  const s=(e&&e.situacao)||{},{titulo,vivo,ok,passo}=cartoes[k],partes=[];
+  titulo.textContent=[typeof s.empresa==='string'?s.empresa:'',NOME[k]].filter(Boolean).join(' — ');
+  const estados=[s.tickets,s.pedidos].find(x=>x&&typeof x==='object');
+  const q=el('div','quadro');
+  if(estados)Object.entries(estados).forEach(([est,n])=>q.append(celula(n,est)));
+  if(s.perfis&&typeof s.perfis==='object')Object.entries(s.perfis).forEach(([p,v])=>q.append(celula((v&&v.posicoes)||0,p+': abertas')));
+  if(q.children.length)partes.push(q);
+  const soltos=Object.keys(ROTULO).filter(r=>['number','string'].includes(typeof s[r])).map(r=>ROTULO[r]+': '+String(s[r]).replace(/_/g,' '));
+  if(s.liberado===false)soltos.push('publicação travada');
+  if(soltos.length)partes.push(el('p','dica',soltos.join(' · ')));
+  const fazendo=Array.isArray(passos.trabalhando)&&passos.trabalhando.includes(k),ult=passos.ultimo&&passos.ultimo[k];
+  if(fazendo)partes.push(el('p','aten','Fazendo um passo agora…'));
+  else if(typeof ult==='string')partes.push(el('p','pre','Último passo, às '+ult));
+  if(passo)passo.disabled=fazendo;
+  if(e&&typeof e.quadro==='string'&&e.quadro){
+    const d=el('details'),antigo=vivo.querySelector('details');d.open=!!(antigo&&antigo.open);
+    d.append(el('summary','','Ver a lista'),el('p','pre',e.quadro));partes.push(d);
+  }
+  vivo.replaceChildren(...partes);
+  ok.replaceChildren(...(Array.isArray(esperando)?esperando:[]).filter(x=>x&&typeof x.id==='string').map(x=>{
+    const b=el('button','','Aprovar '+x.id+(x.titulo?': '+x.titulo:''));b.type='button';
+    b.onclick=()=>{if(confirm('Aprovar '+x.id+'? Isso vale como o seu OK de dono.'))pedir({empresa:k,acao:'aprovar',id:x.id},b);};
+    return b;}));
+  return fazendo;
+}
+let de_novo=0;
+async function carregar(){
+  try{
+    const e=await pega('/api/empresas'),esp=e.esperando_ok||{},passos=e.passos||{};
+    const fazendo=Object.keys(NOME).filter(k=>e[k]).map(k=>pinta(k,e[k],esp[k],passos)).some(x=>x);
+    // enquanto um passo roda, olha de novo logo
+    clearTimeout(de_novo);if(fazendo)de_novo=setTimeout(carregar,4000);
+    return true;
+  }catch{diz('O Braniac não respondeu');return false;}
+}
+$('lista').replaceChildren(...Object.keys(NOME).map(cartao));
+carregar().then(ok=>{if(ok)diz('');});setInterval(carregar,60000);
+</script>
+</body></html>

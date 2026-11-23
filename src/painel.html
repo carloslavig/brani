@@ -1,0 +1,107 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel</title>
+<style>body{font:18px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}h1{font-size:1.7rem;margin:.4rem 0}h2{font-size:1.25rem;margin:1.4rem 0 .3rem}
+input,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .9rem}
+button{cursor:pointer}button:disabled{opacity:.6}:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+summary{cursor:pointer;padding:.5rem 0}progress{width:100%;height:1.2rem}
+.dica{font-size:.9em;color:#8b96a3}.grande{font-size:1.35rem;font-weight:600;margin:.3rem 0}.pre{white-space:pre-wrap}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.6rem}.grade .caixa{margin:0}
+.ok{color:#6fd08c}.ruim{color:#ff8a80}.aten{color:#e6c35c}#st{color:#e6c35c;min-height:1.5em}
+.botoes{display:flex;flex-wrap:wrap;gap:.6rem;margin:.5rem 0}.botoes button{flex:1 1 9rem;min-height:3rem}
+#panico{background:#7a1c1c;border-color:#ff8a80;font-weight:bold;width:100%;min-height:3.5rem}
+.mono{font:14px/1.4 ui-monospace,monospace;overflow-x:auto;white-space:pre}ul.caixa{padding-left:2.2rem}#status{margin-bottom:.6rem}
+</style></head><body>
+<p><a href="/">← Início</a></p>
+<h1>Painel</h1>
+<p id="st" role="status">Carregando…</p>
+<div class="caixa">
+  <p id="power" class="grande">…</p>
+  <div class="botoes"><button id="ligar">Ligar o Braniac</button><button id="desligar">Desligar o Braniac</button></div>
+</div>
+<div class="caixa">
+  <p id="mudo" class="grande">…</p>
+  <div class="botoes"><button id="m30">Silenciar 30 min</button><button id="msempre">Silenciar até eu mandar voltar</button><button id="falar">Voltar a falar</button></div>
+</div>
+<button id="panico">🛑 Pânico: desligar os atendimentos automáticos</button>
+<p class="dica">O pânico só desliga e desarma. Ele não apaga nada.</p>
+<h2>O que está ligado</h2>
+<div id="status" class="grade"></div>
+<div id="bracos" class="grade"></div>
+<h2>O que o Braniac em Rust ainda NÃO faz</h2>
+<ul class="caixa">
+<li>Não envia mensagens: tudo cai na <a href="/saida">caixa de saída</a>.</li>
+<li>Não lê o WhatsApp sem o QR code na VM.</li>
+<li>Não escuta o microfone.</li>
+<li>Não renderiza vídeo.</li>
+<li>Não publica nada.</li>
+</ul>
+<p><a href="/saida">Ver a caixa de saída</a></p>
+<h2>Meta do mês</h2>
+<p id="cofre" class="caixa">…</p>
+<h2>Segurança do computador</h2>
+<p id="guarda" class="caixa">…</p>
+<h2>Agenda de hoje</h2>
+<p id="agenda" class="caixa pre">…</p>
+<details><summary>Velocidade das IAs</summary><p id="lat" class="caixa mono">…</p></details>
+<details><summary>Últimos registros</summary><div id="hist"></div></details>
+<script>
+const $=id=>document.getElementById(id);
+// todo texto entra por textContent: o que vem da API pode ter sido escrito por terceiros
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const json=async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw {erro:j.erro};return j;};
+const pega=async u=>json(await fetch(u));
+const manda=async(u,c)=>json(await fetch(u,{method:'POST',headers:{'X-Braniac':'1','Content-Type':'application/json'},body:JSON.stringify(c)}));
+const SEM='dado não disponível';
+const parte=async(u,f)=>{try{f(await pega(u));return true;}catch{return false;}};
+const poePower=e=>{const lig=!e.pausado;$('power').textContent=lig?'Braniac ligado':'Braniac desligado'+(e.motivo?' ('+e.motivo+')':'');$('power').className='grande '+(lig?'ok':'ruim');};
+const poeMudo=m=>{$('mudo').textContent=m.mudo?'Mudo'+(m.restante_min?' por mais '+m.restante_min+' min':' até você mandar voltar'):'Falando normalmente';$('mudo').className='grande '+(m.mudo?'aten':'ok');};
+async function acao(u,corpo,poe){
+  try{poe(await manda(u,corpo));$('st').textContent='';}catch(e){$('st').textContent=e.erro||'O Braniac não respondeu';}
+}
+$('ligar').onclick=()=>acao('/api/power',{ligado:true},poePower);
+$('desligar').onclick=()=>acao('/api/power',{ligado:false},poePower);
+$('m30').onclick=()=>acao('/api/mudo',{mudo:true,minutos:30},poeMudo);
+$('msempre').onclick=()=>acao('/api/mudo',{mudo:true},poeMudo);
+$('falar').onclick=()=>acao('/api/mudo',{mudo:false},poeMudo);
+$('panico').onclick=async()=>{
+  if(!confirm('Acionar o pânico? Isso desliga os atendimentos automáticos e desarma a autonomia.'))return;
+  await acao('/api/panico',{},r=>{alert(r.texto||'Pânico acionado.');});
+  carregar();
+};
+async function carregar(){
+  const ok=await Promise.all([
+    parte('/api/power',poePower),
+    parte('/api/mudo',poeMudo),
+    parte('/api/status',s=>{
+      const sn=(nome,ok,det)=>{const c=el('div','caixa');c.append(el('strong','',nome),el('div',ok?'ok':'dica',(ok?'● ':'○ ')+det));return c;};
+      const o=x=>x&&typeof x==='object'?x:{},txt=x=>typeof x==='string'&&x?x:SEM;
+      const ias=(Array.isArray(s.provedores)?s.provedores:[]).filter(p=>p&&p.ok).map(p=>p.nome),au=o(s.autonomia),w=o(s.whatsapp),vm=o(s.vm);
+      $('status').replaceChildren(
+        sn('IAs prontas',ias.length>0,ias.join(', ')||'nenhuma'),
+        sn('Atendimento automático',o(s.atendimento_auto).ligado===true,o(s.atendimento_auto).ligado?'ligado':'desligado'),
+        sn('Airbnb automático',o(s.airbnb_auto).ligado===true,o(s.airbnb_auto).ligado?'ligado':'desligado'),
+        sn('Autonomia remota',au.armada===true,au.armada?'armada'+(au.indefinida?'':' por mais '+(au.restante_min||0)+' min'):'desarmada'),
+        sn('WhatsApp (aba na VM)',w.estado==='logado',[txt(w.estado),typeof w.aviso==='string'?w.aviso:''].filter(Boolean).join(': ')),
+        sn('VM',!vm.erro&&vm.ligada===true,vm.erro?String(vm.erro):(vm.ligada===true?'ligada':vm.ligada===false?'desligada':SEM)),
+        sn('Microfone',false,txt(s.microfone)),
+        sn('Escuta por voz',false,txt(o(s.escuta_voz).estado)),
+        sn('E-mail',o(s.email).logado===true,txt(o(s.email).estado)));
+    }),
+    parte('/api/cofre',c=>{$('cofre').textContent=c.fala||SEM;}),
+    parte('/api/guarda',g=>{$('guarda').textContent=g.resumo||SEM;}),
+    parte('/api/latencia',l=>{$('lat').textContent=l.relatorio||SEM;}),
+    parte('/api/painel',p=>{
+      const b=Array.isArray(p.bracos)?p.bracos:[];
+      $('bracos').replaceChildren(...(b.length?b.map(x=>{const c=el('div','caixa');c.append(el('strong','',x.nome||SEM),el('div',x.ok?'ok':'dica',(x.ok?'● ':'○ ')+(x.detalhe||SEM)));return c;}):[el('p','dica','Nada por aqui ainda')]));
+      $('agenda').textContent=(p.painel&&p.painel.agenda_hoje)||'Nada por aqui ainda';
+      const h=Array.isArray(p.historico)?p.historico:[];
+      $('hist').replaceChildren(...(h.length?h.map(x=>el('p','',[x.quando,x.braco,x.texto].filter(Boolean).join(' · '))):[el('p','dica','Nada por aqui ainda')]));
+    }),
+  ]);
+  $('st').textContent=ok.some(x=>x)?(ok.every(x=>x)?'':'Uma parte do painel não respondeu.'):'O Braniac não respondeu';
+}
+carregar();setInterval(carregar,30000);
+</script>
+</body></html>

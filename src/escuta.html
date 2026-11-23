@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escuta por voz</title>
+<style>body{font:20px/1.5 system-ui,sans-serif;max-width:720px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}a{color:#7db7ff}.dica{font-size:.8em;color:#8b96a3}#placa{display:flex;gap:1rem;align-items:center;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:1rem;margin:.8rem 0}#luz{width:1.4rem;height:1.4rem;border-radius:50%;background:#55606c;flex:none}#luz.acordado{background:#5cd67d}#luz.alma{background:#b48cff}#estado{font-size:1.4em;font-weight:600}button{font:inherit;padding:.7rem 1.2rem;border-radius:6px;border:1px solid #2a323c;background:#243042;color:#e6e9ed;cursor:pointer}#mic{font-size:1.5em;width:100%;padding:1.2rem}#mic.gravando{background:#7a2b2b}button:disabled{opacity:.5}input{font:inherit;flex:1;min-width:0;padding:.6rem;border-radius:6px;border:1px solid #2a323c;background:#0c1014;color:#e6e9ed}form{display:flex;gap:.5rem;margin:.8rem 0}#falas p{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .9rem;margin:.5rem 0;overflow-wrap:anywhere}#falas p.eu{border-color:#3b5a85}</style>
+</head><body>
+<p><a href="/">← Início</a></p>
+<h1>Escuta por voz</h1>
+<div id="placa"><span id="luz"></span><div><div id="estado">…</div><div class="dica" id="quem"></div></div></div>
+<button id="mic" type="button">🎤 Falar</button>
+<form id="form"><label for="texto" class="dica" style="align-self:center">ou escreva:</label><input id="texto" autocomplete="off"><button type="submit">Enviar</button></form>
+<p role="status" id="aviso" class="dica"></p>
+<div id="falas" aria-live="polite"></div>
+<p class="dica">Diga “Jarvis, tá acordado?” para acordar, “quero falar com a Alma” para trocar e “pode descansar” para dormir. Nada sai do computador.</p>
+<script>
+const H={'Content-Type':'application/json','X-Braniac':'1'},$=i=>document.getElementById(i);
+const mic=$('mic'),aviso=$('aviso'),falas=$('falas'),luz=$('luz');
+let rec=null,som=null;
+const nome=a=>a==='alma'?'Alma':'Jarvis';
+function pinta(e){if(!e||e.pensando)return;
+  const acordado=e.estado==='acordado',alma=e.agente==='alma'||(e.alma&&e.alma.ativa);
+  luz.className=alma?'alma':acordado?'acordado':'';
+  $('estado').textContent=acordado?'Acordado':alma?'Alma na conversa':'Dormindo';
+  $('quem').textContent=(acordado||alma?'Quem responde: '+(alma?'Alma':'Jarvis'):'Diga: “Jarvis, tá acordado?”')+(e.mudo?' · 🔇 mudo':'');}
+function diz(quem,txt,eu){const p=document.createElement('p');if(eu)p.className='eu';p.textContent=quem+': '+txt;falas.prepend(p);}
+function tocar(txt,agente){if(som)som.pause();
+  fetch('/api/voz',{method:'POST',headers:H,body:JSON.stringify({texto:txt,agente:agente})})
+  .then(r=>r.ok?r.blob():Promise.reject()).then(b=>{som=new Audio(URL.createObjectURL(b));som.play();})
+  .catch(()=>{aviso.textContent='A voz não saiu; a resposta está escrita aqui.';});}
+function frase(txt){diz('Você',txt,true);aviso.textContent='Pensando…';mic.disabled=true;
+  fetch('/api/escuta/frase',{method:'POST',headers:H,body:JSON.stringify({texto:txt})}).then(r=>r.json()).then(d=>{
+    if(d.erro){aviso.textContent=d.erro;return;}
+    aviso.textContent='';pinta(d.estado);
+    if(typeof d.texto==='string'&&d.texto)diz(nome(d.agente),d.texto);
+    if(typeof d.fala==='string'&&d.fala)tocar(d.fala,d.agente);
+  }).catch(()=>{aviso.textContent='Sem resposta do Braniac.';}).finally(()=>{mic.disabled=false;});}
+$('form').addEventListener('submit',e=>{e.preventDefault();const t=$('texto').value.trim();if(t){$('texto').value='';frase(t);}});
+mic.onclick=()=>{
+  if(rec){rec.stop();return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
+    const r=new MediaRecorder(s),c=[];rec=r;
+    r.ondataavailable=e=>c.push(e.data);
+    r.onstop=()=>{rec=null;mic.className='';mic.textContent='🎤 Falar';s.getTracks().forEach(t=>t.stop());
+      aviso.textContent='Entendendo o que você falou…';
+      fetch('/api/ouvir',{method:'POST',headers:{'X-Braniac':'1'},body:new Blob(c,{type:r.mimeType})}).then(x=>x.json())
+      .then(d=>{if(d.erro||!d.texto){aviso.textContent=d.erro||'Não ouvi nada.';}else frase(d.texto);})
+      .catch(()=>{aviso.textContent='Não consegui mandar o áudio.';});};
+    r.start();mic.className='gravando';mic.textContent='⏹ Parar';aviso.textContent='Gravando…';
+  }).catch(()=>{aviso.textContent='Não consegui usar o microfone. Confira a permissão do navegador.';});};
+fetch('/api/escuta-estado').then(r=>r.json()).then(pinta).catch(()=>{});
+</script>
+</body></html>

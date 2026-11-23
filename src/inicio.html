@@ -1,0 +1,34 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Braniac Rust</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:2rem auto;padding:0 16px;background:#11151a;color:#e6e9ed}
+progress{width:100%;height:1.2rem}table{border-collapse:collapse;width:100%}td,th{padding:.35rem .5rem;border-bottom:1px solid #2a323c;text-align:left;vertical-align:top}
+.portado{color:#6fd08c}.falta{color:#8b96a3}.andamento{color:#e6c35c}input{width:100%;padding:.5rem;margin:.8rem 0;background:#1a2028;color:inherit;border:1px solid #2a323c}
+nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.8rem}nav section{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem 1rem}
+nav h2{font-size:1.1rem;margin:.2rem 0 .4rem}nav a{display:block;color:#7db7ff;font-size:1.15rem;padding:.45rem 0}a:focus-visible,input:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+</style>
+<h1>Braniac em Rust</h1>
+<nav aria-label="Telas">
+<section><h2>Conversa</h2><a href="/conversa">Conversa (texto e voz)</a><a href="/conselho">Conselho de IAs</a><a href="/sala">Sala (Jarvis e Alma)</a><a href="/whatsapp">WhatsApp</a><a href="/b2">Braniac (projetos e conversas)</a><a href="/saida">Caixa de saída</a><a href="/escuta">Falar por voz</a><a href="/atendimento">Ensaio do atendimento</a><a href="/tribunais">Tribunais</a><a href="/falta">O que falta</a></section>
+<section><h2>Agentes</h2><a href="/agentes">Agentes</a><a href="/escritorio">Escritório</a><a href="/empresas">Empresas</a><a href="/vozes">Vozes</a><a href="/vm">VM e abas dos agentes</a><a href="/codigo">Código dos agentes</a></section>
+<section><h2>Casa e família</h2><a href="/alma">Alma</a><a href="/agenda">Agenda e rotinas</a><a href="/exercito">Exército</a></section>
+<section><h2>Trabalho</h2><a href="/pendencias">Pendências</a><a href="/esteira">Esteira de vídeos</a></section>
+<section><h2>Sistema</h2><a href="/painel">Painel</a></section>
+</nav>
+<p id="ias"></p>
+<h2>Módulos já portados</h2>
+<p id="resumo">Carregando…</p><progress id="barra" value="0" max="1"></progress>
+<label>Procurar módulo<input id="busca" type="search"></label>
+<table><thead><tr><th>Módulo</th><th>Estado</th><th>O que faz</th></tr></thead><tbody id="lista"></tbody></table>
+<script>
+fetch('/api/ias').then(r=>r.json()).then(l=>{ias.textContent='IAs prontas agora: '+(l.filter(i=>i.ok).map(i=>i.nome).join(', ')||'nenhuma')+'.'});
+fetch('/api/paridade').then(r=>r.json()).then(p=>{
+  resumo.textContent=`${p.portados} de ${p.total} módulos do Braniac atual já funcionam aqui (${p.em_andamento} em andamento).`;
+  barra.max=p.total;barra.value=p.portados;
+  const pinta=f=>{lista.replaceChildren(...p.itens.filter(i=>(i.modulo+i.o_que_faz).toLowerCase().includes(f)).map(i=>{
+    const tr=document.createElement('tr');
+    [i.modulo,i.estado,i.o_que_faz].forEach((t,n)=>{const td=document.createElement('td');td.textContent=t;if(n==1)td.className=i.estado=='em andamento'?'andamento':i.estado;tr.append(td)});
+    return tr}))};
+  pinta('');busca.oninput=()=>pinta(busca.value.toLowerCase());
+});
+</script>

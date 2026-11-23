@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Braniac</title>
+<style>
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{font:20px/1.5 system-ui,sans-serif;max-width:1200px;margin:0 auto;padding:12px 16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}h1{font-size:1.4em;margin:0}h2{font-size:1.2em;margin:0;overflow-wrap:anywhere}h3{font-size:1em;margin:0;flex:1;min-width:0;overflow-wrap:anywhere}
+button,input,textarea,select{font:inherit;color:inherit;background:#0c1014;border:1px solid #2a323c;border-radius:6px;padding:.55rem .8rem}
+button{cursor:pointer;background:#243042}button:disabled{opacity:.5}
+:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+[aria-pressed=true],[aria-current=true]{background:#2f5d9a;border-color:#7db7ff}
+.linha{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.dica{color:#8b96a3;font-size:.85em}
+header{margin-bottom:.8rem}header nav{display:flex;gap:.5rem;margin-left:auto}
+#tela-conversa{display:grid;grid-template-columns:20rem minmax(0,1fr);gap:1rem;align-items:start}
+@media(max-width:800px){#tela-conversa{grid-template-columns:minmax(0,1fr)}}
+summary{cursor:pointer;font-weight:600;padding:.3rem 0}
+#projetos section,#chat,#vazio,#tela-painel section{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.7rem .9rem;margin:.6rem 0}
+#chat,#vazio{margin-top:0}
+ul{list-style:none;margin:.5rem 0 0;padding:0}li{margin:.35rem 0}
+.conv{width:100%;text-align:left;overflow-wrap:anywhere}
+#falas{min-height:38vh;max-height:58vh;overflow:auto;margin:.6rem 0}
+#falas p{border:1px solid #2a323c;border-radius:6px;padding:.5rem .8rem;margin:.5rem 0;overflow-wrap:anywhere}
+#falas p.eu{border-color:#3b5a85;background:#16202c}#falas p.erro{border-color:#a04848}
+#falas b{display:block;font-size:.8em;color:#8b96a3}#falas span{white-space:pre-wrap}
+#falas small{display:block;color:#8b96a3}#falas p button{margin:.4rem 0 .2rem;padding:.3rem .7rem}
+#form{display:flex;gap:.5rem;flex-wrap:wrap;align-items:stretch}#texto{flex:1 1 14rem;min-width:0;resize:vertical}
+#mic.gravando{background:#7a2b2b}#aviso{color:#e6c35c;min-height:1.5em;margin:.4rem 0 0}
+#atalhos{display:grid;grid-template-columns:repeat(auto-fill,minmax(13rem,1fr));gap:.7rem}
+#atalhos a{display:block;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:1rem;font-size:1.15em;text-decoration:none}
+#relatorio{white-space:pre-wrap;overflow-wrap:anywhere;margin:.4rem 0 0}
+dialog{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:8px;width:min(34rem,92vw);padding:1rem}
+dialog::backdrop{background:rgba(0,0,0,.6)}dialog label{display:block;margin:.8rem 0;color:#8b96a3;font-size:.85em}
+dialog input,dialog textarea,dialog select{display:block;width:100%;font-size:1.18em;color:#e6e9ed;margin-top:.2rem}
+</style>
+</head><body>
+<header class="linha">
+<a href="/">← Início</a><h1>Braniac</h1>
+<nav aria-label="Abas"><button type="button" id="aba-conversa" aria-pressed="true">💬 Conversas</button><button type="button" id="aba-painel" aria-pressed="false">🧭 Painel</button></nav>
+</header>
+
+<div id="tela-conversa">
+<details id="lista" open>
+<summary>Projetos e conversas</summary>
+<div id="projetos"><p class="dica">Carregando…</p></div>
+<button type="button" id="novo-projeto">＋ Novo projeto</button>
+</details>
+<main>
+<div id="vazio"><h2>Nenhuma conversa aberta</h2><p>Escolha uma conversa ou comece uma nova.</p><button type="button" id="nova-geral">＋ Nova conversa</button></div>
+<div id="chat" hidden>
+<div class="linha"><div style="flex:1;min-width:0"><h2 id="titulo"></h2><div id="projeto" class="dica"></div></div>
+<button type="button" id="renomear">Renomear</button><button type="button" id="mover">Mover</button><button type="button" id="arquivar">Arquivar</button></div>
+<div id="falas" aria-live="polite"></div>
+<form id="form"><textarea id="texto" rows="2" aria-label="Sua mensagem" placeholder="Escreva aqui…"></textarea>
+<button type="button" id="mic">🎤 Falar</button><button type="submit" id="enviar">Enviar</button></form>
+</div>
+<p id="aviso" role="status"></p>
+</main>
+</div>
+
+<div id="tela-painel" hidden>
+<nav id="atalhos" aria-label="Outras telas">
+<a href="/escritorio">🏢 Escritório</a><a href="/painel">🎛 Painel</a><a href="/alma">💜 Alma</a><a href="/pendencias">📌 Pendências</a>
+<a href="/empresas">🏭 Empresas</a><a href="/tribunais">⚖ Tribunais</a><a href="/saida">📤 Caixa de saída</a><a href="/falta">🧩 O que falta</a>
+</nav>
+<section><h2>Relatório da noite</h2><p id="relatorio" class="dica">Carregando…</p></section>
+</div>
+
+<dialog id="dlg" aria-labelledby="dtit"><form method="dialog"><h2 id="dtit"></h2><div id="dcampos"></div>
+<p class="linha"><button id="dok" value="ok"></button><button value="" formnovalidate>Cancelar</button></p></form></dialog>
+
+<script>
+const H={'Content-Type':'application/json','X-Braniac':'1'},$=i=>document.getElementById(i);
+const el=(tag,props,...filhos)=>{const e=Object.assign(document.createElement(tag),props||{});e.append(...filhos);return e;};
+const btn=(t,f,rotulo)=>{const b=el('button',{type:'button',textContent:t,onclick:f});if(rotulo)b.setAttribute('aria-label',rotulo);return b;};
+let est={projetos:[],conversas:[]},atual=null,ocupado=false,rec=null,som=null,relatorioLido=false;
+const aviso=t=>{$('aviso').textContent=t||'';};
+const falha=e=>aviso(typeof e==='string'?e:'Sem resposta do Braniac.');
+// erro da API vira rejeicao com o texto do erro
+const api=(url,corpo)=>fetch(url,corpo?{method:'POST',headers:H,body:JSON.stringify(corpo)}:undefined).then(r=>r.json()).then(d=>d&&d.erro?Promise.reject(String(d.erro)):d);
+const guarda=d=>{est={projetos:Array.isArray(d.projetos)?d.projetos:[],conversas:Array.isArray(d.conversas)?d.conversas:[]};pintaLista();return d;};
+const acao=corpo=>api('/api/b2',corpo).then(guarda);
+const conv=()=>est.conversas.find(c=>c.id===atual);
+
+function carregar(){return api('/api/b2').then(guarda).catch(()=>{
+  $('projetos').replaceChildren(el('p',{className:'dica',textContent:'Não consegui carregar.'}),btn('Tentar de novo',carregar));});}
+
+function pintaLista(){
+  const primeiro=est.projetos.length?est.projetos[0].id:1;
+  $('projetos').replaceChildren(...est.projetos.map(p=>{
+    const dele=est.conversas.filter(c=>(c.projeto||primeiro)===p.id);
+    const ul=el('ul',null,...dele.map(c=>{const b=btn(String(c.titulo||'Conversa'),()=>abrir(c.id));b.className='conv';b.setAttribute('aria-current',c.id===atual);return el('li',null,b);}));
+    return el('section',null,
+      el('div',{className:'linha'},el('h3',{textContent:String(p.nome)}),btn('＋ Conversa',()=>nova(p.id),'Nova conversa em '+p.nome),btn('✎',()=>editarProjeto(p),'Editar o projeto '+p.nome)),
+      dele.length?ul:el('p',{className:'dica',textContent:'Nenhuma conversa.'}));
+  }));
+  if(!est.projetos.length)$('projetos').append(el('p',{className:'dica',textContent:'Nenhum projeto.'}));
+  const c=conv();$('vazio').hidden=!!c;$('chat').hidden=!c;
+  if(c){const p=est.projetos.find(p=>p.id===c.projeto);$('titulo').textContent=String(c.titulo||'Conversa');$('projeto').textContent=p?'Projeto: '+p.nome:'';}
+}
+
+function origemDe(prov,agentes){
+  const q=Array.isArray(agentes)?agentes.filter(a=>typeof a==='string'):[];
+  if(q.length)return 'Consultei: '+q.join(', ')+' (sem IA)';
+  if(typeof prov!=='string'||!prov)return '';
+  return prov==='agentes'||prov==='local/agentes'?'Sem IA':'IA: '+prov;}
+function fala(eu,txt){const p=el('p',{className:eu?'eu':''},el('b',{textContent:eu?'Você':'Jarvis'}),el('span',{textContent:txt}));$('falas').append(p);rola();return p;}
+function enfeita(p,txt,origem){if(txt)p.append(btn('▶ Ouvir',()=>ouvir(txt)));if(origem)p.append(el('small',{textContent:origem}));}
+function rola(){const f=$('falas');f.scrollTop=f.scrollHeight;}
+
+function abrir(id){
+  atual=id;history.replaceState(null,'','#c'+id);pintaLista();mostra('conversa');aviso('');
+  if(matchMedia('(max-width:800px)').matches)$('lista').open=false;
+  const f=$('falas');f.replaceChildren(el('p',{className:'dica',textContent:'Carregando…'}));
+  api('/api/b2/mensagens?conv='+encodeURIComponent(id)).then(d=>{
+    if(atual!==id)return;
+    const m=Array.isArray(d.mensagens)?d.mensagens:[];f.replaceChildren();
+    if(!m.length)f.append(el('p',{className:'dica',textContent:'Conversa nova. Escreva ou fale.'}));
+    m.forEach(x=>{const eu=x.role==='user',t=String(x.content||''),p=fala(eu,t);if(!eu)enfeita(p,t,origemDe(x.provedor));});rola();
+  }).catch(()=>{if(atual===id)f.replaceChildren(el('p',{className:'dica',textContent:'Não consegui abrir a conversa.'}),btn('Tentar de novo',()=>abrir(id)));});}
+
+function trava(b){ocupado=b;$('enviar').disabled=b;$('mic').disabled=b;}
+function enviar(){
+  const txt=$('texto').value.trim(),id=atual;if(!txt||!id||ocupado)return;
+  $('falas').querySelectorAll('.dica').forEach(d=>d.remove());
+  fala(true,txt);const p=fala(false,'pensando…');$('texto').value='';aviso('');trava(true);
+  api('/api/b2/chat',{conv:id,texto:txt}).then(d=>{
+    const r=typeof d.resposta==='string'?d.resposta:'';
+    p.lastChild.textContent=r||'(sem resposta)';enfeita(p,r,origemDe(d.provedor,d.agentes));rola();
+    return carregar(); // o titulo e a ordem da lista mudam
+  }).catch(e=>{p.lastChild.textContent=typeof e==='string'?e:'Sem resposta do Braniac.';p.classList.add('erro');$('texto').value=txt;})
+  .finally(()=>trava(false));}
+$('form').addEventListener('submit',e=>{e.preventDefault();enviar();});
+$('texto').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();enviar();}});
+
+function ouvir(txt){if(som)som.pause();aviso('Preparando a voz…');
+  fetch('/api/voz',{method:'POST',headers:H,body:JSON.stringify({texto:txt})}).then(r=>r.ok?r.blob():Promise.reject())
+  .then(b=>{aviso('');som=new Audio(URL.createObjectURL(b));som.play();}).catch(()=>aviso('A voz não saiu; a resposta está escrita.'));}
+
+$('mic').onclick=()=>{
+  if(rec){rec.stop();return;}
+  if(!navigator.mediaDevices||!window.MediaRecorder){aviso('Este navegador não deixa usar o microfone aqui.');return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
+    const r=new MediaRecorder(s),c=[];rec=r;
+    r.ondataavailable=e=>c.push(e.data);
+    r.onstop=()=>{rec=null;$('mic').classList.remove('gravando');$('mic').textContent='🎤 Falar';s.getTracks().forEach(t=>t.stop());aviso('Entendendo o que você falou…');
+      fetch('/api/ouvir',{method:'POST',headers:{'X-Braniac':'1'},body:new Blob(c,{type:r.mimeType})}).then(x=>x.json())
+      .then(d=>{if(d.erro||typeof d.texto!=='string'||!d.texto){aviso(d.erro?String(d.erro):'Não ouvi nada.');return;}
+        $('texto').value=($('texto').value+' '+d.texto).trim();$('texto').focus();aviso('Confira e toque em Enviar.');})
+      .catch(()=>aviso('Não consegui mandar o áudio.'));};
+    r.start();$('mic').classList.add('gravando');$('mic').textContent='⏹ Parar';aviso('Gravando… toque em Parar quando terminar.');
+  }).catch(()=>aviso('Não consegui usar o microfone. Confira a permissão do navegador.'));};
+
+// Janela de pergunta: campos = [{rotulo, max, valor, longo, opcional, opcoes}]. Devolve os valores, ou null se cancelou.
+function pedir(titulo,campos,ok){
+  const d=$('dlg');$('dtit').textContent=titulo;$('dok').textContent=ok;
+  const ins=campos.map(c=>{let i;
+    if(c.opcoes)i=el('select',null,...c.opcoes.map(o=>el('option',{value:String(o.id),textContent:String(o.nome)})));
+    else{i=el(c.longo?'textarea':'input');if(c.longo)i.rows=5;else i.autocomplete='off';i.maxLength=c.max;i.required=!c.opcional;}
+    i.value=c.valor==null?'':String(c.valor);return i;});
+  $('dcampos').replaceChildren(...campos.map((c,n)=>el('label',null,c.rotulo,ins[n])));
+  return new Promise(res=>{d.returnValue='';d.onclose=()=>res(d.returnValue==='ok'?ins.map(i=>i.value.trim()):null);d.showModal();});}
+
+function nova(pid){acao({acao:'criar_conversa',projeto:pid}).then(d=>abrir(d.novo)).catch(falha);}
+const camposProjeto=p=>[{rotulo:'Nome',max:80,valor:p&&p.nome},{rotulo:'Instruções para o Jarvis (opcional)',longo:true,max:4000,opcional:true,valor:p&&p.instrucoes}];
+function editarProjeto(p){pedir('Editar projeto',camposProjeto(p),'Salvar').then(v=>v&&acao({acao:'editar_projeto',id:p.id,nome:v[0],instrucoes:v[1]})).catch(falha);}
+$('novo-projeto').onclick=()=>pedir('Novo projeto',camposProjeto(),'Criar').then(v=>v&&acao({acao:'criar_projeto',nome:v[0],instrucoes:v[1]})).catch(falha);
+$('nova-geral').onclick=()=>{if(est.projetos.length)nova(est.projetos[0].id);else aviso('Ainda não carregou. Tente de novo.');};
+$('renomear').onclick=()=>{const c=conv();if(c)pedir('Renomear conversa',[{rotulo:'Título',max:80,valor:c.titulo}],'Salvar').then(v=>v&&acao({acao:'renomear',id:c.id,titulo:v[0]})).catch(falha);};
+$('mover').onclick=()=>{const c=conv();if(c)pedir('Mover para outro projeto',[{rotulo:'Projeto',opcoes:est.projetos,valor:c.projeto}],'Mover').then(v=>v&&acao({acao:'mover',id:c.id,projeto:Number(v[0])})).catch(falha);};
+$('arquivar').onclick=()=>{const c=conv();if(c)pedir('Arquivar “'+(c.titulo||'Conversa')+'”? Ela sai da lista. Nada é apagado.',[],'Arquivar')
+  .then(v=>{if(v){atual=null;history.replaceState(null,'','#');return acao({acao:'arquivar',id:c.id});}}).catch(falha);};
+
+function mostra(q){
+  const c=q==='conversa';$('tela-conversa').hidden=!c;$('tela-painel').hidden=c;
+  $('aba-conversa').setAttribute('aria-pressed',c);$('aba-painel').setAttribute('aria-pressed',!c);
+  if(!c&&!relatorioLido)api('/api/b2/relatorio').then(d=>{relatorioLido=true;$('relatorio').textContent=typeof d.relatorio==='string'?d.relatorio:'Nada registrado ainda.';})
+    .catch(()=>{$('relatorio').textContent='Não consegui carregar o relatório.';});}
+$('aba-conversa').onclick=()=>mostra('conversa');$('aba-painel').onclick=()=>mostra('painel');
+
+carregar().then(()=>{const m=/^#c(\d+)$/.exec(location.hash),id=m&&Number(m[1]);if(id&&est.conversas.some(c=>c.id===id))abrir(id);});
+</script>
+</body></html>

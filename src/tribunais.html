@@ -1,0 +1,137 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tribunais de contas</title>
+<style>body{font:18px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}h1{font-size:1.7rem;margin:.4rem 0}h2{font-size:1.25rem;margin:1.4rem 0 .3rem}
+input,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .9rem}
+button{cursor:pointer;min-height:3rem}button:disabled{opacity:.5;cursor:default}:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+.dica{font-size:.9em;color:#8b96a3}.grande{font-size:1.35rem;font-weight:600;margin:.3rem 0}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}
+.aviso{border-color:#e6c35c;color:#e6c35c;font-weight:600;position:sticky;top:0;z-index:1}
+.ok{color:#6fd08c}.ruim{color:#ff8a80}.aten{color:#e6c35c}#st{min-height:1.5em}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:.5rem .4rem;border-bottom:1px solid #2a323c;vertical-align:top}
+.botoes{display:flex;flex-wrap:wrap;gap:.6rem;align-items:end}label{display:flex;flex-direction:column;font-size:.9em;color:#8b96a3}
+li{margin:.3rem 0}#passos{font-size:1.2rem;padding-left:1.6rem}#passos li{margin:.5rem 0}#passos span{font-weight:600}
+</style></head><body>
+<p><a href="/">← Início</a> · <a href="/esteira">Esteira</a></p>
+<h1>Tribunais de contas</h1>
+<p class="caixa aviso">Número de vídeo vem só do tribunal de contas. Qualquer dúvida vira pendência.</p>
+<p id="st" class="aten" role="status">Carregando…</p>
+<p id="pac" class="caixa ruim" role="alert" hidden></p>
+
+<h2>Acompanhar um levantamento</h2>
+<div class="botoes">
+  <label>Número do vídeo<input id="num" inputmode="numeric" maxlength="4" size="6"></label>
+  <button id="ver">Ver como está</button>
+</div>
+<div id="lev" class="caixa" hidden>
+  <p id="levt" class="grande"></p>
+  <ol id="passos"></ol>
+  <div class="botoes">
+    <button id="rot">2. Gerar roteiro</button><button id="aud">3. Conferir</button>
+    <button id="rel" hidden>Reler o tribunal</button><button id="doc">Documentos</button>
+  </div>
+  <ul id="audp"></ul><ul id="audn" class="dica"></ul>
+  <p id="tri"></p><p id="doct" class="ok"></p>
+</div>
+<p class="caixa grande">Daqui para frente (voz, vídeo e site) ainda é no Braniac atual.</p>
+<p class="dica">O passo 1 (Levantar) é o botão do estado, na tabela abaixo. A porta só informa: nada segue sozinho.</p>
+
+<h2>Estados</h2>
+<table><thead><tr><th>UF</th><th>Tribunal</th><th>Situação</th><th></th></tr></thead><tbody id="tab"></tbody></table>
+<script>
+const $=id=>document.getElementById(id);
+// todo texto entra por textContent: o que vem da API pode ter sido escrito por terceiros
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const json=async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw {erro:j.erro};return j;};
+const pega=async u=>json(await fetch(u));
+const manda=async(u,c)=>json(await fetch(u,{method:'POST',headers:{'X-Braniac':'1','Content-Type':'application/json'},body:JSON.stringify(c)}));
+const lst=x=>Array.isArray(x)?x:[];
+const COR={'rede ligada':'ok','pendente':'ruim','sem rede':'aten','sem molde':'dica'};
+const ESTADO={fazendo:['levantando agora…','aten'],pronto:['pronto','ok'],pendencia:['pendência','ruim']};
+let relogio=null;
+const dizer=(t,c)=>{$('st').textContent=t;$('st').className=c||'aten';};
+const num=()=>$('num').value.trim();
+const passo=(nome,txt,cor)=>{const li=el('li');li.append(el('strong','',nome+': '),el('span',cor,txt));return li;};
+function doRoteiro(r){
+  if(!r)return ['ainda não gerado','aten'];
+  if(r.estado!=='pronto')return ['pendência: '+(r.motivo||''),'ruim'];
+  return ['pronto, '+r.palavras+' palavras'+(r.legenda?', com legenda':', sem legenda'),'ok'];
+}
+function daConferencia(a,rl){
+  if(!a)return ['ainda não conferido','aten'];
+  if(!a.ok)return [lst(a.problemas).length+' problema(s)','ruim'];
+  if(!a.precisa_reler)return ['tudo com prova no documento do tribunal','ok'];
+  if(!rl)return ['a conta fecha; falta reler o tribunal para provar a origem','aten'];
+  if(rl.estado==='fazendo')return ['a conta fecha; relendo o tribunal agora…','aten'];
+  if(rl.estado!=='pronto')return ['a releitura do tribunal não fechou: '+(rl.motivo||''),'ruim'];
+  return lst(rl.problemas).length?['o tribunal deu outro número na releitura','ruim']:['a conta fecha e o tribunal deu o mesmo número de novo','ok'];
+}
+// manter=true: nao apaga o recado que acabou de aparecer (erro de um botao)
+async function ver(manter){
+  const n=num();if(!n)return;
+  clearTimeout(relogio);$('tri').textContent='';
+  try{
+    const e=await pega('/api/tribunais/levantamento?numero='+encodeURIComponent(n));
+    const p=await pega('/api/tribunais/porta?numero='+encodeURIComponent(n)).catch(()=>null);
+    const s=ESTADO[e.estado]||[e.estado||'?','aten'],r=e.roteiro,a=e.auditoria,rl=e.releitura,pronto=e.estado==='pronto';
+    $('lev').hidden=false;
+    $('levt').textContent=[e.numero,e.cidade,e.uf].filter(Boolean).join(' · ');
+    $('passos').replaceChildren(
+      passo('Levantar',s[0]+(e.motivo?': '+e.motivo:''),s[1]),
+      passo('Roteiro',...doRoteiro(r)),
+      passo('Conferir',...daConferencia(a,rl)),
+      passo('Porta',p?(p.liberado?'LIBERADO para a voz':'BARRADO'):'sem resposta',p&&p.liberado?'ok':'ruim'));
+    $('audp').replaceChildren(...lst(p&&p.problemas).map(x=>el('li','ruim',x)));
+    $('audn').replaceChildren(...lst(a&&a.notas).map(x=>el('li','',x)));
+    $('rot').disabled=!pronto;$('aud').disabled=!pronto;
+    $('doc').disabled=!(r&&r.estado==='pronto');
+    $('rel').hidden=!(a&&a.precisa_reler);$('rel').disabled=!!(rl&&rl.estado==='fazendo');
+    $('doct').textContent=e.documentos?'Documentos do tribunal montados em '+e.documentos.pasta+'. Nada foi enviado.':'';
+    if(a&&!a.ok)triagem(n);
+    if(e.estado==='fazendo'||(rl&&rl.estado==='fazendo'))relogio=setTimeout(ver,5000);
+    if(manter!==true)dizer('');
+  }catch(x){$('lev').hidden=true;dizer(x.erro||'O Braniac não respondeu','ruim');}
+}
+async function triagem(n){
+  try{const t=await pega('/api/auditoria/triagem?numero='+encodeURIComponent(n));$('tri').textContent=t.categoria?'O que fazer: '+(t.titulo||t.categoria)+'. '+(t.explicacao||''):'';}
+  catch{$('tri').textContent='';}
+}
+// um passo por pedido: o botao fica parado enquanto roda e a tela mostra o estado novo
+async function pedir(botao,url,fazendo,feito){
+  const n=num();if(!n)return;
+  botao.disabled=true;dizer(fazendo);
+  let erro=false;
+  try{await manda(url,{numero:n});dizer(feito,'ok');}
+  catch(x){erro=true;dizer(x.erro||'O Braniac não respondeu','ruim');}
+  botao.disabled=false;
+  await ver(true);
+  return !erro;
+}
+async function levantar(uf,botao){
+  const cidade=prompt('Cidade de '+uf+':');if(!cidade)return;
+  const numero=prompt('Número do vídeo (até 4 algarismos):');if(!numero)return;
+  if(!confirm('Levantar '+cidade.trim()+' ('+uf+'), vídeo '+numero.trim()+', no tribunal de contas?'))return;
+  botao.disabled=true;
+  try{await manda('/api/tribunais/levantar',{uf,cidade:cidade.trim(),numero:numero.trim()});$('num').value=numero.trim();dizer('Comecei. Pode demorar de minutos a horas, conforme o tribunal.','ok');ver(true);}
+  catch(x){dizer(x.erro||'O Braniac não respondeu','ruim');}
+  finally{botao.disabled=false;}
+}
+async function carregar(){
+  try{
+    const r=await pega('/api/tribunais');
+    $('tab').replaceChildren(...lst(r.estados).map(e=>{
+      const tr=el('tr'),acao=el('td');
+      if(e.levantar){const b=el('button','','1. Levantar');b.setAttribute('aria-label','Levantar uma cidade de '+e.uf);b.onclick=()=>levantar(e.uf,b);acao.append(b);}
+      tr.append(el('th','',e.uf),el('td','',e.tribunal||''),el('td',COR[e.situacao]||'',e.texto||''),acao);return tr;}));
+    $('pac').hidden=r.pacote!==false;$('pac').textContent='Antes de levantar: '+(r.falta_pacote||'falta a pasta do pacote de produção')+'.';
+    if(r.rodando){$('num').value=r.rodando;ver();}else dizer('');
+  }catch(x){dizer(x.erro||'O Braniac não respondeu','ruim');}
+}
+$('ver').onclick=()=>ver();
+$('rot').onclick=()=>pedir($('rot'),'/api/tribunais/roteiro','Gerando o roteiro…','Roteiro gerado.');
+$('aud').onclick=()=>pedir($('aud'),'/api/auditoria/conferir','Conferindo…','Conferência feita.');
+$('rel').onclick=()=>{if(confirm('Reler o tribunal agora? Demora tanto quanto o levantamento.'))pedir($('rel'),'/api/auditoria/reler','Pedindo a releitura…','Releitura começou. Esta tela acompanha.');};
+$('doc').onclick=()=>pedir($('doc'),'/api/tribunais/documentos','Montando os documentos…','Documentos montados. Nada foi enviado.');
+$('num').addEventListener('keydown',e=>{if(e.key==='Enter')ver();});
+carregar();
+</script></body></html>

@@ -1,0 +1,61 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exército</title>
+<style>body{font:18px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}h1{font-size:1.7rem;margin:.4rem 0}h2{font-size:1.25rem;margin:1.4rem 0 .3rem}
+input,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .9rem}
+button{cursor:pointer}button:disabled{opacity:.6}:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+summary{cursor:pointer;padding:.5rem 0}progress{width:100%;height:1.2rem}
+.dica{font-size:.9em;color:#8b96a3}.grande{font-size:1.35rem;font-weight:600;margin:.3rem 0}.pre{white-space:pre-wrap}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.6rem}.grade .caixa{margin:0}
+.ok{color:#6fd08c}.ruim{color:#ff8a80}.aten{color:#e6c35c}#st{color:#e6c35c;min-height:1.5em}
+.item{display:block;width:100%;text-align:left;margin:.35rem 0;min-height:3rem}.item[aria-pressed=true]{border-color:#6fd08c;color:#6fd08c}
+form{display:flex;flex-wrap:wrap;gap:.5rem;align-items:end}label{flex:1 1 14rem;display:flex;flex-direction:column;font-size:.9em;color:#8b96a3}
+</style></head><body>
+<p><a href="/">← Início</a></p>
+<h1>Exército: exames</h1>
+<p id="st" role="status">Carregando…</p>
+<p id="conta" class="grande"></p>
+<p class="dica">Toque no exame para marcar. Toque de novo para desmarcar.</p>
+<div id="lista"></div>
+<form id="f">
+  <label>Ou escreva (ex.: fiz hemograma e audiometria)<input id="texto" autocomplete="off" maxlength="300"></label>
+  <button>Marcar</button>
+</form>
+<script>
+const $=id=>document.getElementById(id);
+// todo texto entra por textContent: o que vem da API pode ter sido escrito por terceiros
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const json=async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw {erro:j.erro};return j;};
+const pega=async u=>json(await fetch(u));
+const manda=async(u,c)=>json(await fetch(u,{method:'POST',headers:{'X-Braniac':'1','Content-Type':'application/json'},body:JSON.stringify(c)}));
+async function marca(texto){
+  $('st').textContent='Gravando…';
+  try{await manda('/api/exercito',{texto});await carregar();}
+  catch(e){$('st').textContent=e.erro||'O Braniac não respondeu';}
+}
+// o checklist chega como texto (exercito.rs): linhas "✅ 3. nome" / "⬜ 3. nome", titulos terminados em ":" e o rodape "Feitos: x/y"
+function linha(l){
+  const m=l.match(/^(✅|⬜)\s*(\d+)\.\s*(.*)$/u);
+  if(m){
+    const feito=m[1]==='✅',b=el('button','item',m[1]+' '+m[3]);
+    b.type='button';b.setAttribute('aria-pressed',feito);
+    b.onclick=()=>marca((feito?'desmarca ':'fiz ')+m[2]);
+    return b;
+  }
+  if(l.startsWith('Feitos:')){$('conta').textContent=l;return null;}
+  if(l.startsWith('Checklist'))return null;
+  return el(l.endsWith(':')?'h2':'p',l.endsWith(':')?'':'dica',l);
+}
+async function carregar(){
+  try{
+    const r=await pega('/api/exercito');
+    const ls=String(r.checklist||'').split('\n').map(x=>x.trim()).filter(Boolean).map(linha).filter(Boolean);
+    $('lista').replaceChildren(...ls);
+    $('st').textContent=ls.length?'':'Nada por aqui ainda';
+  }catch(e){$('st').textContent=e.erro||'O Braniac não respondeu';}
+}
+$('f').onsubmit=e=>{e.preventDefault();const t=$('texto').value.trim();if(t){$('texto').value='';marca(t);}};
+carregar();
+</script>
+</body></html>

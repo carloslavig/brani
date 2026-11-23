@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O que falta</title>
+<style>body{font:20px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}a{color:#7db7ff}h1{font-size:1.8em;margin:.4em 0}h2{font-size:1.25em;margin:1.4em 0 .3em;color:#e6c35c}.dica{font-size:.85em;color:#8b96a3}.numeros{display:flex;flex-wrap:wrap;gap:.6rem;margin:.8rem 0}.numero{flex:1 1 9rem;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.7rem 1rem}.numero b{display:block;font-size:2.2em;line-height:1.1;color:#6fd08c}.numero.falta b{color:#e6c35c}.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem 1rem;margin:.5rem 0;overflow-wrap:anywhere}.caixa b{display:block}.caixa span{color:#b8c1cc}</style>
+</head><body>
+<p><a href="/">← Início</a></p>
+<h1>O que falta para o Braniac em Rust substituir o atual</h1>
+<div class="numeros" id="numeros"></div>
+<p class="dica">Abaixo, o que já tem a regra pronta e continua desligado, e o que cada um espera.</p>
+<div id="grupos"></div>
+<p role="status" id="status" class="dica">Carregando…</p>
+<script>
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const numeros=document.getElementById('numeros'),grupos=document.getElementById('grupos'),status=document.getElementById('status');
+const numero=(n,rotulo,c)=>{const d=el('div','numero'+(c?' '+c:''));d.append(el('b','',n),document.createTextNode(rotulo));return d};
+const ler=u=>fetch(u).then(r=>r.json());
+Promise.all([ler('/api/paridade'),ler('/api/nao-ligados')]).then(([p,n])=>{
+  const resto=p.total-p.portados-p.em_andamento;
+  numeros.replaceChildren(numero(p.portados,'peças prontas, de '+p.total),numero(p.em_andamento,'em andamento','falta'),numero(resto,'ainda por fazer','falta'),numero(n.itens.length,'prontas, mas desligadas','falta'));
+  grupos.replaceChildren(...n.grupos.flatMap(g=>[el('h2','',g.grupo.charAt(0).toUpperCase()+g.grupo.slice(1)+' ('+g.itens.length+')'),
+    ...g.itens.map(i=>{const d=el('div','caixa');d.append(el('b','',i.modulo),el('span','',i.falta));return d})]));
+  status.textContent='Nada desta lista liga sozinho.';
+}).catch(()=>{status.textContent='Não consegui ler a lista.'});
+</script>
+</body></html>

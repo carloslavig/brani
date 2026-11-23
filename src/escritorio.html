@@ -1,0 +1,60 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Escritório</title>
+<style>body{font:18px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}
+a{color:#7db7ff}h1{font-size:1.7rem;margin:.4rem 0}h2{font-size:1.25rem;margin:1.4rem 0 .3rem}
+input,button{font:inherit;color:inherit;background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.6rem .9rem}
+button{cursor:pointer}button:disabled{opacity:.6}:focus-visible{outline:3px solid #7db7ff;outline-offset:2px}
+summary{cursor:pointer;padding:.5rem 0}progress{width:100%;height:1.2rem}
+.dica{font-size:.9em;color:#8b96a3}.grande{font-size:1.35rem;font-weight:600;margin:.3rem 0}.pre{white-space:pre-wrap}
+.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.6rem}.grade .caixa{margin:0}
+.ok{color:#6fd08c}.ruim{color:#ff8a80}.aten{color:#e6c35c}#st{color:#e6c35c;min-height:1.5em}</style></head><body>
+<p><a href="/">← Início</a></p>
+<h1>Escritório</h1>
+<p id="st" role="status">Carregando…</p>
+<p id="conta" class="grande"></p>
+<div id="predio"></div>
+<p id="outros" class="dica"></p>
+<p class="dica">Esta tela só mostra. Ela não liga nem desliga nada.</p>
+<script>
+const $=id=>document.getElementById(id);
+// todo texto entra por textContent: o que vem da API pode ter sido escrito por terceiros
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const json=async r=>{const j=await r.json().catch(()=>({}));if(!r.ok)throw {erro:j.erro};return j;};
+const pega=async u=>json(await fetch(u));
+const manda=async(u,c)=>json(await fetch(u,{method:'POST',headers:{'X-Braniac':'1','Content-Type':'application/json'},body:JSON.stringify(c)}));
+const SEM='dado não disponível';
+const ESTADO={ocioso:['Parado',''],executando:['Trabalhando','ok'],consultando:['Consultando','ok'],analisando:['Analisando','ok'],planejando:['Planejando','ok'],concluido:['Concluído','ok'],aguardando_autorizacao:['Esperando você','aten'],aguardando_servico:['Na fila','aten'],erro:['Com erro','ruim'],desconectado:['Desligado','']};
+// numero do andar que vem em cada agente (sauraki.rs: 1 = registro, 2..6 = empresas) -> chave do predio
+const ANDAR={1:'escritorio',2:'nexodev',3:'marketing',4:'investimentos',5:'cortes',6:'compras'};
+const NOME={terreo:'Térreo',servidores:'Servidores',dormitorio2:'Dormitório 2',dormitorio1:'Dormitório 1',braincenter:'Brain Center',compras:'Compras',esteira:'Esteira de vídeos',cortes:'Cortes de vídeo',investimentos:'Investimentos',marketing:'Marketing',nexodev:'NexoDev',escritorio:'Escritório',cobertura:'Cobertura'};
+function cartao(nome,papel,fazendo,estado,motivo){
+  const c=el('div','caixa'),[rot,cls]=ESTADO[estado]||[SEM,''];
+  c.append(el('strong','',nome||SEM),el('div','dica',papel||''),el('div','',fazendo||SEM),el('div',cls,'● '+rot));
+  if(motivo&&cls&&cls!=='ok')c.append(el('div','dica',motivo));
+  return c;
+}
+async function carregar(){
+  try{
+    const s=await pega('/api/sauraki'),p=await pega('/api/predio').catch(()=>({}));
+    const ags=Array.isArray(s.agentes)?s.agentes:[],por={};
+    const poe=(k,c)=>(por[k]=por[k]||[]).push(c);
+    ags.forEach(a=>poe(ANDAR[a.andar]||'escritorio',cartao(a.exibir||a.nome,[a.especialidade,a.sala].filter(Boolean).join(' · '),a.tarefa,a.estado,a.motivo)));
+    ((s.esteira||{}).estacoes||[]).forEach(e=>poe('esteira',cartao(e.agente,e.papel,(e.cidades||[]).map(c=>[c.numero,c.cidade].filter(Boolean).join(' ')).join(', ')||(e.total?e.total+' cidade(s)':''),e.estado)));
+    const todos=(Array.isArray(p.todos)?p.todos:Object.keys(NOME)).slice().reverse();
+    const feito=k=>!Array.isArray(p.andares)||p.andares.includes(k);
+    const ordem=todos.concat(Object.keys(por).filter(k=>!todos.includes(k)));
+    $('predio').replaceChildren(...ordem.filter(k=>por[k]).flatMap(k=>{
+      const g=el('div','grade');g.append(...por[k]);
+      return [el('h2','',(NOME[k]||k)+(feito(k)?'':' (andar não construído)')),g];
+    }));
+    const n=e=>ags.filter(a=>a.estado===e).length;
+    $('conta').textContent=ags.length?`${ags.length} agentes · ${n('executando')+n('consultando')} trabalhando · ${n('aguardando_autorizacao')} esperando você · ${n('erro')} com erro`:'';
+    const vazios=todos.filter(k=>!por[k]&&feito(k)).map(k=>NOME[k]||k);
+    $('outros').textContent=vazios.length?'Andares sem agentes: '+vazios.join(', ')+'.':'';
+    $('st').textContent=Object.keys(por).length?'':'Nada por aqui ainda';
+  }catch{$('st').textContent='O Braniac não respondeu';}
+}
+carregar();setInterval(carregar,15000);
+</script>
+</body></html>

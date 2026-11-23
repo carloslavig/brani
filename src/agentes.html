@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentes</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}a{color:#7db7ff}.dica{font-size:.85em;color:#8b96a3}.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}h2{font-size:1.1rem}button{font:inherit;color:inherit;background:#11151a;border:1px solid #2a323c;border-radius:6px;padding:.4rem .7rem;cursor:pointer}button:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}summary{cursor:pointer;padding:.3rem 0}summary:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}details ul{margin:.2rem 0 .8rem;padding-left:1.2rem}li{margin:.3rem 0}.vencido{color:#8b96a3;text-decoration:line-through}.marca{font-size:.85em;color:#8b96a3}</style>
+</head><body>
+<p><a href="/">← Início</a></p>
+<h1>Agentes</h1>
+<h2>Quem cuida de cada assunto</h2>
+<p class="dica">Toque no agente para ouvir a voz dele e ver os fatos que ele guarda. Fato vencido fica riscado: nada é apagado.</p>
+<div id="agentes" class="caixa"></div>
+<h2>Recados entre os agentes</h2>
+<p class="dica">O barramento só entrega recados. Ele nunca executa nada.</p>
+<div id="recados" class="caixa"></div>
+<p role="status" id="status"></p>
+<script>
+let aberto='',tocando=null;
+async function voz(nome,b){
+  b.disabled=true;b.textContent='Preparando…';
+  try{
+    const r=await fetch('/api/voz',{method:'POST',headers:{'X-Braniac':'1'},body:JSON.stringify({texto:'Olá. Aqui é '+nome+'. Esta é a minha voz.',agente:nome})});
+    if(!r.ok)throw new Error();
+    if(tocando)tocando.pause();
+    tocando=new Audio(URL.createObjectURL(await r.blob()));await tocando.play();
+    document.getElementById('status').textContent='';
+  }catch{document.getElementById('status').textContent='Não consegui falar agora.';}
+  b.disabled=false;b.textContent='▶ Ouvir a voz';
+}
+const quando=s=>new Date(s*1000).toLocaleString([],{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+async function fatos(id,ul){
+  const {fatos}=await (await fetch('/api/agentes/fatos?id='+encodeURIComponent(id))).json();
+  ul.textContent='';
+  if(!fatos.length){const li=document.createElement('li');li.textContent='Nenhum fato guardado ainda.';ul.appendChild(li);}
+  fatos.forEach(f=>{
+    const li=document.createElement('li'),t=document.createElement('span'),m=document.createElement('span');
+    t.textContent=f.texto;if(!f.valido)t.className='vencido';
+    m.className='marca';
+    m.textContent=' · '+(f.valido?'válido':'vencido')+' · '+(f.nivel==='publico'?'público':'só no computador')+(f.validade?' · '+(f.valido?'vence ':'venceu ')+quando(f.validade):'');
+    li.append(t,m);ul.appendChild(li);
+  });
+}
+async function load(){try{
+  const r=await fetch('/api/agentes');
+  if(!r.ok)throw new Error();
+  const {agentes,recados}=await r.json();
+  const agentesEl=document.getElementById('agentes');
+  agentesEl.textContent='';
+  agentes.forEach(a=>{
+    const d=document.createElement('details'),p=document.createElement('summary'),ul=document.createElement('ul');
+    const b=document.createElement('strong');b.textContent=a.agente;
+    p.append(b,' — '+a.nome+': '+a.descricao+(a.fatos?' ('+a.fatos+' fato'+(a.fatos>1?'s':'')+')':''));
+    const bv=document.createElement('button');bv.textContent='▶ Ouvir a voz';bv.onclick=()=>voz(a.agente,bv);
+    d.append(p,bv,ul);
+    // a lista se refaz a cada 15 s: o agente aberto continua aberto
+    d.addEventListener('toggle',()=>{if(d.open){aberto=a.id;fatos(a.id,ul).catch(()=>{});}else if(aberto===a.id)aberto='';});
+    if(aberto===a.id)d.open=true;
+    agentesEl.appendChild(d);
+  });
+  const recEl=document.getElementById('recados');
+  recEl.textContent='';
+  if(recados.length){
+    recados.slice().reverse().forEach(m=>{
+      const p=document.createElement('p');
+      const time=new Date(m.ts*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      p.textContent=time+' '+m.de+' → '+m.para+' ('+m.tipo+') '+m.texto;
+      recEl.appendChild(p);
+    });
+  }else recEl.textContent='Nenhum recado ainda.';
+  document.getElementById('status').textContent='';
+}catch{document.getElementById('status').textContent='Sem resposta do Braniac.';}
+}
+load();setInterval(load,15000);
+</script>
+</body></html>

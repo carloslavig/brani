@@ -1,0 +1,57 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VM do Braniac</title>
+<!-- Tela do Leo (NexoDev, T063; a entrega veio cortada no fim), fechada e ajustada pelo Claude. -->
+<style>
+body{font:16px/1.5 system-ui,sans-serif;margin:0;padding:16px;background:#11151a;color:#e6e9ed}
+button,input{font:inherit;padding:.5rem .8rem;background:#1a2028;color:inherit;border:1px solid #2a323c;border-radius:6px}
+button{cursor:pointer}:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}
+form{display:flex;gap:.5rem;flex-wrap:wrap;margin:.8rem 0;align-items:end}form input{min-width:10rem}
+ul{list-style:none;padding:0}li{display:flex;gap:.6rem;align-items:center;padding:.4rem 0;border-bottom:1px solid #2a323c;flex-wrap:wrap}
+li b{color:#6fd08c}li span{flex:1;min-width:8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+iframe{width:100%;height:70vh;border:1px solid #2a323c;border-radius:6px;background:#000}#aviso{color:#e6c35c}a{color:#7db7ff}
+#leitura pre{max-height:40vh;overflow:auto;white-space:pre-wrap;background:#1a2028;padding:.8rem;border-radius:6px}
+.dica{font-size:.85em;color:#8b96a3}
+@media(max-width:600px){li span{flex-basis:100%}}
+</style>
+<p><a href="/">← Início</a></p>
+<h1>VM do Braniac</h1>
+<p><span id="estado">Verificando…</span> <button id="ligar">Ligar</button> <button id="desligar">Desligar</button> <span id="aviso" role="status"></span></p>
+<h2>Abas dos agentes</h2>
+<form id="nova"><label>Agente <input id="agente" required placeholder="Ex.: Jarvis"></label><label>Endereço <input id="url" type="url" required placeholder="https://…"></label><button>Ir</button> <span class="dica">Cada agente tem a sua aba</span></form>
+<ul id="abas"></ul>
+<div id="leitura" hidden></div>
+<h2>Tela da VM</h2>
+<p>Os logins são feitos por você aqui dentro.</p>
+<iframe id="tela" title="Tela da VM"></iframe>
+<script>
+const $=id=>document.getElementById(id);
+const api=(c,o)=>fetch(c,o&&{method:'POST',headers:{'X-Braniac':'1'},body:JSON.stringify(o)}).then(r=>r.json());
+const avisa=r=>{$('aviso').textContent=r&&r.erro?r.erro:'';return r};
+const botao=(texto,acao)=>{const b=document.createElement('button');b.textContent=texto;b.onclick=acao;return b};
+async function ver(a){avisa(await api('/api/vm/abas/mostrar',{id:a.id}));$('tela').scrollIntoView({behavior:'smooth'})}
+async function ler(a){
+  const d=avisa(await api('/api/vm/abas/texto?agente='+encodeURIComponent(a.agente)));
+  if(d.erro)return;
+  const h=document.createElement('h3'),p=document.createElement('pre'),c=$('leitura');
+  h.textContent=(d.titulo||a.titulo||'Aba')+' · '+a.agente;p.textContent=d.texto||'(página sem texto)';p.tabIndex=0;
+  c.replaceChildren(h,p,botao('Fechar leitura',()=>{c.hidden=true}));c.hidden=false;
+}
+async function olha(){
+  const e=await api('/api/vm');
+  $('estado').textContent=!e.existe?'A VM ainda não foi criada.':e.ligada?'Ligada.':'Desligada.';
+  if(e.ligada&&!$('tela').src)$('tela').src=e.tela+'/vnc.html?autoconnect=1&resize=scale';
+  if(!e.ligada)$('tela').removeAttribute('src');
+  const abas=e.ligada?await api('/api/vm/abas'):[];
+  $('abas').replaceChildren(...(Array.isArray(abas)?abas:[]).map(a=>{
+    const li=document.createElement('li'),b=document.createElement('b'),s=document.createElement('span');
+    b.textContent=a.agente||'sem agente';s.textContent=(a.titulo||'')+' · '+a.url;
+    li.append(b,s,botao('Ver',()=>ver(a)));
+    if(a.agente)li.append(botao('Ler',()=>ler(a)));
+    li.append(botao('Fechar',()=>api('/api/vm/abas/fechar',{id:a.id}).then(avisa).then(olha)));
+    return li}));
+}
+$('ligar').onclick=()=>api('/api/vm/ligar',{}).then(avisa).then(()=>setTimeout(olha,5000));
+$('desligar').onclick=()=>api('/api/vm/desligar',{}).then(avisa).then(olha);
+$('nova').onsubmit=ev=>{ev.preventDefault();$('aviso').textContent='Abrindo…';api('/api/vm/abas/navegar',{agente:$('agente').value,url:$('url').value}).then(avisa).then(olha)};
+olha();setInterval(olha,5000);
+</script>

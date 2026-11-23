@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atendimento</title>
+<style>body{font:18px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}a{color:#7db7ff}h1{font-size:1.6em}h2{font-size:1.2em;margin-top:1.6rem}.dica{font-size:.85em;color:#8b96a3}.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere;white-space:pre-wrap}.aviso{border-color:#e6c35c}.marca{font-size:.85em;color:#8b96a3;white-space:normal}label{display:block;margin:.6rem 0 .2rem}input,textarea{width:100%;box-sizing:border-box;font:inherit;background:#0c1014;color:#e6e9ed;border:1px solid #2a323c;border-radius:6px;padding:.6rem}button{font:inherit;font-size:1.1em;margin-top:.8rem;padding:.6rem 1.4rem;background:#2b6cb0;color:#fff;border:0;border-radius:6px;cursor:pointer}button:disabled{opacity:.5}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #7db7ff}</style>
+</head><body>
+<p><a href="/">← Início</a> · <a href="/saida">Caixa de saída</a></p>
+<h1>Atendimento</h1>
+<p class="caixa aviso" id="estado">Carregando…</p>
+<h2>Ensaio</h2>
+<p class="dica">Escreva como se fosse alguém mandando mensagem. O Jarvis decide o que faria e a resposta fica só na caixa de saída.</p>
+<form id="f">
+<label for="nome">Nome do contato</label><input id="nome" required autocomplete="off">
+<label for="msg">Mensagem</label><textarea id="msg" rows="3" required></textarea>
+<button id="b">Ensaiar</button>
+</form>
+<p role="status" id="status" class="dica"></p>
+<div id="res"></div>
+<h2>Últimas decisões</h2>
+<div id="dec"></div>
+<script>
+const $=i=>document.getElementById(i);
+const caixa=(marca,texto)=>{const d=document.createElement('div'),m=document.createElement('div');d.className='caixa';m.className='marca';m.textContent=marca;d.append(m,document.createTextNode(texto));return d};
+const NOMES={E:'respondeu',I:'não respondeu',A:'avisou o dono',P:'perguntou ao dono'};
+function estado(){
+  fetch('/api/atendimento').then(r=>r.json()).then(e=>{
+    $('estado').textContent=e.aviso+(e.recados.length?' Recados na fila para o dono: '+e.recados.length+'.':'');
+    $('dec').replaceChildren(...e.decisoes.map(d=>caixa(new Date(d.ts*1000).toLocaleString('pt-BR')+' · '+d.contato+' · '+(NOMES[d.cod]||d.cod),'«'+d.entrada+'»'+(d.texto?'\n→ '+d.texto:''))));
+    if(!e.decisoes.length)$('dec').textContent='Nenhuma decisão ainda.';
+  }).catch(()=>{$('estado').textContent='Não consegui ler o estado do atendimento.'});
+}
+$('f').addEventListener('submit',ev=>{
+  ev.preventDefault();
+  $('b').disabled=true;$('status').textContent='Pensando…';$('res').replaceChildren();
+  fetch('/api/atendimento/ensaio',{method:'POST',headers:{'Content-Type':'application/json','X-Braniac':'1'},
+    body:JSON.stringify({conversas:[{nome:$('nome').value,mensagens:[$('msg').value]}]})})
+  .then(r=>r.json()).then(r=>{
+    if(r.erro){$('status').textContent=r.erro;return}
+    $('status').textContent=r.aviso;
+    const itens=r.saida.map(i=>caixa('Responderia · '+i.canal+' → '+i.destino,i.texto));
+    if(!r.saida.length)itens.push(caixa('Responderia','Nada: nenhuma mensagem sairia.'));
+    itens.push(caixa('Relatório',r.relatorio));
+    if(r.porque.length)itens.push(caixa('Por quê',r.porque.join('\n')));
+    $('res').replaceChildren(...itens);
+    estado();
+  }).catch(()=>{$('status').textContent='O ensaio falhou.'}).finally(()=>{$('b').disabled=false});
+});
+estado();
+</script>
+</body></html>

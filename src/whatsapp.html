@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WhatsApp</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:0 auto;padding:16px;background:#11151a;color:#e6e9ed}a{color:#7db7ff}.dica{font-size:.85em;color:#8b96a3}.caixa{background:#1a2028;border:1px solid #2a323c;border-radius:6px;padding:.8rem 1rem;margin:.6rem 0;overflow-wrap:anywhere}h2{font-size:1.1rem}button{font:inherit;color:inherit;background:#11151a;border:1px solid #2a323c;border-radius:6px;padding:.4rem .7rem;cursor:pointer}button:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}summary{cursor:pointer;padding:.3rem 0}summary:focus-visible{outline:2px solid #7db7ff;outline-offset:2px}details ul{margin:.2rem 0 .8rem;padding-left:1.2rem}li{margin:.3rem 0}.vencido{color:#8b96a3;text-decoration:line-through}.marca{font-size:.85em;color:#8b96a3}</style>
+</head><body>
+<p><a href="/">← Início</a></p>
+<h1>WhatsApp (só leitura)</h1>
+<p class="dica">Mostra a lista de conversas da aba do WhatsApp na VM. Não abre conversa, não marca como lida e não envia nada. O QR code é lido pelo senhor, na <a href="/vm">tela da VM</a>.</p>
+<p><button id="abrir">Abrir o WhatsApp na VM</button> <button id="ver">Atualizar</button></p>
+<p role="status" id="status"></p>
+<div id="lista" class="caixa"></div>
+<script>
+const st=document.getElementById('status'),lista=document.getElementById('lista');
+function mostra(d){
+  lista.textContent='';
+  if(d.erro){st.textContent=d.erro;return;}
+  st.textContent=d.aviso||(d.conversas.length+' conversas na tela, '+d.nao_lidas+' mensagens não lidas.');
+  for(const c of d.conversas){
+    const p=document.createElement('p');p.textContent=c.nome+(c.nao_lidas?' — '+c.nao_lidas+' não lida(s)':'');
+    if(c.nao_lidas)p.style.fontWeight='bold';
+    lista.appendChild(p);
+  }
+}
+const ver=()=>fetch('/api/whatsapp').then(r=>r.json()).then(mostra).catch(()=>{st.textContent='O Braniac não respondeu.';});
+document.getElementById('ver').onclick=ver;
+document.getElementById('abrir').onclick=()=>{st.textContent='Abrindo…';fetch('/api/whatsapp/abrir',{method:'POST',headers:{'X-Braniac':'1'},body:'{}'}).then(r=>r.json()).then(mostra).catch(()=>{st.textContent='Não consegui abrir.';});};
+ver();
+</script>
+</body></html>

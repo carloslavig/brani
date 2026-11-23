@@ -1,0 +1,139 @@
+{
+ "system": "Voce e o Jarvis, assistente do sistema Braniac. Fale em portugues do Brasil, de forma direta e curta. NUNCA invente: nome, numero, valor, data, horario, lugar ou acontecimento so pode aparecer na resposta se estiver na conversa, no bloco BANCO, nos fatos do agente ou em resultado de ferramenta. Nao sabe? Primeiro PROCURE com as ferramentas (consultar_banco, pesquisar_web); se mesmo assim nao achar, diga com todas as letras que nao sabe e o que falta. Nao entendeu o pedido ou ele serve para duas coisas? Faca UMA pergunta curta antes de responder. Nunca preencha lacuna com suposicao; se for palpite, diga que e palpite. Toda resposta e conferida por um revisor contra as fontes. So diga que fez algo (clicou, abriu, digitou, guardou) depois de a ferramenta confirmar; se ela nao foi chamada ou deu erro, diga isso.",
+ "historico_max_msgs": 20,
+ "timeout_s": 20,
+ "claude_max_por_dia": 20,
+ "sensivel": [
+  "pix",
+  "cartao",
+  "cartão",
+  "senha",
+  "cvv",
+  "cpf",
+  "cnpj",
+  "agencia",
+  "agência",
+  "conta banc",
+  "conta corrente",
+  "codigo de verifica",
+  "código de verifica",
+  "codigo de seguran",
+  "código de seguran",
+  "token",
+  "passaporte"
+ ],
+ "cadeia": [
+  {
+   "nome": "groq",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://api.groq.com/openai/v1/chat/completions",
+   "modelo": "openai/gpt-oss-120b",
+   "chave_env": "GROQ_API_KEY",
+   "classe": "forte"
+  },
+  {
+   "nome": "groq-20b",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://api.groq.com/openai/v1/chat/completions",
+   "modelo": "openai/gpt-oss-20b",
+   "chave_env": "GROQ_API_KEY",
+   "classe": "rapido"
+  },
+  {
+   "nome": "gemini-lite",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+   "modelo": "gemini-3.1-flash-lite",
+   "chave_env": "GEMINI_API_KEY",
+   "classe": "rapido"
+  },
+  {
+   "nome": "gemini-lite-b",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+   "modelo": "gemini-3.1-flash-lite",
+   "chave_env": "GEMINI_API_KEY_2",
+   "classe": "rapido"
+  },
+  {
+   "nome": "openrouter",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://openrouter.ai/api/v1/chat/completions",
+   "modelo": "nvidia/nemotron-3-ultra-550b-a55b:free",
+   "chave_env": "OPENROUTER_API_KEY",
+   "classe": "forte"
+  },
+  {
+   "nome": "gemini",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+   "modelo": "gemini-flash-latest",
+   "chave_env": "GEMINI_API_KEY",
+   "classe": "forte"
+  },
+  {
+   "nome": "gemini-b",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+   "modelo": "gemini-flash-latest",
+   "chave_env": "GEMINI_API_KEY_2",
+   "classe": "forte"
+  },
+  {
+   "nome": "openrouter-gemma",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://openrouter.ai/api/v1/chat/completions",
+   "modelo": "google/gemma-4-31b-it:free",
+   "chave_env": "OPENROUTER_API_KEY",
+   "classe": "forte"
+  },
+  {
+   "nome": "cerebras",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://api.cerebras.ai/v1/chat/completions",
+   "modelo": "llama-3.3-70b",
+   "chave_env": "CEREBRAS_API_KEY",
+   "classe": "rapido"
+  },
+  {
+   "nome": "mistral",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://api.mistral.ai/v1/chat/completions",
+   "modelo": "mistral-small-latest",
+   "chave_env": "MISTRAL_API_KEY",
+   "classe": "forte"
+  },
+  {
+   "nome": "nvidia",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://integrate.api.nvidia.com/v1/chat/completions",
+   "modelo": "minimaxai/minimax-m3.1-flash",
+   "chave_env": "NVIDIA_API_KEY",
+   "classe": "padrao"
+  },
+  {
+   "nome": "ollama",
+   "tipo": "local",
+   "api": "ollama",
+   "url": "http://127.0.0.1:11434/api/chat",
+   "modelo": "qwen2.5:3b",
+   "keep_alive": "2m"
+  },
+  {
+   "nome": "claude",
+   "tipo": "claude",
+   "api": "cli"
+  }
+ ]
+}

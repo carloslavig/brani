@@ -1,0 +1,1760 @@
+[
+ {
+  "modulo": "agenda",
+  "linhas": 380,
+  "o_que_faz": "AGENDA DO DONO (pedido de 14/10/2026): o Jarvis organiza tarefas, compromissos e a rotina dele.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "agente_dev",
+  "linhas": 161,
+  "o_que_faz": "Agente de programacao PLUGAVEL do Braniac: quem mexe no codigo, faz tarefas no PC e responde duvidas dificeis.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "airbnb",
+  "linhas": 442,
+  "o_que_faz": "AIRBNB (anfitriao) pelo Chrome do agente (CDP, porta 9222): LER as conversas e RESPONDER hospedes.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "airbnb_base",
+  "linhas": 70,
+  "o_que_faz": "Base de conhecimento POR ANUNCIO do Airbnb (fatos no jarvis.db, escopo 'airbnb') + perguntas ao Dono + 'Info Casa' antes de aceitar a casa inteira.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "airbnb_conhecimento",
+  "linhas": 70,
+  "o_que_faz": "Base de conhecimento do Airbnb (politicas da plataforma + manual de atendimento), curada em 07/10/2026 a partir das respostas do ChatGPT e do Gemini",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "airbnb_escalada",
+  "linhas": 208,
+  "o_que_faz": "ESCALADA DO AIRBNB (28/10/2026, pedido do Dono). Funciona mesmo com o atendimento automatico desligado: so LE a caixa de entrada.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "airbnb_vigia",
+  "linhas": 634,
+  "o_que_faz": "ATENDIMENTO AUTOMATICO DO AIRBNB: olha a caixa de entrada do anfitriao e responde hospedes que ficaram sem resposta, com as MESMAS",
+  "estado": "portado"
+ },
+ {
+  "modulo": "alma_aprende",
+  "linhas": 355,
+  "o_que_faz": "A.L.M.A. APRENDE (01/11/2026, plano do conselho de IAs em data/conselho_alma.txt). 100% local, sem IA online.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "alma_cuida",
+  "linhas": 320,
+  "o_que_faz": "A.L.M.A. OBSERVA E CUIDA (26/10/2026). A rotina saiu daqui (agora e do agente Compasso, compasso.py). A Alma agora:",
+  "estado": "portado"
+ },
+ {
+  "modulo": "alma_evolucao",
+  "linhas": 144,
+  "o_que_faz": "EVOLUCAO DA A.L.M.A.: o Jarvis (ou o conselho) pode MELHORAR a parte ajustavel da persona dela, com seguranca. Primeira etapa da auto-melhoria (Dono, 10/10/2026).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "alma_mente",
+  "linhas": 613,
+  "o_que_faz": "A MENTE DA ALMA (16/11/2026): a Alma entende o Dono melhor, lembra mais e fala como gente. Pedido do Dono:",
+  "estado": "portado"
+ },
+ {
+  "modulo": "alma_orbe",
+  "linhas": 279,
+  "o_que_faz": "ESFERA DE VOZ DA ALMA (ALMA 2.0, 16/11/2026): janela propria (nao e a do Jarvis), sem borda, sempre por cima, que voce arrasta. Tres niveis:",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "alma_voz",
+  "linhas": 416,
+  "o_que_faz": "VOZ PROPRIA DA ALMA (ALMA 2.0, 16/11/2026): sessao de conversa, controle de presenca e o laco de 1 min que liga tudo",
+  "estado": "portado"
+ },
+ {
+  "modulo": "andares",
+  "linhas": 43,
+  "o_que_faz": "Andares do predio 3D (/sauraki) que estao construidos (16/11/2026).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "animacoes",
+  "linhas": 62,
+  "o_que_faz": "ANIMACOES para reels (12/11/2026): quatro animacoes prontas do repositorio claude-animation-skills (Artem Novitckii, MIT; licenca em skills/_licencas) que o Braniac gera",
+  "estado": "portado"
+ },
+ {
+  "modulo": "artcraft",
+  "linhas": 255,
+  "o_que_faz": "ArtCraft DENTRO do Jarvis (17/10/2026): foto, vetor, PDF, Word, planilha, slides, audio, CAD e video (so ler) pelos CLIs sem janela",
+  "estado": "portado"
+ },
+ {
+  "modulo": "artes_loja",
+  "linhas": 304,
+  "o_que_faz": "ARTES DA LIBANO ESFIHARIA para o Instagram, feitas 100% pelo Braniac (sem gastar tokens do Claude): fotos da pasta do Dono -> posts de feed (4:5),",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "assinatura",
+  "linhas": 30,
+  "o_que_faz": "ASSINATURA DIGITAL DO BRANIAC (24/10/2026, decisao do Dono): todo Braniac, de qualquer dono, sabe e responde POR PADRAO quem sao a sua",
+  "estado": "portado"
+ },
+ {
+  "modulo": "assuntos",
+  "linhas": 435,
+  "o_que_faz": "ASSUNTOS E AGENTES (26/10/2026, pedido do Dono): o Jarvis continua sendo a ENTRADA de toda conversa, mas cada ASSUNTO tem o seu proprio banco",
+  "estado": "portado"
+ },
+ {
+  "modulo": "atender",
+  "linhas": 694,
+  "o_que_faz": "Atendimento do WhatsApp pelo Jarvis: le as conversas nao lidas, decide com o Claude (protocolo JV1 em canal.py),",
+  "estado": "portado"
+ },
+ {
+  "modulo": "atividade",
+  "linhas": 163,
+  "o_que_faz": "MONITOR DE ATIVIDADES (ALMA 2.0, 16/11/2026): a Alma passa a saber o que acontece no Braniac e, principalmente, QUEM esta fazendo:",
+  "estado": "portado"
+ },
+ {
+  "modulo": "automelhoria",
+  "linhas": 321,
+  "o_que_faz": "AUTOMELHORIA DO BRANIAC (pedido do Dono, 14/10/2026): o Jarvis melhora o proprio codigo sem o Dono abrir o Claude Code.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "avaliar_jarvis",
+  "linhas": 85,
+  "o_que_faz": "AVALIACAO DE EFICACIA DO JARVIS (27/10/2026): manda perguntas tipicas ao Jarvis REAL (http://127.0.0.1:8765/api/chat) e confere se a resposta serve.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "b2",
+  "linhas": 397,
+  "o_que_faz": "B.R.A.N.I.A.C 1 (24/10/2026): projetos e conversas SEPARADOS (cada conversa tem historico proprio, 'b2:<id>'), instrucoes por projeto",
+  "estado": "portado"
+ },
+ {
+  "modulo": "banco",
+  "linhas": 337,
+  "o_que_faz": "BANCO UNIFICADO DO JARVIS: um unico lugar (data/jarvis.db) onde TODAS as IAs do Braniac (Groq, Gemini, OpenRouter, Cerebras, Mistral,",
+  "estado": "portado"
+ },
+ {
+  "modulo": "barramento",
+  "linhas": 96,
+  "o_que_faz": "BARRAMENTO DOS AGENTES (26/10/2026): como os agentes do Braniac conversam entre si. Caixa de mensagens local (data/agentes.db), 100% sem IA e sem rede.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "braincenter",
+  "linhas": 510,
+  "o_que_faz": "BRAIN CENTER (07/11/2026): memoria central do Braniac que se consolida quando a MAIORIA dos agentes esta ociosa.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "busca_maps",
+  "linhas": 83,
+  "o_que_faz": "GOOGLE MAPS PARA O JARVIS (05/11/2026, pedido do Dono): acha clinicas/lojas/servicos perto da cidade pedida, com nome, nota, endereco e TELEFONE.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "busca_pedido",
+  "linhas": 268,
+  "o_que_faz": "BUSCA A PEDIDO + PROATIVIDADE (05/11/2026, pedido do Dono). A Tia Mae pediu por audio \"quanto custa uma ressonancia em Itabuna\". Agora, quando a familia",
+  "estado": "portado"
+ },
+ {
+  "modulo": "canal",
+  "linhas": 144,
+  "o_que_faz": "Canal Jarvis <-> Claude: fila local com protocolo de uma linha (JV1), para economizar tokens.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "candidatura_rotina",
+  "linhas": 84,
+  "o_que_faz": "Rotina de candidaturas (04/11/2026): 3 janelas por dia (manha, tarde, noite), ate META vagas em cada. Cada janela aciona o Claude com navegador, seguindo a",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "candidaturas",
+  "linhas": 100,
+  "o_que_faz": "Agente NANDO (28/10/2026, nome escolhido com o conselho): recebe vagas do Correio e do Garimpeiro, faz a triagem (remota? tem link?) e guarda a fila de candidaturas",
+  "estado": "portado"
+ },
+ {
+  "modulo": "celular",
+  "linhas": 58,
+  "o_que_faz": "CHAMAR O JARVIS PELO CELULAR (24/10/2026): o app manda so os trechos com FALA (WAV 16 kHz); aqui o Whisper local transcreve, '<nome>, ta acordado?'",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "clareza",
+  "linhas": 255,
+  "o_que_faz": "CLAREZA (10/11/2026): o Jarvis entender a PERGUNTA e nao responder outra coisa. Tudo barato: so regra, e uma chamada de IA gratis",
+  "estado": "portado"
+ },
+ {
+  "modulo": "claude_agent",
+  "linhas": 89,
+  "o_que_faz": "Delega tarefas no PC ao agente de programacao escolhido (padrao: Claude Code, `claude -p --chrome`; ver agente_dev.py).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "claudinho",
+  "linhas": 227,
+  "o_que_faz": "CLAUDINHO, gerente master do Braniac (29/10/2026, janela de 48 h a partir da ativacao).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "compasso",
+  "linhas": 339,
+  "o_que_faz": "ROTINAS DA Compasso (pedido do Dono, 10/10/2026): a Compasso guarda as rotinas da familia (e do proprio Jarvis) e, na hora certa,",
+  "estado": "portado"
+ },
+ {
+  "modulo": "confirmacao",
+  "linhas": 63,
+  "o_que_faz": "Entende confirmacao e negacao em linguagem natural ('pode sim', 'manda ai', 'manda ver', 'faca' = sim; 'nem a pau', 'ta maluco?',",
+  "estado": "portado"
+ },
+ {
+  "modulo": "conselho",
+  "linhas": 91,
+  "o_que_faz": "CONSELHO DE IAs DO BRANIAC: a 'reuniao' entre as IAs parceiras (ChatGPT, Gemini, Grok, DeepSeek, Kimi) sobre um assunto.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "contexto",
+  "linhas": 591,
+  "o_que_faz": "Base de conhecimento do Jarvis (quem e quem, regras do negocio) + escalonamento de duvidas.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "correio",
+  "linhas": 89,
+  "o_que_faz": "Agente CORREIO (26/10/2026): de ~15 em 15 min olha so os METADADOS da caixa de entrada (Gmail, somente leitura, tudo local, nada vai a IA online) e avisa o",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "cortes/captura",
+  "linhas": 107,
+  "o_que_faz": "Captura: grava a live (streamlink) + chat (IRC anonimo, so leitura), baixa VOD/clipe (yt-dlp).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/comandos",
+  "linhas": 110,
+  "o_que_faz": "Comandos dos cortes em texto: usados pela linha de comando e pela ferramenta 'cortes' do Jarvis.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/config",
+  "linhas": 120,
+  "o_que_faz": "Configuracao dos cortes: braniac/data/cortes/cortes.json (criado com valores padrao na 1a execucao).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/deteccao",
+  "linhas": 133,
+  "o_que_faz": "Deteccao de momentos virais SEM IA: pico de volume (audio) + pico de mensagens no chat (com peso para memes de hype).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/fila",
+  "linhas": 97,
+  "o_que_faz": "Fila dos cortes (SQLite em data/cortes/cortes.db): detectado -> renderizado -> aprovado/rejeitado -> publicado.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/legenda",
+  "linhas": 112,
+  "o_que_faz": "Legenda local: faster-whisper (small; GTX 1650 em float16, senao CPU int8) com tempo de cada palavra -> arquivo .ass",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/pipeline",
+  "linhas": 242,
+  "o_que_faz": "Orquestra um corte do inicio ao fim e a publicacao dos aprovados.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/render",
+  "linhas": 61,
+  "o_que_faz": "Render vertical 9:16 (1080x1920) com ffmpeg: corte + enquadramento + legenda queimada + volume normalizado.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/tiktok",
+  "linhas": 41,
+  "o_que_faz": "TikTok: SEM robo de navegador (contra os termos, risco de perder a conta).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/titulos",
+  "linhas": 59,
+  "o_que_faz": "Titulo + hashtags do corte pela IA LOCAL (Ollama). Nada de IA paga; sem Ollama, usa um modelo de texto fixo.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/twitch",
+  "linhas": 110,
+  "o_que_faz": "Twitch: status da live, VODs e clipes. Usa a API oficial (Helix) se houver TWITCH_CLIENT_ID/TWITCH_CLIENT_SECRET no .env;",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/vigia",
+  "linhas": 148,
+  "o_que_faz": "Vigia dos cortes (roda sozinho): checa as lives, grava, processa quando acaba, busca clipes/VODs e publica os aprovados.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "cortes/youtube",
+  "linhas": 96,
+  "o_que_faz": "Upload para o YouTube (Shorts) pela API oficial (YouTube Data API v3, videos.insert).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "criacao",
+  "linhas": 268,
+  "o_que_faz": "CRIAR IMAGEM / VIDEO pelo conselho de IAs (25/10/2026, pedido do Dono):",
+  "estado": "portado"
+ },
+ {
+  "modulo": "delegacao",
+  "linhas": 335,
+  "o_que_faz": "DELEGACAO (27/10/2026): so o JARVIS fala com o Dono. Quando o Dono quer saber algo, o Jarvis vai ate o agente do assunto, PERGUNTA (barramento: pedido),",
+  "estado": "portado"
+ },
+ {
+  "modulo": "dev_livre",
+  "linhas": 78,
+  "o_que_faz": "Jarvis PROGRAMA sozinho com as IAs gratis (sem o Claude): implementador da automelhoria quando o Claude nao esta disponivel (21/10/2026).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "dono",
+  "linhas": 432,
+  "o_que_faz": "Vigia o WhatsApp do Dono (contato 'Eu(BH)', o outro numero dele): TODA mensagem dele ao Jarvis e respondida,",
+  "estado": "portado"
+ },
+ {
+  "modulo": "dossie_semente",
+  "linhas": 18,
+  "o_que_faz": "Dossie inicial do Jarvis: o que ele precisa saber sobre as pessoas e os assuntos do dono.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "drive_pasta",
+  "linhas": 164,
+  "o_que_faz": "PASTA DO DRIVE como caixa de entrada (12/11/2026): o Braniac olha a pasta combinada pelo Chrome logado dele (so le e baixa; nunca apaga nem muda nada no Drive)",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "elo_loja",
+  "linhas": 91,
+  "o_que_faz": "Conversa Atendente (Braniac Loja) <-> Jarvis pelo elo P2P (par_webrtc). Tudo que a Atendente manda e o Jarvis responde fica em data/par_conversas.jsonl",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "empresa_compras",
+  "linhas": 384,
+  "o_que_faz": "EMPRESA DE COMPRAS \"Pechincha\" (05/11/2026, pedido do Dono): 6o andar do predio. Agentes que PESQUISAM e RECOMENDAM compra; nunca compram.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "empresa_cortes",
+  "linhas": 491,
+  "o_que_faz": "LINHA DE CORTES DE VÍDEO \"Claquete\" (03/11/2026, pedido do Dono): 5o andar do Braniac, separado da Fornalha (que fica só com marketing de clientes).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "empresa_dev",
+  "linhas": 617,
+  "o_que_faz": "EMPRESA DE DESENVOLVIMENTO (29/10/2026, pedido do Dono): o \"2o andar\" do Braniac. Uma software house de agentes (front, back, APIs, juniores, QA...),",
+  "estado": "portado"
+ },
+ {
+  "modulo": "empresa_inv",
+  "linhas": 204,
+  "o_que_faz": "EMPRESA DE INVESTIMENTOS \"Quantix\" (01/11/2026, pedido do Dono): andar de agentes que investe por perfil de risco (daytrade, swing, holding).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "empresa_mkt",
+  "linhas": 525,
+  "o_que_faz": "EMPRESA DE MARKETING (29/10/2026, pedido do Dono): o 3o andar do Braniac, \"Fornalha\" (nome e equipe do conselho de IAs, data/conselho_mkt.txt).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "entrelinhas",
+  "linhas": 190,
+  "o_que_faz": "ENTRELINHAS (FASE 1 - SO OBSERVA, NUNCA AGE): le o que o Dono diz e anota o que o Braniac ENTENDERIA e o que PROPORIA fazer.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "escuta",
+  "linhas": 635,
+  "o_que_faz": "Escuta por voz no notebook: o Dono fala 'Jarvis, tá acordado?' e o Jarvis acorda, ouve, responde falando e continua ouvindo",
+  "estado": "portado"
+ },
+ {
+  "modulo": "estudio3d",
+  "linhas": 343,
+  "o_que_faz": "ESTUDIO 3D no Braniac (11/11/2026): o Jarvis faz sozinho um RASCUNHO de video curto explicativo em 3D (vertical 1080x1920) no Estudio3D do Dono.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "exercito",
+  "linhas": 301,
+  "o_que_faz": "CABO TITO (29/10/2026): dados do processo seletivo STT (TI) 2026/2027 da 11ª RM, tirados do edital (Aviso de Convocação 10-SSMR/11, 3/7/2026) e das",
+  "estado": "portado"
+ },
+ {
+  "modulo": "faxina_abas",
+  "linhas": 40,
+  "o_que_faz": "Faxina de abas (11/11/2026): o Chrome do Braniac acumulava abas paradas (Gemini, Grok, Instagram, TikTok...) e era ele,",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "fcc",
+  "linhas": 45,
+  "o_que_faz": "fcc: ponte local Anthropic Messages -> provedores gratis do Braniac (codigo Rust em fcc-rs/).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "financeiro",
+  "linhas": 255,
+  "o_que_faz": "Agente FINANCEIRO (Cofre, 27/10/2026): so LE a conta InfinitePay do Dono (aba logada no Chrome do Braniac, porta 9222) e acompanha a META de saldo",
+  "estado": "portado"
+ },
+ {
+  "modulo": "fornalha_estudio",
+  "linhas": 203,
+  "o_que_faz": "Oficina local da Fornalha: o que o estúdio de cinema com IA faz (ideias do pro-cinematic-studio), só com Pillow e ffmpeg, sem API paga.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "freelas",
+  "linhas": 167,
+  "o_que_faz": "Caçador de freelas: lê feeds PÚBLICOS (sem login), o Ollama local dá nota e rascunha a proposta.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "funil",
+  "linhas": 145,
+  "o_que_faz": "Funil unico dos avisos AUTOMATICOS ao Dono (16/11/2026, Dono: \"o Jarvis me manda mensagem demais\").",
+  "estado": "portado"
+ },
+ {
+  "modulo": "gibberlink",
+  "linhas": 253,
+  "o_que_faz": "Gibberlink (GL1): quando o Jarvis percebe que do outro lado tambem e uma IA, os dois largam a fala natural",
+  "estado": "portado"
+ },
+ {
+  "modulo": "gmail",
+  "linhas": 327,
+  "o_que_faz": "Gmail do Dono, SOMENTE LEITURA (escopo gmail.readonly): ver nao lidas, buscar e ler um e-mail. NAO envia, apaga nem altera nada.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "gmail_web",
+  "linhas": 31,
+  "o_que_faz": "Gmail SO LEITURA pela aba logada do Chrome do Braniac (28/10/2026): sem OAuth, entao nao expira em 7 dias. Le remetente e assunto da caixa de entrada",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "gpt_web",
+  "linhas": 9,
+  "o_que_faz": "Atalho para o ChatGPT (ver ia_web.py).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "gratis",
+  "linhas": 112,
+  "o_que_faz": "IAs GRATIS EXTRAS no Braniac (24/10/2026), vindas do FreeLLMAPI (MIT, nosso fork usuario/freellmapi): catalogo de modelos gratis com os limites de",
+  "estado": "portado"
+ },
+ {
+  "modulo": "grupo_ia",
+  "linhas": 174,
+  "o_que_faz": "Monitor do grupo de WhatsApp 'IA & Tech': o Jarvis SO OBSERVA. Novidades de IA/agentes -> triagem rapida -> conselho de IAs -> se relevante, vai para",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "guarda",
+  "linhas": 136,
+  "o_que_faz": "GUARDA: o Braniac de olho na seguranca do PC e do IP (pedido do Dono, 08/10/2026). SO OBSERVA E AVISA; nao muda firewall nem fecha portas sozinho.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "guia_pai",
+  "linhas": 80,
+  "o_que_faz": "Zelo, agente que ajuda o pai do Dono (Tio Moises, contato 'Munzes') a entender mensagens.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "habilidades_terceiros",
+  "linhas": 122,
+  "o_que_faz": "Habilidades de terceiros: o Braniac nao as distribui; so oferece baixar do GitHub do proprio autor (16/11/2026).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "ia_img",
+  "linhas": 105,
+  "o_que_faz": "Gera imagem pelo GEMINI (aba logada do Chrome do Braniac) e salva o arquivo (Dono autorizou em 02/10 e pediu a arte do canal em 08/10).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "ia_web",
+  "linhas": 287,
+  "o_que_faz": "IAs de nuvem pelas abas logadas do Chrome do agente (porta 9222), uma por site: ChatGPT, Gemini, Grok, DeepSeek.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "ibge_cidades",
+  "linhas": 112,
+  "o_que_faz": "Lista oficial de municipios do IBGE, por estado, na ordem do Dono (16/11/2026).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "imagem",
+  "linhas": 224,
+  "o_que_faz": "Imagens do Braniac: LER (descrever/transcrever o que ha na foto) e CRIAR (gerar/editar), como a voz faz com audio.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "jarvis",
+  "linhas": 1726,
+  "o_que_faz": "Cerebro unico do Jarvis: Telegram (texto e voz) e interface web passam todos por aqui.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "latencia",
+  "linhas": 98,
+  "o_que_faz": "Latencia por provedor de IA: cada chamada vira uma linha (provedor, ms, ok) em data/latencia.jsonl. NUNCA grava o texto da pergunta.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "leads_maps",
+  "linhas": 68,
+  "o_que_faz": "LEADS DO GOOGLE MAPS (12/11/2026, pedido do Dono): lista de empresas (nome, telefone, site, categoria, endereco, nota) de um tipo de negocio numa cidade, pelo kit",
+  "estado": "portado"
+ },
+ {
+  "modulo": "legado/importar_gpt",
+  "linhas": 38,
+  "o_que_faz": "Pega na aba do ChatGPT (projeto 'Reunioes das IAs') a entrevista que o Dono respondeu la e grava no banco LOCAL do legado.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "leis",
+  "linhas": 114,
+  "o_que_faz": "Consulta de LEIS (repositorio github.com/danalec/legalize-br: 198 mil leis, decretos e MPs de 1988-2026, 1 arquivo .md por norma, de graca e local).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "ligar_tudo",
+  "linhas": 85,
+  "o_que_faz": "Liga TUDO do Braniac de uma vez (botao da Area de Trabalho): Chrome do Braniac (porta 9222) com WhatsApp, ChatGPT, Gemini, Grok e DeepSeek,",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "limpeza",
+  "linhas": 136,
+  "o_que_faz": "Limpeza de disco assistida (Dono, 07/10/2026). SO ANALISA e, quando mandado, move DUPLICADOS EXATOS para a Lixeira (reversivel).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/arquivos",
+  "linhas": 117,
+  "o_que_faz": "Transferencia de arquivos em blocos, com retomada e verificacao (SPEC.md secao 5). Quadro binario: fid(8) | indice(4) | hash16 do bloco | dados.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/avisos",
+  "linhas": 61,
+  "o_que_faz": "CAIXA DE AVISOS na fila HTTPS (13/11/2026): tudo o que o Braniac diz ao par fica aqui, inteiro e numerado, e o par le com GET /avisos?desde=N.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/concluidos",
+  "linhas": 111,
+  "o_que_faz": "Vídeos do Cliente já CONCLUÍDOS: publicados no site exemplo.com.br (Dono, 16/11/2026).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/conferir",
+  "linhas": 58,
+  "o_que_faz": "Conferencia visual contra o GABARITO do Cliente: monta uma folha lado a lado (Cliente | nosso) nos mesmos 10 pontos do video",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/conferir_capitais",
+  "linhas": 203,
+  "o_que_faz": "Conferência periódica da esteira das capitais (Dono, 15/11/2026: \"verificação periódica se as informações estão sendo usadas direitinho e",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/confianca",
+  "linhas": 159,
+  "o_que_faz": "Convites, pares conhecidos e permissoes (SPEC.md secoes 3 e 7). Nada e confiavel por padrao: par novo fica 'pendente' ate o dono",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/docs_cap/ac",
+  "linhas": 117,
+  "o_que_faz": "977 Rio Branco (TCE-AC): o leitor (tribunais/ac.py) leu os painéis Qlik do TCE-AC pelo Chrome e não guardou nada do tribunal.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/am",
+  "linhas": 143,
+  "o_que_faz": "995 Manaus (TCE-AM, e-Contas, API de Dados Abertos: econtasapi.tce.am.gov.br).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/ce",
+  "linhas": 50,
+  "o_que_faz": "997 Fortaleza (TCE-CE): SIM pela API de Dados Abertos (JSON) -> balancete de despesa, de receita e orçamento de cada ano em .txt",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/cod_texto",
+  "linhas": 68,
+  "o_que_faz": "Contorno para capitais cujo código de ação não é só números com ponto (GO: órgão.unidade.função.subfunção em texto; MS: ...'.CAM'),",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/es",
+  "linhas": 82,
+  "o_que_faz": "976 Vitória (TCE-ES): dados abertos do CidadES (PCM) que o leitor guardou em JSON (só as linhas do município) -> um .txt por ano e tipo.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/go",
+  "linhas": 58,
+  "o_que_faz": "992 Cidade (TCM-GO): consultas do Portal do Cidadão (Power BI do tribunal, gravadas em tcm-go/*.json pelo leitor) -> um .txt por ano e tipo.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/mg",
+  "linhas": 62,
+  "o_que_faz": "996 Belo Horizonte (TCE-MG): SICOM dos Dados Abertos (zip com CSV \";\") -> despesa.csv e receita.csv de cada ano em .txt.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/ms",
+  "linhas": 128,
+  "o_que_faz": "987 Campo Grande (TCE-MS): consultas aos painéis Qlik do tribunal (gravadas em tce-ms/*.json pelo leitor) -> .txt por ano e tipo.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/mt",
+  "linhas": 54,
+  "o_que_faz": "983 Cuiabá (TCE-MT): consultas ao Radar de Controle Público (painel Qlik) que o radar_mt guardou em radar/*.json -> um .txt por ano e tipo.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/pb",
+  "linhas": 102,
+  "o_que_faz": "985 João Pessoa (TCE-PB): SAGRES Dados Abertos (zips com CSV) + SAGRES Online (JSON da API pública: despesas autorizadas = orçado por",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/pe",
+  "linhas": 191,
+  "o_que_faz": "993 Recife (TCE-PE).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/pi",
+  "linhas": 122,
+  "o_que_faz": "986 Teresina (TCE-PI): os PDFs da Documentação Web usados pelo leitor (LOA, Anexo 6 do Balanço Geral, Relação das notas de empenhos)",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/pr",
+  "linhas": 110,
+  "o_que_faz": "994 Curitiba (TCE-PR, PIT, Download de Dados do SIM-AM).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/rj",
+  "linhas": 53,
+  "o_que_faz": "998 Rio de Janeiro (TCM-RJ): Radar Carioca (Power BI público do tribunal, consulta querydata) -> Despesas e Receitas de cada ano em .txt",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/rs",
+  "linhas": 48,
+  "o_que_faz": "991 Porto Alegre (TCE-RS): balancetes do SIAPC (um CSV por órgão, Dados Abertos) -> um .txt por ano e tipo, com o arquivo do órgão na 1a coluna.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/sc",
+  "linhas": 77,
+  "o_que_faz": "981 Florianópolis (TCE-SC): consultas aos painéis do Farol (e-Sfinge) que o leitor guardou em JSON -> um .txt por ano e tipo.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_cap/to",
+  "linhas": 54,
+  "o_que_faz": "975 Palmas (TCE-TO): planilhas do SICAP (HTML com extensão .xls) -> um .txt por ano e tipo, com a unidade gestora na 1a coluna.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/docs_capitais",
+  "linhas": 398,
+  "o_que_faz": "Documentos do tribunal de contas ao lado dos números das capitais (pedido do Cliente pelo Parceiro, 16/11/2026).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/etcm",
+  "linhas": 242,
+  "o_que_faz": "",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/fila",
+  "linhas": 331,
+  "o_que_faz": "FILA de pedidos do BRANIAC LINK (SPEC.md secao 12): servidor HTTP pequeno por onde um par confirmado entrega arquivos (audio, roteiro) e pega o resultado (mp4).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/fila_cliente",
+  "linhas": 209,
+  "o_que_faz": "Cliente da FILA do BRANIAC LINK (SPEC.md secao 12): entrega arquivos e pega o resultado. Usa a MESMA identidade (Ed25519) ja confirmada no par:",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/fonte_siconfi",
+  "linhas": 249,
+  "o_que_faz": "Vídeo de prefeitura de QUALQUER estado (esteira das capitais, 15/11/2026): números do RREO que a própria prefeitura entrega a cada",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/identidade",
+  "linhas": 62,
+  "o_que_faz": "Identidade criptografica do dispositivo: par Ed25519 gerado uma vez. id = 'bl1-' + 20 hex do SHA-256 da chave publica.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/integracao",
+  "linhas": 630,
+  "o_que_faz": "Liga o BRANIAC LINK ao Braniac (unico arquivo da pasta que importa o resto). Local-first: nada sobe para IA online alem do que o par pediu e o dono liberou.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/lote_magno",
+  "linhas": 544,
+  "o_que_faz": "Lupa: agente dos videos do Cliente (orcamento de prefeituras, TCM-BA). Guarda o andamento de cada cidade e as PENDENCIAS (prefeitura que nao",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/municipios",
+  "linhas": 182,
+  "o_que_faz": "Situacao das cidades da Bahia nos videos do Cliente, para o Braniac e o Xandao conversarem na mesma lingua.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/no",
+  "linhas": 554,
+  "o_que_faz": "No do BRANIAC LINK: sinalizacao + conexao WebRTC (aiortc) + dispatcher do protocolo (SPEC.md secoes 2 a 6).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/pdfs_tcm",
+  "linhas": 134,
+  "o_que_faz": "PDFs do tribunal de contas de cada cidade (Dono, 15/11/2026): vão junto do vídeo. Ficam em <pasta de entrega>/pdfs-tcm/ (a mesma pasta",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/predio",
+  "linhas": 183,
+  "o_que_faz": "Predio por predio entre o Braniac e o Xandao (Cliente), pela FILA do Link (pedidos assinados), nos dois sentidos (14/11/2026).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/preparar_magno",
+  "linhas": 458,
+  "o_que_faz": "",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/processo",
+  "linhas": 212,
+  "o_que_faz": "BANCO DO PROCESSO dos videos do Cliente (PROMPT-AUTOMACAO do Xandao, 13/11/2026): etapas, regras, pedidos, execucoes e aprovacoes num SQLite,",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/producao",
+  "linhas": 247,
+  "o_que_faz": "FILA DE PRODUCAO do BRANIAC LINK (pedido \"producao_completa\" do Xandao): o Braniac pesquisa, escreve, narra e renderiza sozinho.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/protocolo",
+  "linhas": 73,
+  "o_que_faz": "Envelope do BRANIAC LINK (ver SPEC.md): JSON assinado pelo dispositivo. Tudo que chega e dado nao confiavel: validar() antes de qualquer uso.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/puxar",
+  "linhas": 84,
+  "o_que_faz": "O Braniac PEDE ao Xandao o proximo video quando esta livre (pull; conselho de IAs, 13/11/2026: mensagem estruturada + trava local).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/radar_mt",
+  "linhas": 249,
+  "o_que_faz": "Vídeo de prefeitura de MATO GROSSO (15/11/2026): os números vêm do Radar de Controle Público do TCE-MT (guia de MT:",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/render_estudio",
+  "linhas": 250,
+  "o_que_faz": "Processador da fila do LINK no Braniac: pedido de um par (audio da voz + roteiro de cenas) -> video vertical renderizado pelo NOSSO Estudio 3D.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/render_magno",
+  "linhas": 285,
+  "o_que_faz": "Pedido do Xandao no formato do PACOTE do Cliente (Solrac Estudio, 13/11/2026): chega UM zip por cidade (video-NNN.zip, o que o",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/ac",
+  "linhas": 172,
+  "o_que_faz": "MOLDE DO ACRE (15/11/2026), Rio Branco. PENDENTE: 2026 ainda não entregue por todos os órgãos ao TCE-AC.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/al",
+  "linhas": 73,
+  "o_que_faz": "MOLDE DE ALAGOAS (15/11/2026) — PENDENTE: o TCE-AL não publica em base aberta a despesa por ação nem a receita por origem do município.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/am",
+  "linhas": 218,
+  "o_que_faz": "MOLDE DO AMAZONAS (15/11/2026). O guia do AM manda: tceam.tc.br, menu Cidadão > Consultas > \"Consulta às receitas e despesas públicas\"",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/ap",
+  "linhas": 74,
+  "o_que_faz": "MOLDE DO AMAPÁ (15/11/2026), Macapá. PENDENTE: o TCE-AP não publica a despesa do MUNICÍPIO INTEIRO por ação.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/base",
+  "linhas": 305,
+  "o_que_faz": "Parte comum de todos os moldes: recebe o que o molde do estado LEU NO TRIBUNAL (ações com orçado/empenhado/liquidado e receita por",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/tribunais/ce",
+  "linhas": 152,
+  "o_que_faz": "MOLDE DO CEARÁ (15/11/2026). O guia do CE manda o TCE-CE (que fiscaliza todos os 184 municípios, capital inclusive): Portal de",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/es",
+  "linhas": 158,
+  "o_que_faz": "MOLDE DO ESPÍRITO SANTO (15/11/2026). O guia do ES manda o TCE-ES (fiscaliza os 78 municípios, capital inclusive): CidadES, Controle",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/go",
+  "linhas": 212,
+  "o_que_faz": "MOLDE DE GOIÁS (15/11/2026). O guia de GO manda ao TCM-GO (Tribunal de Contas dos Municípios), Portal do Cidadão",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/ma",
+  "linhas": 272,
+  "o_que_faz": "MOLDE DO MARANHÃO (15/11/2026). O guia do MA manda ao TCE-MA (fiscaliza prefeituras e câmaras, capital inclusive): aplicativo TCE+ >",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/mg",
+  "linhas": 194,
+  "o_que_faz": "MOLDE DE MINAS GERAIS (15/11/2026). O guia de MG manda o TCE-MG (\"Fiscalizando com o TCE\" e \"Panorama Municipal — Despesas\"),",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/ms",
+  "linhas": 288,
+  "o_que_faz": "MOLDE DE MATO GROSSO DO SUL (15/11/2026). O guia do MS manda o TCE-MS (Espaço Cidadão e aplicativo TCE-MS/DGP), mas não diz onde",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/pa",
+  "linhas": 64,
+  "o_que_faz": "MOLDE DO PARÁ (15/11/2026) — PENDENTE: o TCM-PA não publica a execução orçamentária completa dos municípios.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/pb",
+  "linhas": 208,
+  "o_que_faz": "MOLDE DA PARAÍBA (15/11/2026). O guia da PB manda o TCE-PB (que fiscaliza todos os municípios, capital inclusive) e o SAGRES",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/pe",
+  "linhas": 346,
+  "o_que_faz": "MOLDE DE PERNAMBUCO (15/11/2026). O guia de PE manda: TCE-PE, \"Tome Conta\" (escolher o município e o órgão; receita e despesas).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/pi",
+  "linhas": 353,
+  "o_que_faz": "MOLDE DO PIAUÍ (15/11/2026). O guia do PI manda: tcepi.tc.br > Portal da Cidadania > escolher o município > Despesas/Receitas.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/pr",
+  "linhas": 124,
+  "o_que_faz": "MOLDE DO PARANÁ (15/11/2026). O guia do PR manda ao TCE-PR, Portal Informação para Todos (PIT, pit.tce.pr.gov.br), painel",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/rj",
+  "linhas": 162,
+  "o_que_faz": "MOLDE DO RIO DE JANEIRO, CAPITAL (15/11/2026). O guia do RJ diz: a capital é fiscalizada pelo TCM-RJ (TCMRio), não pelo TCE-RJ; no",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/rn",
+  "linhas": 187,
+  "o_que_faz": "MOLDE DO RIO GRANDE DO NORTE (15/11/2026). O guia do RN manda o TCE-RN (todos os municípios, capital inclusive): Observatório >",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/ro",
+  "linhas": 75,
+  "o_que_faz": "MOLDE DE RONDÔNIA (15/11/2026), Porto Velho. O guia do RO manda o TCE-RO, sistema \"Tô no Controle\" (os 52 municípios: Gestão,",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/rr",
+  "linhas": 57,
+  "o_que_faz": "MOLDE DE RORAIMA (15/11/2026), Boa Vista. PENDENTE: o TCE-RR não publica 2026 nem a despesa por ação com orçado e liquidado.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/rs",
+  "linhas": 128,
+  "o_que_faz": "MOLDE DO RIO GRANDE DO SUL (15/11/2026). O guia do RS manda ao TCE-RS, Portal de Dados Abertos (dados.tce.rs.gov.br, CKAN):",
+  "estado": "portado"
+ },
+ {
+  "modulo": "link/tribunais/sc",
+  "linhas": 223,
+  "o_que_faz": "MOLDE DE SANTA CATARINA (15/11/2026). O guia de SC manda ao TCE-SC: Portal do Cidadão (consulta pública ao e-Sfinge) e Farol TCE/SC.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/se",
+  "linhas": 109,
+  "o_que_faz": "MOLDE DE SERGIPE (15/11/2026) — PENDENTE: o TCE-SE não publica, em base aberta, a despesa por AÇÃO, o orçado por ação nem a receita de 2026.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/sp",
+  "linhas": 93,
+  "o_que_faz": "MOLDE DE SÃO PAULO (15/11/2026). O guia de SP diz: a capital é fiscalizada pelo TCM-SP (não pelo TCE-SP) e os dados ficam no IRIS",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "link/tribunais/to",
+  "linhas": 171,
+  "o_que_faz": "MOLDE DO TOCANTINS (15/11/2026), Palmas. O guia do TO manda o TCE-TO, Portal do Cidadão > Informações dos Municípios (a partir de 2013)",
+  "estado": "portado"
+ },
+ {
+  "modulo": "manutencao",
+  "linhas": 177,
+  "o_que_faz": "AUTO-ATUALIZACAO SEGURA do Braniac (pedido do Dono, 08/10/2026): toda madrugada (03h) o Braniac se confere sozinho.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "mcp_servidor",
+  "linhas": 63,
+  "o_que_faz": "PILOTO OpenClaw (27/10/2026): servidor MCP LOCAL (stdio) pelo qual o OpenClaw consulta os agentes do Braniac.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "memoria",
+  "linhas": 272,
+  "o_que_faz": "Memoria local do Braniac (SQLite): guarda TUDO o que importa das conversas para nao se perder e para NAO precisar",
+  "estado": "portado"
+ },
+ {
+  "modulo": "modulos",
+  "linhas": 76,
+  "o_que_faz": "Modulos do Braniac: a base sempre liga; cada andar/rotina opcional so roda se a pessoa escolheu.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "monitor_dono",
+  "linhas": 123,
+  "o_que_faz": "Monitor das conversas do Dono (13/11/2026): o Jarvis acompanha a lista do WhatsApp e, por padrao, FICA QUIETO.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "monza",
+  "linhas": 99,
+  "o_que_faz": "Agente MONZA (29/10/2026): corridas de carro pelo WhatsApp. Quem pede corrida recebe perguntas (onde esta / pra onde vai), a rota e a distancia saem do",
+  "estado": "portado"
+ },
+ {
+  "modulo": "mostrar",
+  "linhas": 161,
+  "o_que_faz": "\"ME MOSTRA\" POR VOZ (15/11/2026, pedido do Dono): perguntas de situacao ('como ta o NexoDev?', 'como ta a esteira?') abrem a tela certa",
+  "estado": "portado"
+ },
+ {
+  "modulo": "mudo",
+  "linhas": 101,
+  "o_que_faz": "MUDO do Jarvis (pedido do Dono, 08/10/2026): quando ele estiver falando demais.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "orbe",
+  "linhas": 225,
+  "o_que_faz": "Orbe mini do Jarvis: janelinha sem borda, TRANSPARENTE, sempre por cima, do tamanho do icone de rede da bandeja (+4 px), que voce arrasta pela tela.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "organiza_claude",
+  "linhas": 138,
+  "o_que_faz": "Organiza a barra lateral do app do Claude SEM IA (pedido do Dono, 16/11/2026: zero token).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "organizador",
+  "linhas": 81,
+  "o_que_faz": "Organiza a pasta Downloads do Dono (30/10/2026). So MOVE para subpastas por tipo; nunca apaga, nunca abre/executa, nunca toca em pasta existente.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "organizar_sessoes",
+  "linhas": 46,
+  "o_que_faz": "Organiza as conversas da aba Sessoes do B.R.A.N.I.A.C 1 (b2.py) por assunto, igual a skill organizar-conversas do Claude.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "painel",
+  "linhas": 96,
+  "o_que_faz": "Painel da interface (08/10/2026, ideias do conselho de IAs): BOTAO DE PANICO, status dos bracos e historico de acoes.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "painel_claw",
+  "linhas": 68,
+  "o_que_faz": "PAINEL (27/10/2026): dados agregados para a interface nova `/painel` (layout inspirado no Control UI do OpenClaw, MIT). So LEITURA e so dados locais ja existentes:",
+  "estado": "portado"
+ },
+ {
+  "modulo": "painel_rede",
+  "linhas": 159,
+  "o_que_faz": "Painel da esteira do Cliente na rede local (celular, tablet), SO leitura.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "par_webrtc",
+  "linhas": 426,
+  "o_que_faz": "PAR WEBRTC (29/10/2026): dois Braniacs conversam a distancia, DIRETO (WebRTC), sem VPN, sem IP fixo e sem humano no meio -- o mesmo jeito do celular (remoto.py).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "pc",
+  "linhas": 66,
+  "o_que_faz": "Jarvis mexe no PC do Dono (24/10/2026, pedido dele para o B.R.A.N.I.A.C 2): abrir paginas, pastas e documentos, procurar e listar arquivos.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "pendencias",
+  "linhas": 87,
+  "o_que_faz": "Painel de pendências e erros: o que espera o OK do Dono e o que está quebrado, num lugar só. Só LÊ dados que já existem (sem IA).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "personalidade",
+  "linhas": 134,
+  "o_que_faz": "PERSONALIDADE DO JARVIS (04/11/2026): botoes de 0 a 10 (empatia, humor, formalidade, objetividade, franqueza, proatividade) que o Dono ajusta",
+  "estado": "portado"
+ },
+ {
+  "modulo": "pesquisa",
+  "linhas": 172,
+  "o_que_faz": "PESQUISA NA WEB e leitura das abas do Chrome do Braniac (porta 9222), de forma autonoma (pedido do Dono, 08/10/2026).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "pessoal",
+  "linhas": 19,
+  "o_que_faz": "Dados pessoais do dono (nome completo, numeros, e-mail, meta de conta, dossie): ficam SO em data/pessoal.json (fora do Git).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "porta_lan",
+  "linhas": 185,
+  "o_que_faz": "PORTA LAN TEMPORARIA (07/11/2026): uma porta (8766) so na rede local para o Claude do Mac mandar ARQUIVOS ao PC.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "porta_lan_cliente",
+  "linhas": 85,
+  "o_que_faz": "Cliente da porta LAN do Braniac (roda no Mac; so biblioteca padrao do Python 3).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "portal",
+  "linhas": 346,
+  "o_que_faz": "PORTAL REMOTO (16/11/2026): porta de entrada web para usar o Braniac de qualquer lugar, com o PC como servidor.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "power",
+  "linhas": 160,
+  "o_que_faz": "Interruptor do Braniac: liga/desliga manual e modo jogo automatico.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "profundo",
+  "linhas": 98,
+  "o_que_faz": "MODO PROFUNDO (24/10/2026, pedido do Dono: 'funcionar alem de pergunta e resposta... pode demorar, desde que de a melhor resposta/acao'):",
+  "estado": "portado"
+ },
+ {
+  "modulo": "projeto_consulta",
+  "linhas": 143,
+  "o_que_faz": "PROJETO SEM REGISTRO (04/11/2026, pedido do Dono): quando ele fala de um projeto e o Jarvis nao acha nada parecido no banco, nem",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "providers",
+  "linhas": 148,
+  "o_que_faz": "Chamadas aos provedores. Cada uma devolve texto ou levanta ProviderError(cooldown).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "qualidade",
+  "linhas": 28,
+  "o_que_faz": "Mede quantas respostas do Jarvis o Dono corrigiu (28/10/2026). Local, sem IA: conta correcoes explicitas ('nao foi isso que perguntei', 'nada a ver', 'errou')",
+  "estado": "portado"
+ },
+ {
+  "modulo": "recado_falado",
+  "linhas": 54,
+  "o_que_faz": "RECADO FALADO (05/11/2026, pedido do Dono): os recados chegavam robóticos (\"📩 Recado de X: «...»\"). Agora o Jarvis conversa em ÁUDIO,",
+  "estado": "portado"
+ },
+ {
+  "modulo": "recados",
+  "linhas": 135,
+  "o_que_faz": "RECADOS PARA O DONO (correcao de 13/10/2026): o Jarvis prometia 'vou passar pro Dono' e o recado nao chegava, ou chegava truncado/trocado por uma",
+  "estado": "portado"
+ },
+ {
+  "modulo": "rede",
+  "linhas": 286,
+  "o_que_faz": "REDE DE BRANIACS: assistentes de pessoas diferentes conversam entre si pela VPN (Radmin), SO com a permissao de cada dono.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "rede_apoio",
+  "linhas": 69,
+  "o_que_faz": "REDE DE APOIO DA ALMA (ALMA 2.0, 16/11/2026). Nao cria canal novo: tudo sai pelo `alma_cuida._mandar` (WhatsApp do Braniac, tetos por pessoa,",
+  "estado": "portado"
+ },
+ {
+  "modulo": "rede_jarvis",
+  "linhas": 143,
+  "o_que_faz": "Rede de Braniacs do Jarvis (17/10/2026): liga rede.py (protocolo, mesmo arquivo da instalacao dos amigos) ao Jarvis.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "remoto",
+  "linhas": 232,
+  "o_que_faz": "ACESSO REMOTO P2P (24/10/2026): o app B.R.A.N.I.A.C do celular conversa com o Braniac deste notebook DIRETO (WebRTC), sem servidor no meio.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "reuniao_matinal",
+  "linhas": 116,
+  "o_que_faz": "REUNIAO DA MANHA (28/10/2026, pedido do Dono): antes do bom dia das 6h os agentes passam ao Jarvis o que tem a reportar; quem nao tem nada, fica calado.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "revisao",
+  "linhas": 101,
+  "o_que_faz": "Revisao das decisoes do atendimento ANTES de agirem (decisao do Dono: nada de 'decisao de merda' sair sem passar pelo Claude).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "revisor_claude",
+  "linhas": 80,
+  "o_que_faz": "Porteiro do Claude (decisao do Dono, 08/11/2026): NENHUMA resposta do Jarvis ao Dono no WhatsApp sai sem o Claude aprovar.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "rotina",
+  "linhas": 503,
+  "o_que_faz": "Rotinas diarias do Jarvis (pedido do Dono, 07/10/2026), todas LOCAIS e sem IA online:",
+  "estado": "portado"
+ },
+ {
+  "modulo": "router",
+  "linhas": 520,
+  "o_que_faz": "Roteador: online gratis -> Ollama local -> Claude (so em ultimo caso).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "sala",
+  "linhas": 268,
+  "o_que_faz": "SALA DE CONVERSA do Jarvis com a A.L.M.A. (agente nova, decisao do conselho de IAs em 10/10/2026) + o Dono assistindo/participando.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "sauraki",
+  "linhas": 358,
+  "o_que_faz": "SAURAKI (Sistema Autonomo Unificado de Raciocinio, Aprendizado, Conhecimento e Inteligencia) - camada VISUAL do Braniac: escritorio virtual 2D.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "segredos",
+  "linhas": 89,
+  "o_que_faz": "CHAVES CRIPTOGRAFADAS NO braniac/.env (pedido do Dono, 14/10/2026).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "seguranca",
+  "linhas": 144,
+  "o_que_faz": "Checagem de seguranca do PC e da rede do Dono (30/10/2026). SO LE: nao muda firewall, contas, registro nem roteador, e nao tenta senha de nada.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "sentinela",
+  "linhas": 155,
+  "o_que_faz": "Vigia de voz: fica de pe desde que o Windows liga e escuta SO a frase 'Jarvis, ta acordado?' enquanto o Braniac esta FECHADO.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "server",
+  "linhas": 749,
+  "o_que_faz": "Interface web do Jarvis (so em 127.0.0.1) + API. Sem dependencias externas.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "skills/backtest-expert/scripts/evaluate_backtest",
+  "linhas": 676,
+  "o_que_faz": "Evaluate backtest quality using a 5-dimension scoring framework.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/breakdown/build",
+  "linhas": 35,
+  "o_que_faz": "/breakdown: spec.json -> a 3D phone that comes apart layer by layer, every part labelled (1080x1920, 4.2 s).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/drawdown-circuit-breaker/scripts/_market_calendar",
+  "linhas": 303,
+  "o_que_faz": "Shared exchange-calendar and timezone contract for cash-equity skills.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/drawdown-circuit-breaker/scripts/check_circuit_breaker",
+  "linhas": 852,
+  "o_que_faz": "Drawdown Circuit Breaker - account-level risk gate for new trade risk.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/graph/build",
+  "linhas": 26,
+  "o_que_faz": "/graph: spec.json -> a smooth line graph that draws itself while one number counts up (1080x1920, 4 s).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/ig-caption/caption",
+  "linhas": 215,
+  "o_que_faz": "caption.py - lint an Instagram caption and show exactly what the feed shows",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/ig-human/detect",
+  "linhas": 236,
+  "o_que_faz": "detect.py - a five-check panel that scores how machine-written a draft looks.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/ig-human/humanize",
+  "linhas": 284,
+  "o_que_faz": "humanize.py - strip the machine fingerprint out of a draft.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/ig-reel/beats",
+  "linhas": 216,
+  "o_que_faz": "beats.py - turn a Reel script into a timed beat sheet before you record it.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/ig-reel/hookscore",
+  "linhas": 314,
+  "o_que_faz": "hookscore.py - score the first line of a Reel on the five things strong hooks",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/ig-viral/swipe",
+  "linhas": 207,
+  "o_que_faz": "swipe.py - rank reels you collected by how far they beat their own account,",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/calculators/concentration_calculator",
+  "linhas": 171,
+  "o_que_faz": "Component 1: Market Concentration (Weight: 25%)",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/calculators/credit_conditions_calculator",
+  "linhas": 125,
+  "o_que_faz": "Component 3: Credit Conditions (Weight: 15%)",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/calculators/equity_bond_calculator",
+  "linhas": 199,
+  "o_que_faz": "Component 5: Equity-Bond Relationship (Weight: 15%)",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/calculators/sector_rotation_calculator",
+  "linhas": 124,
+  "o_que_faz": "Component 6: Sector Rotation (Weight: 10%)",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/calculators/size_factor_calculator",
+  "linhas": 132,
+  "o_que_faz": "Component 4: Size Factor (Weight: 15%)",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/calculators/utils",
+  "linhas": 364,
+  "o_que_faz": "Shared utility functions for macro regime calculators.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/calculators/yield_curve_calculator",
+  "linhas": 301,
+  "o_que_faz": "Component 2: Yield Curve (Weight: 20%)",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/fmp_client",
+  "linhas": 435,
+  "o_que_faz": "FMP API Client for Macro Regime Detector",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/macro_regime_detector",
+  "linhas": 345,
+  "o_que_faz": "Macro Regime Detector - Main Orchestrator",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/report_generator",
+  "linhas": 495,
+  "o_que_faz": "Macro Regime Detector - Report Generator",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/macro-regime-detector/scripts/scorer",
+  "linhas": 608,
+  "o_que_faz": "Macro Regime Detector - Composite Scoring & Regime Classification",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/map-route/build",
+  "linhas": 31,
+  "o_que_faz": "/map-route: spec.json -> a white 3D city where the route draws itself, the pin drops and the camera pulls back (1080x1920, 4 s).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/market-environment-analysis/scripts/_market_calendar",
+  "linhas": 303,
+  "o_que_faz": "Shared exchange-calendar and timezone contract for cash-equity skills.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/market-environment-analysis/scripts/market_utils",
+  "linhas": 208,
+  "o_que_faz": "Market Analysis Utility Functions for Environment Report",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/minimalistic-graphics/build",
+  "linhas": 35,
+  "o_que_faz": "/minimalistic-graphics: spec.json -> black-and-white line art, a dot hops up the steps and lands the line (1080x1920).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/portfolio-manager/scripts/check_alpaca_connection",
+  "linhas": 340,
+  "o_que_faz": "Test script for Alpaca API connection.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/portfolio-manager/scripts/reconcile_positions",
+  "linhas": 250,
+  "o_que_faz": "Compare complete, manually normalized equity snapshots without external access.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/portfolio-manager/scripts/review_csv",
+  "linhas": 206,
+  "o_que_faz": "Produce a limited, offline equity-holdings allocation report from CSV.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/position-sizer/scripts/position_sizer",
+  "linhas": 546,
+  "o_que_faz": "Position sizer for long stock trades.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/pre-trade-discipline-gate/scripts/check_pre_trade_discipline",
+  "linhas": 719,
+  "o_que_faz": "Pre-Trade Discipline Gate - manual execution checklist before placing orders.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/stick-figure/engine/template/audio",
+  "linhas": 237,
+  "o_que_faz": "",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/stick-figure/engine/tools/align",
+  "linhas": 64,
+  "o_que_faz": "",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/stick-figure/engine/tools/tts_elevenlabs",
+  "linhas": 44,
+  "o_que_faz": "Generate the voiceover for the reel in the current folder with the ElevenLabs API.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/stick-figure/engine/tools/tts_kokoro",
+  "linhas": 42,
+  "o_que_faz": "",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/technical-analyst/scripts/check_weekly_price_action",
+  "linhas": 757,
+  "o_que_faz": "Contrarian Confirmation Mode -- Weekly Price Action Checker",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/technical-analyst/scripts/weekly_price_action",
+  "linhas": 634,
+  "o_que_faz": "Pure weekly price-action confirmation module (Jason Shapiro contrarian",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trade-performance-coach/scripts/review_trade_performance",
+  "linhas": 840,
+  "o_que_faz": "Deterministic trade performance coach.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-alerts/alerts",
+  "linhas": 788,
+  "o_que_faz": "Price alerts and the NYSE clock for trader-alerts. Standard library only.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-analyst/facts",
+  "linhas": 549,
+  "o_que_faz": "Earnings reader for trader-analyst. Standard library only.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-broker/ticket",
+  "linhas": 721,
+  "o_que_faz": "Order tickets and the decision log for trader-broker. Standard library only.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-budget/size",
+  "linhas": 882,
+  "o_que_faz": "Position sizing for trader-budget. Standard library only, no network.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-entry/entry",
+  "linhas": 961,
+  "o_que_faz": "Entry Timer for trader-entry: watches a setup bar by bar and says the",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-exit/exit",
+  "linhas": 736,
+  "o_que_faz": "Exit Planner for trader-exit: sets the stop and the target BEFORE you",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-memory-core/scripts/fmp_price_adapter",
+  "linhas": 105,
+  "o_que_faz": "Thin FMP price adapter for MAE/MFE calculation.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-memory-core/scripts/thesis_ingest",
+  "linhas": 655,
+  "o_que_faz": "Trader Memory Core — skill output → thesis conversion (register only).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-memory-core/scripts/thesis_review",
+  "linhas": 555,
+  "o_que_faz": "Trader Memory Core — review, postmortem, and MAE/MFE calculation.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-memory-core/scripts/thesis_store",
+  "linhas": 3495,
+  "o_que_faz": "Trader Memory Core — thesis CRUD and index management.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-memory-core/scripts/trader_memory_cli",
+  "linhas": 133,
+  "o_que_faz": "Stdlib-only launcher for the trader-memory-core CLI scripts.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-news/news",
+  "linhas": 547,
+  "o_que_faz": "News monitor for trader-news. Standard library only.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-pelosi/ptr",
+  "linhas": 567,
+  "o_que_faz": "Congress trade tracker for trader-pelosi. Standard library only.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-risk/check",
+  "linhas": 820,
+  "o_que_faz": "Pre-trade risk check for trader-risk. Standard library only, no network.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-scanner/scan",
+  "linhas": 1084,
+  "o_que_faz": "Chart Scanner for trader-scanner: scan thousands of charts for setups. Standard library only.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/trader-timemachine/timemachine",
+  "linhas": 957,
+  "o_que_faz": "Time Machine for trader-timemachine. Standard library only.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills/zach-d-films/engine/captions",
+  "linhas": 45,
+  "o_que_faz": "Turns word timings into the CAPTIONS list for src/shots.js: 1 to 3 words per caption, broken at punctuation.",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "skills",
+  "linhas": 72,
+  "o_que_faz": "AGENT SKILLS no Braniac (formato aberto agentskills.io, pedido do Dono em 14/10/2026).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "sobrecarga",
+  "linhas": 93,
+  "o_que_faz": "DETECTOR DE SOBRECARGA (ALMA 2.0, 16/11/2026). Indice HEURISTICO de 0 a 100 a partir do resumo de atividade HUMANA (atividade.resumir).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "spotify",
+  "linhas": 389,
+  "o_que_faz": "Spotify no PC do Dono.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "store",
+  "linhas": 79,
+  "o_que_faz": "Historico por conversa, cooldown de provedores e contagem de uso (SQLite).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "taxa_sepique",
+  "linhas": 317,
+  "o_que_faz": "TAXA DO SE PIQUE (30/10/2026): API que confirma a \"ajuda de custo\" de 3% do app de taximetro. O app informa {aparelho, nome, valor}; o COFRE (leitura da",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "tela",
+  "linhas": 228,
+  "o_que_faz": "Jarvis USA O NOTEBOOK do Dono como uma pessoa (24/10/2026): olha a tela, clica, digita e aperta teclas, passo a passo, ate cumprir a tarefa.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "tela_viva",
+  "linhas": 98,
+  "o_que_faz": "TELA VIVA (10/11/2026): mostra no escritorio a aba do Chrome do Braniac (CDP, porta 9222) e repassa clique/tecla do Dono.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "telegram_bot",
+  "linhas": 205,
+  "o_que_faz": "Jarvis no Telegram (texto e voz). So obedece ao dono (TELEGRAM_USER_ID) em conversa PRIVADA.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "telegram_ex",
+  "linhas": 150,
+  "o_que_faz": "TELEGRAM DA MARIANA (05/11/2026, pedido do Dono; NAO vai para o GitHub). A Alma cuida da conversa com a Mariana Damacena Lima (ex-esposa) pelo Telegram Web",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "termico",
+  "linhas": 114,
+  "o_que_faz": "Monitor termico do notebook. Fontes: GPU NVIDIA (nvidia-smi), CPU/RAM (psutil) e, SE estiver aberto, o LibreHardwareMonitor/OpenHardwareMonitor (WMI) para a",
+  "estado": "portado"
+ },
+ {
+  "modulo": "tratamento",
+  "linhas": 55,
+  "o_que_faz": "Tratamento obrigatorio (decisao do Dono): a Parceira Mendes e SEMPRE 'Deusa Parceira'. Nunca 'Parceira', nem 'Parceira' sozinho.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "vagas",
+  "linhas": 77,
+  "o_que_faz": "Agente GARIMPEIRO (26/10/2026): uma vez por dia procura vagas REMOTAS (Remotive, API publica, sem login) com o perfil do Dono (TI, suporte, IA/automacao;",
+  "estado": "portado"
+ },
+ {
+  "modulo": "vaquinha",
+  "linhas": 362,
+  "o_que_faz": "Agente VAQUINHA (27/10/2026): acompanha a conta bancaria da vaquinha do Dono (aba logada no Chrome do Braniac; so LEITURA) e, a cada 5 min, soma os Pix",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "video_analise",
+  "linhas": 109,
+  "o_que_faz": "Analise LOCAL de video, sem IA online e sem gastar token: quadros (ffmpeg) + descricao de cada",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "vigia",
+  "linhas": 426,
+  "o_que_faz": "ATENDIMENTO AUTOMATICO do WhatsApp: o Jarvis olha a lista de conversas o tempo todo e responde sozinho (em audio) a quem",
+  "estado": "portado"
+ },
+ {
+  "modulo": "vm",
+  "linhas": 177,
+  "o_que_faz": "Controle da VM Windows isolada do Braniac (VirtualBox, sem janela).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "voz",
+  "linhas": 720,
+  "o_que_faz": "Voz local do Jarvis: ouvir (faster-whisper) e falar (Piper, voz masculina faber). Tudo no CPU.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "voz_do_carlos",
+  "linhas": 135,
+  "o_que_faz": "VOZ DO DONO (27/10/2026): o bloco da Alma que guarda COMO o Dono fala e entrega isso ao Jarvis como um trecho de prompt (\"guia de voz\").",
+  "estado": "portado"
+ },
+ {
+  "modulo": "vozes_agentes",
+  "linhas": 155,
+  "o_que_faz": "MODULO DE VOZES POR AGENTE (16/11/2026): cada agente do Braniac pode ter a sua propria voz.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "vozes_catalogo",
+  "linhas": 125,
+  "o_que_faz": "16/11: catalogo de vozes para a pagina /vozes: cada MODELO de voz com as VOZES de dentro dele, amostra falada na hora e escolha da voz.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "whatsapp",
+  "linhas": 399,
+  "o_que_faz": "WhatsApp local do Jarvis: SO LEITURA, via Chrome de automacao (porta 9222) e local-ia/wpp_local.py.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "wpp_arquivo",
+  "linhas": 363,
+  "o_que_faz": "Enviar um ARQUIVO (documento) pelo WhatsApp Web, via Chrome de automacao (porta 9222).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "wpp_direto",
+  "linhas": 98,
+  "o_que_faz": "WhatsApp SEM aba do Chrome (27/10/2026): sidecar Node/Baileys em 127.0.0.1:8766 (wpp_baileys/server.js).",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "wpp_doc",
+  "linhas": 149,
+  "o_que_faz": "Documentos recebidos no WhatsApp (17/10/2026): o Jarvis NUNCA mais deixa um arquivo sem resposta nem sem ajuda.",
+  "estado": "portado"
+ },
+ {
+  "modulo": "wpp_img",
+  "linhas": 49,
+  "o_que_faz": "Imagens no WhatsApp Web (Chrome de automacao, porta 9222): LER a foto/print mais recente que a pessoa mandou.",
+  "estado": "em andamento"
+ },
+ {
+  "modulo": "wpp_voz",
+  "linhas": 315,
+  "o_que_faz": "Voz no WhatsApp Web: ENVIAR mensagem de voz e OUVIR audios recebidos (via Chrome de automacao, porta 9222).",
+  "estado": "portado"
+ },
+ {
+  "modulo": "xtts_gera",
+  "linhas": 31,
+  "o_que_faz": "Voz XTTS-v2 (Coqui, local na placa de video). Roda SO no venv proprio data/xtts (torch nao entra no Python do Braniac).",
+  "estado": "fora do escopo"
+ },
+ {
+  "modulo": "zelo",
+  "linhas": 108,
+  "o_que_faz": "ZELO (16/11/2026): agente que conversa com o PAI e a MAE do Dono pelo WhatsApp, sempre via Braniac (nunca script/navegador proprio).",
+  "estado": "portado"
+ }
+]
