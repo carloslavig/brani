@@ -40,9 +40,9 @@ End If
 On Error GoTo 0
 Set env = sh.Environment("Process")
 env("BRANIAC_DADOS") = dados
-env("BRANIAC_ENV") = "%USERPROFILE%\Projetos\Agente\braniac\.env"
-env("BRANIAC_PACOTE") = "C:\Cliente\PACOTE-PRODUCAO-COMPLETA"
-env("BRANIAC_GUIAS") = "C:\Cliente\guias-estados\estados"
+env("BRANIAC_ENV") = "C:\Users\usuario\Projetos\Agente\braniac\.env"
+env("BRANIAC_PACOTE") = "C:\Parceiro\PACOTE-PRODUCAO-COMPLETA"
+env("BRANIAC_GUIAS") = "C:\Parceiro\guias-estados\estados"
 env("RUST_BACKTRACE") = "1"
 cmd = "cmd /c " & exe & " >> " & log & " 2>&1"  ' caminhos sem espaco: sem aspas aninhadas (com elas o cmd nao subia o exe)
 
@@ -58,4 +58,6 @@ If seco Then
 End If
 
 If ja Then WScript.Quit 0
+' /logon (so o atalho da pasta Inicializar passa): o Jarvis fala a saudacao de boot; a hora do arquivo e o que vale (reiniciar so o servidor nao toca nele)
+If WScript.Arguments.Named.Exists("logon") Then fso.CreateTextFile(dados & "\logon.flag", True).Close
 sh.Run cmd, 0, False

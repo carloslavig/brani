@@ -23,6 +23,11 @@ pub static VOZ: LazyLock<Mutex<(Escuta, Sessao)>> = LazyLock::new(Default::defau
 /// Trabalhos de fundo em andamento (um de cada por vez).
 static FUNDO: Mutex<Vec<&'static str>> = Mutex::new(Vec::new());
 
+/// Tem trabalho longo de fundo em curso (usado pelo estado "parando" do interruptor do servidor).
+pub fn fundo_em_curso() -> bool {
+    !crate::travar(&FUNDO).is_empty()
+}
+
 const SO_O_DONO: &str = "desligado: só o dono liga";
 const LOGIN: &str = "precisa do seu login";
 const APARELHO: &str = "precisa de aparelho (microfone, janela, render)";
@@ -51,8 +56,8 @@ const NAO_LIGADOS: [(&str, &str, &str); 43] = [
     (APARELHO, "tela", "falta olhar e controlar a tela do computador (mouse e teclado)"),
     (APARELHO, "tela_viva", "falta o navegador do Braniac aberto para mostrar a aba ao vivo"),
     (APARELHO, "link_render_estudio", "falta o estúdio de vídeo (render): a ponte do Link recusa pedido de render com \"ainda não disponível\""),
-    (APARELHO, "link_render_magno", "falta o pacote de vídeos instalado e o render (um render por vez no computador)"),
-    (APARELHO, "link_preparar_magno", "falta rodar o ffmpeg, a transcrição e a voz da narração"),
+    (APARELHO, "link_render_parceiro", "falta o pacote de vídeos instalado e o render (um render por vez no computador)"),
+    (APARELHO, "link_preparar_parceiro", "falta rodar o ffmpeg, a transcrição e a voz da narração"),
     (APARELHO, "link_conferir", "falta tirar os quadros do vídeo (ffmpeg) e alguém conferir a folha"),
     (APARELHO, "artes_loja", "falta o desenho das artes e o ffmpeg do reel"),
     (EXPOE, "rede", "conversaria com outros Braniacs pela rede"),
@@ -139,7 +144,7 @@ fn com_voz<R>(dados: &Path, agora: &Agora, ts: f64, jarvis_acordado: bool, fora:
         }
     };
     // sem microfone nativo nao ha como saber se outro programa esta em chamada; sem time de programacao ligado, nao abre ticket
-    f(&Voz { alma: &alma, relogio: ts, dizer: &dizer, jarvis_em_conversa: jarvis_acordado, em_chamada: false, abrir_orbe: &|| {}, retrato: fora.retrato, abrir_ticket: None, semente: ts as i64 })
+    f(&Voz { alma: &alma, relogio: ts, dizer: &dizer, jarvis_em_conversa: jarvis_acordado, em_chamada: false, abrir_orbe: &|| crate::janela::mostrar(dados, crate::janela::alma(crate::PORTA)), retrato: fora.retrato, abrir_ticket: None, semente: ts as i64 })
 }
 
 /// O que a tela /escuta le.
@@ -166,7 +171,8 @@ fn frase(dados: &Path, par: &mut (Escuta, Sessao), texto: &str, agora: &Agora, t
             dados, ts, porta: crate::PORTA, apelidos: &[], falar: &falar, responder: fora.responder, alma: &alma,
             sessao: if ativa { Some(&ouvir) } else { None },
             fechar_sessao: &|motivo| ses.borrow_mut().fechar(v, motivo),
-            abrir_janela: &|| {}, minimizar_janela: &|| {},
+            abrir_janela: &|| crate::janela::mostrar(dados, crate::janela::jarvis(crate::PORTA)),
+            minimizar_janela: &|| crate::janela::minimizar(crate::janela::jarvis(crate::PORTA)),
             ler_tela: &|_| Err("não ligado".into()),
             abrir_link: &|u| drop(crate::abrir_no_pc(u)),
             mandar_whatsapp: &|t| drop(saida::registrar(dados, "escuta", &dono, t)),
@@ -226,7 +232,7 @@ fn powershell(script: &str) -> Result<String, String> {
     if !cfg!(windows) {
         return Err("só no Windows".into());
     }
-    let mut c = std::process::Command::new("powershell.exe");
+    let mut c = crate::oculto::cmd("powershell.exe");
     c.args(["-NoProfile", "-NonInteractive", "-Command", &format!("[Console]::OutputEncoding=[Text.Encoding]::UTF8;{script}")]);
     sem_janela(&mut c);
     let o = c.output().map_err(|e| format!("não consegui rodar o PowerShell: {e}"))?;
@@ -396,7 +402,7 @@ fn video_valido(arquivo: &str, dados: &Path) -> Result<PathBuf, String> {
 /// Roda o ffprobe (so le o arquivo). `args` vem do `fornalha_estudio::args_sondar`: o caminho e UM argumento, nunca passa por shell.
 fn ffprobe(args: &[String]) -> Result<String, String> {
     let exe = which("ffprobe").ok_or("não ligado: falta o ffmpeg")?;
-    let mut c = std::process::Command::new(exe);
+    let mut c = crate::oculto::cmd(exe);
     c.args(&args[1..]);
     sem_janela(&mut c);
     // shortcut: sem tempo limite; o ffprobe so le o cabecalho de um arquivo deste PC. Por um prazo se um dia aceitar caminho de rede.

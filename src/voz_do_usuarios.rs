@@ -1,4 +1,4 @@
-//! Voz do dono (braniac/voz_do_carlos.py): estatisticas LOCAIS do jeito como o dono escreve (tamanho das frases, giria, perguntas,
+//! Voz do dono (braniac/voz_do_usuarios.py): estatisticas LOCAIS do jeito como o dono escreve (tamanho das frases, giria, perguntas,
 //! pontuacao, emoji) viram um guia curto anexado ao prompt do Jarvis. No maximo 1x por semana (e com 30+ mensagens) o conselho de IAs
 //! transforma uma descricao ABSTRATA (so numeros e tracos) num guia melhor. Privacidade: nenhuma frase do dono sai do PC; a pergunta
 //! ao conselho e montada so a partir das estatisticas. O conselho entra por closure. O nome do dono vem de configuracao (parametro).
@@ -139,7 +139,7 @@ pub fn refinar(dados: &Path, dono: &str, consultar: &dyn Fn(&str, &str) -> Resul
         return false;
     }
     let _ = std::fs::create_dir_all(pasta(dados));
-    let texto = format!("Guia de voz do {dono} (use ao responder a ele e ao redigir mensagens em nome dele):\n{}", r.chars().take(1500).collect::<String>());
+    let texto = format!("Guia de voz do {dono} (use ao responder a ele e ao redigir mensagens em nome dele):\n{}", crate::tratamento::alma_dono(&r.chars().take(1500).collect::<String>()));
     if std::fs::write(pasta(dados).join("guia_de_voz.md"), texto).is_err() {
         return false;
     }
@@ -174,7 +174,7 @@ mod tests {
 
     #[test]
     fn guia_local_e_refinamento_semanal_pelo_conselho() {
-        let d = std::env::temp_dir().join(format!("braniac-voz_do_carlos-{}", std::process::id()));
+        let d = std::env::temp_dir().join(format!("braniac-voz_do_usuarios-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(d.join("alma")).unwrap();
         assert_eq!(guia(&d, "Davi"), "");
@@ -204,7 +204,7 @@ mod tests {
 
     #[test]
     fn poucas_amostras_nao_vao_ao_conselho() {
-        let d = std::env::temp_dir().join(format!("braniac-voz_do_carlos-b-{}", std::process::id()));
+        let d = std::env::temp_dir().join(format!("braniac-voz_do_usuarios-b-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(d.join("alma")).unwrap();
         std::fs::write(d.join("alma").join("estilo_amostras.jsonl"), json!({ "texto": "oi" }).to_string()).unwrap();

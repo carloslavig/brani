@@ -88,7 +88,7 @@ re!(voz_re, r"(?i)volta\w*\s+(?:a\s+|pro\s+|para\s+o\s+)?(?:mandar\s+)?[áa]udio
 // confirmacoes, links, numeros: tem que ser LIDO
 re!(precisa_texto, r"(?i)/sim|/nao|confirma\?|https?://|www\.|«|\d{6,}");
 re!(encerra, concat!(
-    r"(?i)^(?:(?:ok|okay|okk|certo|certinho|beleza|blz|show|perfeito|entendi|entendido|combinado|fechado|valeu|vlw|obrigad[oa]|obg|tmj|tudo bem|tudo certo|",
+    r"(?i)^(?:(?:ok|okay|okk|certo|cerexemplo|beleza|blz|show|perfeito|entendi|entendido|combinado|fechado|valeu|vlw|obrigad[oa]|obg|tmj|tudo bem|tudo certo|",
     r"t[aá] bom|t[aá] certo|t[aá] [oó]timo|[oó]timo|legal|massa|top|boa|de nada|por nada|imagina|disponha|sim|uhum|isso|",
     r"j[aá] (?:vi|anotei|entendi)|anotado|recebido|bom dia|boa tarde|boa noite)[\s,.!👍🙏😊🙂😄❤️✅]*)+$"));
 re!(elogio_re, r"(?i)\b(?:muito\s+bom|[eé]\s+bom|bom\s+demais|show|top|demais|parab[eé]ns|incr[ií]vel|excelente|[oó]timo|massa|gostei|arrasou|mandou\s+bem|fant[aá]stico|perfeito|nota\s*10|sensacional|genial)\b");

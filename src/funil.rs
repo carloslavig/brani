@@ -113,6 +113,9 @@ pub fn passar(dados: &Path, texto: &str, origem: &str, agora: &Agora, ts: f64) -
         est["enviados"] = Value::Object(env);
         est["contagem"] = json!({ hoje: n + 1 });
         gravar(dados, &est);
+        if critico(texto) {
+            let _ = crate::app_painel::pedir("/"); // precisa do Dono: o aplicativo vem para a frente
+        }
         return "agora";
     }
     let mut fila: Vec<Value> = est["fila"].as_array().cloned().unwrap_or_default();

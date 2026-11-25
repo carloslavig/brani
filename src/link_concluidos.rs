@@ -2,7 +2,7 @@
 //! aquela cidade (preparar, voz, render, envio), a nao ser que uma PESSOA peca para refazer: `pedir_refazer` libera UMA vez so
 //! (`usar_pedido` apaga quando a esteira pega). Daqui nada fala com site nenhum: o texto do sitemap publico chega pela closure
 //! `baixar`, que quem chama decide; marcar "aprovado" no checklist tambem e closure.
-//! Diferenca do Python: a hora da ultima conferencia fica em dados/magno/concluidos_site.ultima (la era memoria do processo),
+//! Diferenca do Python: a hora da ultima conferencia fica em dados/parceiro/concluidos_site.ultima (la era memoria do processo),
 //! para o intervalo de 3 h valer tambem depois de reiniciar.
 #![allow(dead_code)]
 use crate::tempo::Agora;
@@ -15,11 +15,11 @@ pub const INTERVALO: f64 = 3.0 * 3600.0;
 static TRAVA: Mutex<()> = Mutex::new(());
 
 fn arq(dados: &Path) -> PathBuf {
-    dados.join("magno").join("concluidos_site.json")
+    dados.join("parceiro").join("concluidos_site.json")
 }
 
 fn pedidos(dados: &Path) -> PathBuf {
-    dados.join("magno").join("refazer_pedidos.json") // {numero: {quem, quando, nota}}: pedido humano de refazer
+    dados.join("parceiro").join("refazer_pedidos.json") // {numero: {quem, quando, nota}}: pedido humano de refazer
 }
 
 fn ler(arq: &Path) -> Map<String, Value> {
@@ -98,12 +98,12 @@ pub fn publicados(sitemap: &str) -> Vec<(String, String)> {
 /// Marca como concluido todo video novo do site e devolve os numeros novos. No maximo a cada 3 h (ou `forcar`): fora disso
 /// `baixar` nem e chamada. `agora_s`: relogio em segundos (so para o intervalo). `aprovar(numero)`: o checklist passa a dizer aprovado.
 pub fn sincronizar(dados: &Path, baixar: &dyn Fn() -> Result<String, String>, agora: &Agora, agora_s: f64, forcar: bool, aprovar: &dyn Fn(&str)) -> Result<Vec<String>, String> {
-    let marca = dados.join("magno").join("concluidos_site.ultima");
+    let marca = dados.join("parceiro").join("concluidos_site.ultima");
     let ultima = std::fs::read_to_string(&marca).ok().and_then(|t| t.trim().parse::<f64>().ok()).unwrap_or(0.0);
     if !forcar && agora_s - ultima < INTERVALO {
         return Ok(vec![]);
     }
-    std::fs::create_dir_all(dados.join("magno")).map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(dados.join("parceiro")).map_err(|e| e.to_string())?;
     std::fs::write(&marca, agora_s.to_string()).map_err(|e| e.to_string())?;
     let publ = publicados(&baixar()?);
     let mut novos = vec![];

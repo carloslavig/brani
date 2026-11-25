@@ -3,7 +3,7 @@
 <head><script>/* B.R.A.N.I: o servidor exige X-Braniac em todo POST */var _f=window.fetch;window.fetch=function(u,o){if(o&&o.method==="POST")o.headers=Object.assign({"X-Braniac":"1"},o.headers||{});return _f(u,o)};</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Esteira do Cliente</title>
+<title>Esteira do Parceiro</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#16151A">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
-  /* paleta dos próprios vídeos do @exemplo: fundo grafite, texto areia, verde-folha */
+  /* paleta dos próprios vídeos do @parceiro-exemplo: fundo grafite, texto areia, verde-folha */
   :root { --fundo:#16151A; --campo:#1F1E24; --campo2:#2A2930; --tinta:#F0EBE1; --apagado:#A29D95; --verde:#2FA36B; --verde-campo:#173D2B;
           --alerta:#E06A4F; --alerta-campo:#3A211C; --voz:#C9A227; }
   * { box-sizing:border-box; margin:0 }
@@ -105,10 +105,10 @@
 .barra-seq{display:flex;gap:4px}.barra-seq i{flex:1;height:8px;border-radius:2px;background:rgba(240,235,225,.12)}.barra-seq i.on{background:#2FA36B}
 @media (max-width:700px){.linha-seq{grid-template-columns:1fr 1fr}.linha-seq .barra-seq{grid-column:1/-1}}
 </style>
-</head>
+<link rel="stylesheet" href="/tema-antigravity.css"><script src="/tema-antigravity.js"></script></head>
 <body>
 <main>
-  <div class="barra"><div class="marca">Esteira do <b>Cliente</b></div><button id="instalar" class="instalar" hidden>Instalar como app</button></div>
+  <div class="barra"><div class="marca">Esteira do <b>Parceiro</b></div><button id="instalar" class="instalar" hidden>Instalar como app</button></div>
   <p class="dica-app" id="dica-app" hidden></p>
 
   <section class="topo">
@@ -131,7 +131,7 @@
 
   <section class="numeros" id="numeros"></section>
 
-  <section class="seq" id="docs-sec" hidden><h3>Documentos no site do Cliente</h3><p class="detalhe" style="margin:-8px 0 18px">Cada cidade que a gente produziu: os PDFs do TCM (ou do tribunal do estado) já subiram para o site? Salvador, Cidade e São Paulo não têm documento.</p><div class="docs-resumo" id="docs-resumo"></div><div id="docs"></div></section>
+  <section class="seq" id="docs-sec" hidden><h3>Documentos no site do Parceiro</h3><p class="detalhe" style="margin:-8px 0 18px">Cada cidade que a gente produziu: os PDFs do TCM (ou do tribunal do estado) já subiram para o site? Salvador, Barra do Garças e São Paulo não têm documento.</p><div class="docs-resumo" id="docs-resumo"></div><div id="docs"></div></section>
 
   <section class="seq"><h3>Cidades em sequência</h3><p class="detalhe" style="margin:-8px 0 18px">Cada cidade que a esteira já tocou, com os PDFs do TCM baixados e onde ela está.</p><div id="seq"></div></section>
 
@@ -163,7 +163,7 @@ function desenhar(d) {
   document.getElementById("sub").innerHTML = L
     ? `${prontos} de ${meta} prontos neste lote <span>· faltam ${L.faltam}${L.pendencias ? ` · ${L.pendencias} com pendência` : ""}</span>`
     : `${prontos} de ${meta} vídeos prontos <span>· ${e.pendencias_esteira.length} ${e.pendencias_esteira.length === 1 ? "cidade" : "cidades"} aplicando a regra do guia</span>`;
-  const EST = {pronto: "pronto", no_site: "enviado ao site do Cliente", esperando_voz: "pronto para a voz · esperando a voz", esperando_render: "voz pronta · esperando o render", guia: "aplicando a regra do guia", voz: "gravando a voz", render: "renderizando",
+  const EST = {pronto: "pronto", no_site: "enviado ao site do Parceiro", esperando_voz: "pronto para a voz · esperando a voz", esperando_render: "voz pronta · esperando o render", guia: "aplicando a regra do guia", voz: "gravando a voz", render: "renderizando",
     roteiro: "roteiro e cenas", levantamento: "conferindo com o Balanço", baixando_tcm: "baixando do TCM", fila: "na fila"};
   document.getElementById("slots").innerHTML = (e.vagas || e.slots || []).concat(Array(Math.max(0, nq - (e.vagas || e.slots || []).length)).fill({})).slice(0, nq).map((c) =>
     `<div class="slot st-${esc(c.estado || "fila")}" tabindex="0" data-nome="${esc(c.numero ? `${c.numero} ${c.cidade} · ${EST[c.estado] || c.estado}` : "")}" aria-label="${esc(c.cidade || "")}"></div>`).join("");
@@ -188,7 +188,7 @@ function desenhar(d) {
       `<div class="passo ${i < 3 ? "feito" : i === 3 ? "trava" : ""}">${i === 3 ? "Aguardando voz" : nome}</div>`).join("")}</div></div>`).join("")}</div>`;
 
   const ETQ = {baixando_tcm: "baixando do TCM", levantamento: "documentos baixados · conferindo com o Balanço", roteiro: "conferido · roteiro e cenas",
-    esperando_voz: "documentos, Balanço, roteiro e cenas prontos · esperando a voz", esperando_render: "voz pronta · esperando o render", voz: "gravando a voz", render: "RENDERIZANDO AGORA", pronto: "pronto (esperando o lote de 5 para o site)", no_site: "pronto · ENVIADO AO SITE DO MAGNO", guia: "documento faltando · aplicando a regra do guia"};
+    esperando_voz: "documentos, Balanço, roteiro e cenas prontos · esperando a voz", esperando_render: "voz pronta · esperando o render", voz: "gravando a voz", render: "RENDERIZANDO AGORA", pronto: "pronto (esperando o lote de 5 para o site)", no_site: "pronto · ENVIADO AO SITE DO PARCEIRO", guia: "documento faltando · aplicando a regra do guia"};
   const ORD = ["baixando_tcm", "levantamento", "roteiro", "esperando_voz", "voz", "esperando_render", "render", "pronto", "no_site"];
   document.getElementById("seq").innerHTML = (e.cidades_seq || []).map((c) => {
     const k = c.etapa === "guia" ? 1 : ORD.indexOf(c.etapa);
@@ -257,7 +257,7 @@ function desenhar(d) {
 
   const b = e.cidades_bahia;
   if (b) {
-    const partes = [["finalizadas", "no ar ou aprovadas", "var(--verde)"], ["entregues", "esperando o Cliente", "var(--voz)"], ["producao", "em produção", "#5B8DB8"], ["faltam", "faltam", "var(--campo2)"]];
+    const partes = [["finalizadas", "no ar ou aprovadas", "var(--verde)"], ["entregues", "esperando o Parceiro", "var(--voz)"], ["producao", "em produção", "#5B8DB8"], ["faltam", "faltam", "var(--campo2)"]];
     document.getElementById("faixa").innerHTML = partes.map(([k, , cor]) => `<div style="width:${100 * b[k] / b.total}%;background:${cor}" title="${b[k]}"></div>`).join("");
     document.getElementById("faixa-leg").innerHTML = partes.map(([k, nome, cor]) => `<span><i style="background:${cor}"></i>${b[k]} ${nome}</span>`).join("");
   }
@@ -266,7 +266,7 @@ function desenhar(d) {
 }
 
 async function carregar() {
-  try { desenhar(await (await fetch("/api/magno", {cache: "no-store"})).json()); }
+  try { desenhar(await (await fetch("/api/parceiro", {cache: "no-store"})).json()); }
   catch (err) { document.getElementById("hora").textContent = "Braniac fora do ar"; }
 }
 carregar(); setInterval(carregar, 15000);
@@ -281,7 +281,7 @@ carregar(); setInterval(carregar, 15000);
     if (pedido) { pedido.prompt(); await pedido.userChoice; pedido = null; bt.hidden = true; return; }
     dica.textContent = /iphone|ipad|ipod/i.test(navigator.userAgent)
       ? "No Safari, toque em Compartilhar (o quadrado com a seta) e depois em “Adicionar à Tela de Início”."
-      : "No Chrome, toque nos três pontinhos e depois em “Adicionar à tela inicial” (ou “Instalar app”).";
+      : "No Chrome, toque nos três ponexemplos e depois em “Adicionar à tela inicial” (ou “Instalar app”).";
     dica.hidden = false;
   };
 })();

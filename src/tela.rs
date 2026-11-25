@@ -285,6 +285,6 @@ mod tests {
         let torta = Falso::novo("Editor", vec![Ok("nao sei".into()), Ok("{\"acao\": \"fim\", \"resultado\": \"linha 1\nlinha 2\"}".into())]);
         assert_eq!(torta.rodar("le a tela", 40), "linha 1 linha 2");
         assert!(plano("sem chaves").is_err() && plano("} ao contrario {").is_err());
-        assert!(prompt("x", &[]).contains("JA FEITO: nada ainda") && prompt("x", &["a".into(), "b".into()]).contains("JA FEITO: a; b\n") && !prompt("x", &[]).to_lowercase().contains("dono"));
+        assert!(prompt("x", &[]).contains("JA FEITO: nada ainda") && prompt("x", &["a".into(), "b".into()]).contains("JA FEITO: a; b\n") && !prompt("x", &[]).to_lowercase().contains("usuarios"));
     }
 }

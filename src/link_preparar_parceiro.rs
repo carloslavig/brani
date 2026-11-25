@@ -1,4 +1,4 @@
-//! Producao completa de video de prefeitura (link/preparar_magno.py): as regras e os parses que deixam o video pronto para o render
+//! Producao completa de video de prefeitura (link/preparar_parceiro.py): as regras e os parses que deixam o video pronto para o render
 //! quando a narracao chega. Sem IA e sem rede: palavras com tempo -> blocos por ano -> folhas; conferencia da voz contra o roteiro
 //! (numero pulado ou trocado reprova, buraco na transcricao reprova); texto para a voz; divisao em blocos; pausas encurtadas.
 //! Ficou de fora (closure ou argumentos devolvidos para quem chama executar): ffmpeg/ffprobe, Whisper, os pedidos de TTS (Google e
@@ -142,7 +142,7 @@ pub fn sintetico(roteiro_falado: &str) -> Vec<Pal> {
 
 pub fn palavras_ts(pal: &[Pal]) -> String {
     let lista: Vec<Value> = pal.iter().map(|p| json!({ "w": p.w, "s": p.s, "e": p.e })).collect();
-    format!("// SINTETICO (sem voz): so para revisar quadros. O preparar_magno troca pelo alinhamento da narracao real.\nexport const PALAVRAS: {{w: string; s: number; e: number}}[] = {};\n", json!(lista))
+    format!("// SINTETICO (sem voz): so para revisar quadros. O preparar_parceiro troca pelo alinhamento da narracao real.\nexport const PALAVRAS: {{w: string; s: number; e: number}}[] = {};\n", json!(lista))
 }
 
 fn alvo(frase: &str) -> Vec<String> {
@@ -502,7 +502,7 @@ pub fn com_audio_seg(tsx: &str, dur: f64) -> String {
 /// A ficha videos/NNN/video.json da producao completa.
 pub fn ficha(numero: &str, cfg: &Value, pal: &[Pal], dur: f64, sintetico: bool) -> Result<Value, String> {
     let capa = quando(pal, cfg["capa_palavra"].as_str().unwrap_or(""), 1)?;
-    Ok(json!({ "_explica": format!("Producao completa do Braniac (preparar_magno).{}", if sintetico { " SINTETICO: nao renderizar." } else { "" }),
+    Ok(json!({ "_explica": format!("Producao completa do Braniac (preparar_parceiro).{}", if sintetico { " SINTETICO: nao renderizar." } else { "" }),
         "numero": numero, "nome": cfg["nome"], "projeto": cfg["projeto"], "composicao_estudio": cfg["comp"], "composicao_kit": cfg["comp"], "arquivo_mapa": cfg["arquivo_mapa"],
         "folhas": format!("videos/{numero}/folhas.json"), "quadro_capa": ((capa + 1.2) * 30.0).round() as i64, "duracao_esperada_s": r2(dur + 0.9) }))
 }

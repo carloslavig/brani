@@ -51,6 +51,29 @@ const JS_WHATSAPP: &str = r#"(() => {
   return { estado: 'logado', conversas: out };
 })()"#;
 
+/// A aba responde? (crash "Aw, Snap" ou pagina travada nao respondem em 5 s). Conecta, avalia `1` e solta.
+pub fn viva(base: &str, id: &str) -> bool {
+    let Ok((mut ws, _)) = tungstenite::connect(format!("ws://{base}/devtools/page/{id}")) else { return false };
+    if let MaybeTlsStream::Plain(s) = ws.get_ref() {
+        let _ = s.set_read_timeout(Some(Duration::from_secs(5)));
+    }
+    if ws.send(Message::Text(json!({ "id": 1, "method": "Runtime.evaluate", "params": { "expression": "1", "returnByValue": true } }).to_string())).is_err() {
+        return false;
+    }
+    for _ in 0..50 {
+        match ws.read() {
+            Ok(Message::Text(t)) => {
+                if serde_json::from_str::<Value>(&t).is_ok_and(|v| v["id"] == 1) {
+                    return true;
+                }
+            }
+            Ok(_) => {}
+            Err(_) => return false,
+        }
+    }
+    false
+}
+
 pub struct Aba {
     ws: WebSocket<MaybeTlsStream<TcpStream>>,
     n: u64,

@@ -17,7 +17,7 @@
 //!   AUDITORIA: os PDFs de documentos_tcm/ ou documentos/ sao lidos de novo pelo pdftotext a cada conferencia (o .txt ao lado e
 //!     so rascunho: .txt sem PDF nao e prova); roteiro e legenda conferidos sao os da sombra, nunca os do pacote.
 //!   RELEITURA: levantamento sem PDF (dados abertos) so tem a origem provada quando o tribunal, lido de novo numa pasta limpa,
-//!     da o mesmo numero (link_conferir_capitais). A sigla do tribunal vem do guia do estado (BRANIAC_GUIAS ou dados/magno/guias).
+//!     da o mesmo numero (link_conferir_capitais). A sigla do tribunal vem do guia do estado (BRANIAC_GUIAS ou dados/parceiro/guias).
 //!   PORTA: so informa se poderia seguir para a voz. DOCUMENTOS: so o Ceara (unico molde cujo cache serve ao adaptador como esta).
 //! NAO ligado aqui: releitura do tribunal na triagem, voz, render, site, envio de PDFs, fila do Link, tunel, o e-TCM da Bahia
 //! e os moldes que dependem de navegador. O relogio nao faz nada.
@@ -40,7 +40,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 const AVISO: &str = "Número de vídeo vem só do tribunal de contas. Qualquer dúvida vira pendência.";
-const SEM_PACOTE: &str = "falta apontar a pasta do pacote de produção (variável BRANIAC_PACOTE ou a pasta dados/magno/pacote, com scripts-braniac/setores.py dentro)";
+const SEM_PACOTE: &str = "falta apontar a pasta do pacote de produção (variável BRANIAC_PACOTE ou a pasta dados/parceiro/pacote, com scripts-braniac/setores.py dentro)";
 const NAVEGADOR: &str = "Portado, leitura pelo navegador ainda não ligada";
 const LIMITE: u64 = 400 * 1024 * 1024;
 /// Teto do que sai de dentro de um zip do tribunal (os CSV e XML de um ano inteiro sao grandes, mas nao tanto).
@@ -68,7 +68,7 @@ const MOLDES: [(&str, &str, char, &str); 27] = [
     ("CE", "TCE-CE", 'R', "qualquer município do Ceará"),
     ("DF", "TCDF", 'X', "o Distrito Federal não tem municípios"),
     ("ES", "TCE-ES", 'R', "qualquer município do Espírito Santo, com o nome como o tribunal escreve; precisa da lista do IBGE baixada"),
-    ("GO", "TCM-GO", 'R', "só Cidade"),
+    ("GO", "TCM-GO", 'R', "só Goiânia"),
     ("MA", "TCE-MA", 'R', "só São Luís; são milhares de consultas, leva horas"),
     ("MG", "TCE-MG", 'N', "download pela tela dos Dados Abertos, em zip"),
     ("MS", "TCE-MS", 'N', "motor do Qlik por WebSocket"),
@@ -163,7 +163,7 @@ fn dorme_real(s: f64) {
 /// Roda um programa sem janela e com tempo limite. Devolve (codigo de saida, o que ele escreveu de erro).
 pub fn rodar(programa: &str, args: &[OsString], limite: Duration) -> Result<(i32, String), String> {
     use std::process::Stdio;
-    let mut c = std::process::Command::new(programa);
+    let mut c = crate::oculto::cmd(programa);
     c.args(args).stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::piped());
     #[cfg(windows)]
     {
@@ -578,7 +578,7 @@ pub fn levantar(pasta: &Path, uf: &str, cidade: &str, numero: &str, f: &Fora, ag
 }
 
 fn raiz(dados: &Path) -> PathBuf {
-    dados.join("magno").join("levantamentos")
+    dados.join("parceiro").join("levantamentos")
 }
 
 fn numero_ok(n: &str) -> bool {
@@ -732,7 +732,7 @@ fn estado_de(dados: &Path, numero: &str) -> Result<Value, String> {
 }
 
 fn pacote(dados: &Path) -> PathBuf {
-    std::env::var_os("BRANIAC_PACOTE").map(PathBuf::from).unwrap_or_else(|| dados.join("magno").join("pacote"))
+    std::env::var_os("BRANIAC_PACOTE").map(PathBuf::from).unwrap_or_else(|| dados.join("parceiro").join("pacote"))
 }
 
 /// Codigo do IBGE da cidade, pela lista oficial ja baixada (nome igual, sem contar acento e caixa).
@@ -846,7 +846,7 @@ fn gera(pasta: &Path, numero: &str, pacote: &Path, sombra: &Path, gerador: Gerad
     let s = pacote.join("scripts-braniac");
     let (g_rot, g_leg) = (s.join("gera_cidade.py"), s.join("gera_legenda.py"));
     if !g_rot.is_file() {
-        return Err(format!("falta no pacote de produção: {} (a pasta do pacote vem da variável BRANIAC_PACOTE ou de dados/magno/pacote)", g_rot.display()));
+        return Err(format!("falta no pacote de produção: {} (a pasta do pacote vem da variável BRANIAC_PACOTE ou de dados/parceiro/pacote)", g_rot.display()));
     }
     let cid = ler_json(&pasta.join("saida").join("cidade.json")).ok_or("levantamento com o cidade.json ilegível")?;
     if cid["numero"].as_str() != Some(numero) {
@@ -977,7 +977,7 @@ pub fn porta(dados: &Path, numero: &str) -> Result<Value, String> {
 }
 
 fn guias(dados: &Path) -> PathBuf {
-    std::env::var_os("BRANIAC_GUIAS").map(PathBuf::from).unwrap_or_else(|| dados.join("magno").join("guias"))
+    std::env::var_os("BRANIAC_GUIAS").map(PathBuf::from).unwrap_or_else(|| dados.join("parceiro").join("guias"))
 }
 
 /// A sigla do tribunal que o guia do estado manda citar.
@@ -988,7 +988,7 @@ fn sigla_do_guia(dados: &Path, uf: &str) -> Result<String, String> {
         return Err("cidade.json com a UF fora do formato".into());
     }
     let arq = guias(dados).join(format!("{uf}.json"));
-    let g = ler_json(&arq).ok_or_else(|| format!("falta o guia do estado ({}); aponte a pasta dos guias na variável BRANIAC_GUIAS ou ponha o arquivo em dados/magno/guias", arq.display()))?;
+    let g = ler_json(&arq).ok_or_else(|| format!("falta o guia do estado ({}); aponte a pasta dos guias na variável BRANIAC_GUIAS ou ponha o arquivo em dados/parceiro/guias", arq.display()))?;
     crate::link_tribunais::guia(uf, &g, true)?["sigla"].as_str().map(String::from).ok_or_else(|| format!("guia de {uf} sem a sigla do tribunal"))
 }
 
@@ -1000,8 +1000,8 @@ fn arranjo(pasta: &Path, numero: &str) -> Result<PathBuf, String> {
     if !cid["nome"].as_str().is_some_and(nome_de_pasta) || !cid["uf"].as_str().is_some_and(|u| u.len() == 2 && u.bytes().all(|b| b.is_ascii_uppercase())) {
         return Err("cidade.json sem nome ou UF".into());
     }
-    std::fs::create_dir_all(arr.join("magno")).map_err(|e| e.to_string())?;
-    gravar_json(&arr.join("magno").join("capitais.json"), &json!({ numero: { "cidade": cid["nome"], "uf": cid["uf"] } }))?;
+    std::fs::create_dir_all(arr.join("parceiro")).map_err(|e| e.to_string())?;
+    gravar_json(&arr.join("parceiro").join("capitais.json"), &json!({ numero: { "cidade": cid["nome"], "uf": cid["uf"] } }))?;
     let copia = cc::pasta_de(&arr, &arr, numero).ok_or("cidade.json sem nome ou UF")?.0.join("saida");
     std::fs::create_dir_all(&copia).map_err(|e| e.to_string())?;
     for n in ["cidade.json", "setores.json"] {
@@ -1222,7 +1222,7 @@ pub fn get(dados: &Path, _rot: &Arc<Roteador>, url: &str) -> Option<Resp> {
         "/api/esteira/orq" => crate::dado(crate::esteira_orq::estado_http(dados)),
         "/api/esteira/producao" => crate::dado(json!({ "pedidos": crate::link_producao::pedidos(dados) })),
         "/api/esteira/pdfs" => {
-            let l = crate::link_pdfs_tcm::Locais { pacote: pacote(dados), site: dados.join("magno").join("site"), tmp: std::env::temp_dir() };
+            let l = crate::link_pdfs_tcm::Locais { pacote: pacote(dados), site: dados.join("parceiro").join("site"), tmp: std::env::temp_dir() };
             crate::dado(json!({ "cidades": crate::link_pdfs_tcm::cidades(dados, &l) }))
         }
         "/api/ibge" => {
@@ -1372,7 +1372,7 @@ mod tests {
         let d = tmp("pedido");
         let (uf, cidade, numero, pasta) = pedido(&d, &json!({ "uf": "ce", "cidade": " Fortaleza ", "numero": 997 })).unwrap();
         assert_eq!((uf.as_str(), cidade.as_str(), numero.as_str()), ("CE", "Fortaleza", "997"));
-        assert!(pasta.ends_with("magno/levantamentos/997-fortaleza"));
+        assert!(pasta.ends_with("parceiro/levantamentos/997-fortaleza"));
         for ruim in [json!({ "uf": "CE", "cidade": "Fortaleza", "numero": "../1" }), json!({ "uf": "CE", "cidade": "..\\x", "numero": "1" }), json!({ "uf": "CE", "cidade": "", "numero": "1" }), json!({ "uf": "CE", "cidade": "Fortaleza", "numero": "12345" })] {
             assert!(pedido(&d, &ruim).is_err(), "{ruim}");
         }
@@ -1422,7 +1422,7 @@ mod tests {
         let nunca = fora(&nunca_rede, &pac);
         assert!(levantar(&pasta, "SC", "Florianópolis", "1006", &nunca, 1.0e9).unwrap_err().starts_with(NAVEGADOR));
         // molde de uma cidade so recusa as outras sem consultar
-        for (uf, cidade, diz) in [("RS", "Pelotas", "só com a capital"), ("TO", "Araguaína", "Palmas"), ("PR", "Londrina", "só com Curitiba"), ("SP", "Campinas", "só da capital"), ("MA", "Imperatriz", "só com São Luís"), ("GO", "Anápolis", "só com Cidade"), ("RJ", "Niterói", "só da capital")] {
+        for (uf, cidade, diz) in [("RS", "Pelotas", "só com a capital"), ("TO", "Araguaína", "Palmas"), ("PR", "Londrina", "só com Curitiba"), ("SP", "Campinas", "só da capital"), ("MA", "Imperatriz", "só com São Luís"), ("GO", "Anápolis", "só com Goiânia"), ("RJ", "Niterói", "só da capital")] {
             assert!(levantar(&pasta, uf, cidade, "500", &nunca, 1.0e9).unwrap_err().contains(diz), "{uf}");
         }
         // ES sem o codigo do IBGE da cidade: pendencia antes de consultar
@@ -1751,14 +1751,14 @@ mod tests {
 
     #[test]
     fn go_levanta_com_o_token_da_pagina_publica() {
-        let d = confere("GO", "Cidade", &rede_go, "querydata");
+        let d = confere("GO", "Goiânia", &rede_go, "querydata");
         // pagina sem o token: pendencia dita, sem consultar o painel
         let pac = pacote_falso(&d);
         let sem = |u: &str, _: &[(&str, &str)], _: Option<&str>| {
             assert!(u.starts_with(GO_PORTAL), "foi consultar {u}");
             Ok((200, b"<html>em manutencao</html>".to_vec()))
         };
-        let e = levantar(&raiz(&d).join("902-teste"), "GO", "Cidade", "902", &fora(&sem, &pac), 1.0e9).unwrap_err();
+        let e = levantar(&raiz(&d).join("902-teste"), "GO", "Goiânia", "902", &fora(&sem, &pac), 1.0e9).unwrap_err();
         assert!(e.contains("não trouxe o token") && !e.contains("tok-"), "{e}");
         let _ = std::fs::remove_dir_all(&d);
     }

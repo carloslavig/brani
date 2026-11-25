@@ -183,7 +183,7 @@ pub fn tratar(dados: &Path, mem: &Mutex<Memoria>, c: &Cripto, e: &Entrada, ts: f
             let p = Pedido { usuario: &usuario, senha: &senha, codigo: codigo.trim(), bdev: bdev.as_deref(), ip: &e.ip, ua };
             let avisar = |t: &str| {
                 use std::io::Write;
-                let arq = dados.join("outbox_carlos.txt");
+                let arq = dados.join("outbox_usuarios.txt");
                 let sep = if std::fs::metadata(&arq).map(|m| m.len() > 0).unwrap_or(false) { "\n---\n" } else { "" };
                 if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&arq) {
                     let _ = write!(f, "{sep}{t}");
@@ -339,7 +339,7 @@ mod tests {
         let Saida::Pronta(200, cab, corpo) = s else { panic!("esperava 200") };
         assert!(String::from_utf8_lossy(&corpo).contains("precisa_codigo"));
         assert!(!cab.iter().any(|(k, v)| k == "Set-Cookie" && v.starts_with("bsess")), "nao pode haver sessao antes do codigo");
-        assert!(std::fs::read_to_string(d.join("outbox_carlos.txt")).unwrap().contains("Código"));
+        assert!(std::fs::read_to_string(d.join("outbox_usuarios.txt")).unwrap().contains("Código"));
     }
 
     #[test]

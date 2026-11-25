@@ -182,7 +182,7 @@ pub fn pendente_de_resposta(l: &Linha) -> bool {
 pub fn encerramento(texto: &str) -> bool {
     let t = texto.trim();
     !t.is_empty() && !t.contains('?') && t.chars().count() <= 60
-        && rx!(r"(?i)^(?:(?:ok|okay|okk|certo|certinho|beleza|blz|show|perfeito|entendi|entendido|combinado|fechado|valeu|vlw|obrigad[oa]|obg|tmj|tudo bem|tudo certo|t[aá] bom|t[aá] certo|t[aá] [oó]timo|[oó]timo|legal|massa|top|boa|de nada|por nada|imagina|disponha|sim|uhum|isso|j[aá] (?:vi|anotei|entendi)|anotado|recebido|bom dia|boa tarde|boa noite)[\s,.!👍🙏😊🙂😄❤️✅]*)+$").is_match(t)
+        && rx!(r"(?i)^(?:(?:ok|okay|okk|certo|cerexemplo|beleza|blz|show|perfeito|entendi|entendido|combinado|fechado|valeu|vlw|obrigad[oa]|obg|tmj|tudo bem|tudo certo|t[aá] bom|t[aá] certo|t[aá] [oó]timo|[oó]timo|legal|massa|top|boa|de nada|por nada|imagina|disponha|sim|uhum|isso|j[aá] (?:vi|anotei|entendi)|anotado|recebido|bom dia|boa tarde|boa noite)[\s,.!👍🙏😊🙂😄❤️✅]*)+$").is_match(t)
 }
 
 /// Mensagens do HOSPEDE e cartoes do sistema depois da ultima resposta nossa -> (textos do hospede, cartoes).

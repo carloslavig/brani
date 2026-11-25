@@ -187,7 +187,7 @@ pub fn slug(projeto: &str) -> String {
     if p.is_empty() { "geral".into() } else { p }
 }
 
-fn pasta_projeto(dados: &Path, t: &Value) -> PathBuf {
+pub(crate) fn pasta_projeto(dados: &Path, t: &Value) -> PathBuf {
     pasta(dados).join("projetos").join(slug(s(t, "projeto")))
 }
 
@@ -215,6 +215,18 @@ fn ext_ok(nome: &str) -> bool {
     nome.rsplit_once('.').is_some_and(|(_, e)| EXT_OK.contains(&e.to_lowercase().as_str()))
 }
 
+/// A IA embrulha o arquivo do bloco `=== ARQUIVO ===` numa cerca de codigo (```rust ... ```): a cerca nao e parte do arquivo.
+fn sem_cerca(corpo: &str) -> String {
+    let mut l: Vec<&str> = corpo.trim_matches('\n').split('\n').collect();
+    if l.first().is_some_and(|x| x.trim_start().starts_with("```")) {
+        l.remove(0);
+        if l.last().is_some_and(|x| x.trim() == "```") {
+            l.pop();
+        }
+    }
+    l.join("\n")
+}
+
 fn limpa_rotulo(corpo: &str) -> String {
     static R: OnceLock<Regex> = OnceLock::new();
     let rot = rx(&R, r"(?i)^(?:java|xml|rust|toml|c|cpp|c\+\+|go|python|py|json|html|css|js|javascript|ts|typescript|text|txt|bash|sh|yaml|yml|sql|markdown|md|copiar( c[oó]digo)?|copy( code)?|editar|edit|baixar|download|executar|run)$");
@@ -237,7 +249,7 @@ pub fn extrair_arquivos(texto: &str) -> BTreeMap<String, String> {
     for c in rx(&M, r"(?s)=== *ARQUIVO: *([^ \n=]+) *===[ \t]*\n(.*?)\n?=== *FIM *===").captures_iter(&texto) {
         let nome = c[1].trim().trim_start_matches('/').to_string();
         if seguro(&nome) {
-            out.entry(nome).or_insert_with(|| limpa_rotulo(&c[2]));
+            out.entry(nome).or_insert_with(|| limpa_rotulo(&sem_cerca(&c[2])));
         }
     }
     for c in rx(&B, r"(?s)(?:^|\n)([^\n`]{0,120})\n?```[\w+-]*[ \t]*\n(.*?)```").captures_iter(&texto) {
@@ -461,6 +473,27 @@ pub fn parar(dados: &Path, id: &str, motivo: &str, ts: f64) -> Result<(), String
     gravar_tickets(dados, &todos)
 }
 
+/// O senior (Claude) devolve o ticket com o motivo: volta ao dev com o ciclo zerado e o motivo entra como "revisao reprovou".
+pub fn devolver(dados: &Path, id: &str, motivo: &str, ts: f64) -> Result<String, String> {
+    if motivo.trim().is_empty() {
+        return Err("diga o motivo da devolução".into());
+    }
+    let mut todos = tickets(dados);
+    let t = todos.iter_mut().find(|x| s(x, "id").eq_ignore_ascii_case(id.trim())).ok_or("Ticket não encontrado.")?;
+    if t["estado"] == "entregue" {
+        return Err(format!("{} já foi entregue.", s(t, "id")));
+    }
+    historico(t, "revisao", &format!("REPROVADO pelo sênior: {}", corta(motivo.trim(), 600)), ts, 12);
+    t["estado"] = json!("desenvolvimento");
+    t["tentativas"] = json!(0);
+    if let Some(o) = t.as_object_mut() {
+        o.remove("parado");
+    }
+    let msg = format!("{} devolvido ao dev com o motivo.", s(t, "id"));
+    gravar_tickets(dados, &todos)?;
+    Ok(msg)
+}
+
 /// OK de entrega: ticket "pronto" vira "entregue" e a branch e mesclada (closure). So vale quando o pedido veio do dono; deploy e publicacao continuam manuais.
 pub fn aprovar(dados: &Path, id: &str, pedido_do_dono: bool, ts: f64, mesclar: &dyn Fn(&Value) -> bool) -> String {
     if !pedido_do_dono {
@@ -581,8 +614,8 @@ mod tests {
         }
         assert!(abrir(&d, "loja", "abc", "", "", false, 1.0).unwrap_err().contains("sem título"));
         assert!(tickets(&d).is_empty());
-        let (t, _) = abrir(&d, "Loja Líbano", "Criar endpoint de pedidos", "rota REST para listar pedidos", "", false, 1.0).unwrap();
-        assert_eq!((t["area"].as_str(), t["responsavel"].as_str(), t["projeto"].as_str(), t["id"].as_str()), (Some("api"), Some("Duda"), Some("loja-libano"), Some("T001")));
+        let (t, _) = abrir(&d, "Loja Loja", "Criar endpoint de pedidos", "rota REST para listar pedidos", "", false, 1.0).unwrap();
+        assert_eq!((t["area"].as_str(), t["responsavel"].as_str(), t["projeto"].as_str(), t["id"].as_str()), (Some("api"), Some("Duda"), Some("loja-loja"), Some("T001")));
         let (t2, msg) = abrir(&d, "loja", "Ajustar botão do site", "css do botão", "", false, 1.0).unwrap();
         assert_eq!((t2["area"].as_str(), t2["responsavel"].as_str()), (Some("front"), Some("Bia")));
         assert!(msg.starts_with("T002 aberto em loja"));
@@ -688,6 +721,19 @@ mod tests {
         assert_eq!(r["app.py"].trim(), "print('oi')");
         let r = extrair_arquivos("resumo\r\n=== ARQUIVO: src/main.rs ===\r\nrust\nCopiar código\nfn main() {}\n=== FIM ===\n=== ARQUIVO: ../x.rs ===\nruim\n=== FIM ===\n=== ARQUIVO: /etc/x.sh ===\nok\n=== FIM ===");
         assert_eq!(r, BTreeMap::from([("src/main.rs".to_string(), "fn main() {}".to_string()), ("etc/x.sh".to_string(), "ok".to_string())]));
+        // regressao: arquivo dentro de cerca de codigo (```toml) entrava com a cerca e o cargo recusava o Cargo.toml
+        let r = extrair_arquivos("=== ARQUIVO: Cargo.toml ===
+```toml
+[package]
+name = \"x\"
+```
+=== FIM ===
+=== ARQUIVO: src/lib.rs ===
+```rust
+pub fn a() {}
+```
+=== FIM ===");
+        assert_eq!((r["Cargo.toml"].as_str(), r["src/lib.rs"].as_str()), ("[package]\nname = \"x\"", "pub fn a() {}"));
         for ruim in ["build.rs", "sub/build.rs", ".env", ".git/config.txt", "jogo.exe", "roda.bat", "a/../../b.rs", "semextensao"] {
             assert!(extrair_arquivos(&format!("=== ARQUIVO: {ruim} ===\nfn main(){{}}\n=== FIM ===")).is_empty(), "{ruim}");
         }

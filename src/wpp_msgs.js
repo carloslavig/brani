@@ -7,7 +7,7 @@
     var row=el.closest('[class*="message-in"],[class*="message-out"]');
     var dir=row && row.className.indexOf('message-out')>=0 ? 'EU' : 'ELE';
     if (EU && cab.replace(/\s+/g,' ').indexOf('] '+EU+':')>=0) dir='EU';  // layout novo: so o cabecalho indica o autor
-    var links=[];   // endereco dos links (17/11: o Contato mandou um link do Drive e so o titulo da previa chegava ao Jarvis)
+    var links=[];   // endereco dos links (17/11: o Pedro mandou um link do Drive e so o titulo da previa chegava ao Jarvis)
     (el.closest('[role="row"]')||row||el).querySelectorAll('a[href^="http"]').forEach(function(a){ if(links.indexOf(a.href)<0) links.push(a.href); });
     msgs.push({d:dir,c:cab.replace(/\s+/g,' ').trim(),t:txt.trim(),links:links});
   });

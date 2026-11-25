@@ -144,7 +144,7 @@ impl Roteador {
             .filter(|m| !online || !(txt(&m["provider"]).starts_with("local/") || self.sensivel(txt(&m["content"]))))
             .map(|m| json!({ "role": m["role"], "content": m["content"] })));
         msgs.push(json!({ "role": "user", "content": texto }));
-        msgs.extend(turno.iter().cloned());
+        if self.cfg["poda_contexto"].as_bool().unwrap_or(false) { msgs.extend(crate::poda::podar(turno, 2, 600)); } else { msgs.extend(turno.iter().cloned()); }
         Value::Array(msgs)
     }
 

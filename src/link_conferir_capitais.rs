@@ -9,13 +9,13 @@
 //! Divergencia NAO e sinonimo de video errado: aqui so se diz "no video X, na fonte agora Y". O que esta errado (video,
 //! levantamento do PC ou o tribunal que mudou) sai das tres leituras de `link_auditar::triagem`. Fonte fora do ar ou leitura
 //! que nao fecha (Err do molde) fica em `erro_fonte` e NAO marca o video como errado: tenta na proxima rodada.
-//! Resultado em dados/magno/conferencia.json; problema NOVO vira aviso ao dono (closure; quem chama decide o canal).
+//! Resultado em dados/parceiro/conferencia.json; problema NOVO vira aviso ao dono (closure; quem chama decide o canal).
 //! Entram como closure (`Fora`): reler o tribunal, a sigla do guia do estado, a conferencia da voz e o aviso.
 //! Ficou de fora: o bloco do SICONFI (no Python ja esta desligado) e a linha de comando. Diferenca: a lista de numeros/linhas
 //! dentro da mensagem sai no formato do Rust (aspas duplas).
 #![allow(dead_code)]
 use crate::link_auditar::{br, dito, valores};
-use crate::link_lote_magno;
+use crate::link_lote_parceiro;
 use crate::texto_pt::sem_acento;
 use regex::Regex;
 use serde_json::{json, Map, Value};
@@ -61,7 +61,7 @@ fn us(v: f64) -> String {
 
 /// A pasta do levantamento da capital e o registro dela (cidade, uf).
 pub fn pasta_de(dados: &Path, pacote: &Path, numero: &str) -> Option<(PathBuf, Value)> {
-    let cap = link_lote_magno::capital(dados, numero)?;
+    let cap = link_lote_parceiro::capital(dados, numero)?;
     let cidade: String = sem_acento(cap["cidade"].as_str()?).chars().filter(char::is_ascii).collect();
     Some((pacote.join(format!("RECEITAS-DESPESAS-{}-{}", cidade.to_uppercase().replace(' ', "-"), cap["uf"].as_str()?)), cap))
 }
@@ -149,7 +149,7 @@ pub fn conferir(dados: &Path, pacote: &Path, numero: &str, baixar: bool, f: &For
         let mut ok: BTreeSet<i128> = vals.iter().filter(|v| **v != 0.0).flat_map(|v| valores(&dito(*v))).chain([2024, 2025, 2026]).collect();
         let meses = objeto(&c["meses"], "meses")?.values().filter_map(Value::as_str).collect::<Vec<_>>().join(" ");
         ok.extend(Regex::new(r"\d+").expect("regex fixa").find_iter(&meses).filter_map(|m| m.as_str().parse::<i128>().ok()));
-        let soltos: BTreeSet<i128> = valores(&rot.replace("@exemplo", "")).into_iter().filter(|v| !ok.contains(v)).collect();
+        let soltos: BTreeSet<i128> = valores(&rot.replace("@parceiro-exemplo", "")).into_iter().filter(|v| !ok.contains(v)).collect();
         if !soltos.is_empty() {
             prob.push(format!("roteiro com número que não veio da fonte: {:?}", soltos.iter().take(5).collect::<Vec<_>>()));
         }
@@ -188,10 +188,10 @@ fn ler_mapa(arq: &Path) -> Map<String, Value> {
     std::fs::read_to_string(arq).ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
 }
 
-/// Confere as capitais pedidas (ou todas as da esteira) e grava dados/magno/conferencia.json. So problema NOVO vira aviso.
+/// Confere as capitais pedidas (ou todas as da esteira) e grava dados/parceiro/conferencia.json. So problema NOVO vira aviso.
 pub fn rodar(dados: &Path, pacote: &Path, numeros: Option<&[String]>, agora_s: f64, avisar: bool, f: &Fora) -> Result<Map<String, Value>, String> {
-    let magno = dados.join("magno");
-    let (reg, arq) = (ler_mapa(&magno.join("capitais.json")), magno.join("conferencia.json"));
+    let parceiro = dados.join("parceiro");
+    let (reg, arq) = (ler_mapa(&parceiro.join("capitais.json")), parceiro.join("conferencia.json"));
     let mut conf = ler_mapa(&arq);
     let todos: Vec<String> = numeros.map_or_else(|| reg.keys().cloned().collect(), <[String]>::to_vec);
     let mut novos = vec![];
@@ -215,7 +215,7 @@ pub fn rodar(dados: &Path, pacote: &Path, numeros: Option<&[String]>, agora_s: f
         }
         conf.insert(n.clone(), json!({ "ok": p.is_empty(), "quando": agora_s, "problemas": p }));
     }
-    std::fs::create_dir_all(&magno).map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(&parceiro).map_err(|e| e.to_string())?;
     std::fs::write(&arq, serde_json::to_string_pretty(&conf).map_err(|e| e.to_string())?).map_err(|e| format!("{}: {e}", arq.display()))?;
     if !novos.is_empty() && avisar {
         (f.avisar)(&format!("Conferência das capitais achou problema (o vídeo não é mandado como certo até alguém olhar):\n{}", novos.join("\n").chars().take(1200).collect::<String>()));
@@ -225,11 +225,11 @@ pub fn rodar(dados: &Path, pacote: &Path, numeros: Option<&[String]>, agora_s: f
 
 /// No relogio da rotina: uma rodada a cada 3 h. None = ainda nao e hora.
 pub fn tick(dados: &Path, pacote: &Path, agora_s: f64, f: &Fora) -> Option<Result<Map<String, Value>, String>> {
-    let marca = dados.join("magno").join("conferencia.ultima");
+    let marca = dados.join("parceiro").join("conferencia.ultima");
     if std::fs::read_to_string(&marca).ok().and_then(|t| t.trim().parse::<f64>().ok()).is_some_and(|u| agora_s - u < INTERVALO) {
         return None;
     }
-    if let Err(e) = std::fs::create_dir_all(dados.join("magno")).and_then(|_| std::fs::write(&marca, agora_s.to_string())) {
+    if let Err(e) = std::fs::create_dir_all(dados.join("parceiro")).and_then(|_| std::fs::write(&marca, agora_s.to_string())) {
         return Some(Err(e.to_string()));
     }
     Some(rodar(dados, pacote, None, agora_s, true, f))
@@ -261,13 +261,13 @@ mod tests {
         json!({ "2024-12": { "Saúde": { "liquidado": 5e8, "acoes": [] } } })
     }
 
-    const CERTO: &str = "São Teste arrecadou 2 bilhões. Gastou 1 bilhão e 500 milhões até agosto, mês 08. Saúde, 500 milhões. Gastar não é crime. @exemplo";
+    const CERTO: &str = "São Teste arrecadou 2 bilhões. Gastou 1 bilhão e 500 milhões até agosto, mês 08. Saúde, 500 milhões. Gastar não é crime. @parceiro-exemplo";
 
     fn caso(nome: &str, fonte: &str) -> Caso {
         let raiz = std::env::temp_dir().join(format!("braniac-link_conferir_capitais-{nome}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&raiz);
         let c = Caso { dados: raiz.join("dados"), pacote: raiz.join("pacote"), raiz };
-        grava(&c.dados.join("magno/capitais.json"), &json!({ "1099": { "cidade": "São Teste", "uf": "SP" }, "1100": { "cidade": "Sem Pasta", "uf": "RJ" } }).to_string());
+        grava(&c.dados.join("parceiro/capitais.json"), &json!({ "1099": { "cidade": "São Teste", "uf": "SP" }, "1100": { "cidade": "Sem Pasta", "uf": "RJ" } }).to_string());
         let saida = c.pacote.join("RECEITAS-DESPESAS-SAO-TESTE-SP/saida");
         grava(&saida.join("cidade.json"), &cidade(fonte).to_string());
         grava(&saida.join("setores.json"), &setores().to_string());
@@ -365,7 +365,7 @@ mod tests {
         let f = fora(&igual, &avisar);
         assert!(tick(&c.dados, &c.pacote, 1000.0, &f).unwrap().is_ok() && tick(&c.dados, &c.pacote, 1000.0 + INTERVALO - 1.0, &f).is_none());
         assert_eq!(tick(&c.dados, &c.pacote, 1000.0 + INTERVALO, &f).unwrap().unwrap()["1099"]["quando"], json!(1000.0 + INTERVALO));
-        let gravado: Value = json_de(&c.dados.join("magno/conferencia.json")).unwrap();
+        let gravado: Value = json_de(&c.dados.join("parceiro/conferencia.json")).unwrap();
         assert!(gravado["1099"]["ok"] == true && gravado["1099"].get("erro_fonte").is_none());
         assert_eq!((us(1234567.891), us(-0.5)), ("1,234,567.89".to_string(), "-0.50".to_string()));
         let _ = std::fs::remove_dir_all(&c.raiz);

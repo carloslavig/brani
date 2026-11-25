@@ -60,7 +60,7 @@ So diga que fez algo depois de o RESULTADO DE FERRAMENTA confirmar.", lista.join
 
 /// Roda `claude -p` com o pedido pela entrada padrao. Nao edita nada nem recebe permissao de ferramenta.
 fn rodar(exe: &Path, prompt: &str, pasta: &Path, timeout_s: u64) -> Result<String, ErroProvedor> {
-    let mut c = Command::new(exe);
+    let mut c = crate::oculto::cmd(exe);
     // se o Braniac foi ligado de dentro de uma sessao do Claude Code, o filho nao pode achar que esta aninhado nela
     c.env_remove("CLAUDECODE").env_remove("CLAUDE_CODE_ENTRYPOINT");
     c.arg("-p").current_dir(pasta).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());

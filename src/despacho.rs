@@ -1,6 +1,6 @@
 //! Despachante da caixa de saida: entrega DE VERDADE o que o B.R.A.N.I produz sozinho (rotinas, funil e resumos, Alma, recados, avisos
 //! da agenda/Compasso/bom dia, outbox do Claude), atras das mesmas chaves de `dados/troca.json` (todas nascem DESLIGADAS).
-//! Fontes: `saida.jsonl` (canal, destino, texto, ts), `avisos.jsonl` (para, texto, ts) e `outbox_carlos.txt` (blocos `---`, regras de
+//! Fontes: `saida.jsonl` (canal, destino, texto, ts), `avisos.jsonl` (para, texto, ts) e `outbox_usuarios.txt` (blocos `---`, regras de
 //! vigia.enviar_outbox do Python: [audio] [arquivo] [resumo] [voz] [alma] [jorge]; texto puro sai como "Claudinho (via Braniac): ...").
 //! Regras: `whatsapp` ligada entrega a todos; `whatsapp_so_dono` so ao dono; `telegram` so ao dono (canal escuta-telegram).
 //! NUNCA entrega o que nasceu antes de a chave ser vista ligada (`desde_*` em dados/despacho.json): a sombra acumulada fica para sempre.
@@ -16,6 +16,8 @@ use serde_json::{json, Value};
 use std::path::Path;
 
 const MAX_TENTATIVAS: i64 = 4;
+/// Quanto tempo uma mensagem espera a aba do WhatsApp voltar antes de contar tentativa normal.
+const ESPERA_INFRA_S: f64 = 12.0 * 3600.0;
 const POR_CICLO: usize = 4;
 
 pub struct Portas<'a> {
@@ -141,6 +143,14 @@ fn corta(t: &str, n: usize) -> String {
     t.chars().take(n).collect()
 }
 
+/// Falha de INFRAESTRUTURA (aba do WhatsApp nao achada, VM/CDP fora do ar): nao e culpa da mensagem. Nao conta tentativa nem
+/// descarta: a mensagem espera a aba voltar (a reconciliacao repoe). Assim um bom dia nao se perde porque a VM estava confusa.
+fn infra(e: &str) -> bool {
+    let e = e.to_lowercase();
+    ["nao tem aba", "não tem aba", "vm esta ligada", "vm está ligada", "nao foi aberto na vm", "nao conectei na aba", "aba caiu", "aba nao respondeu", "ler a lista do whatsapp", "cdp fora do ar"]
+        .iter().any(|x| e.contains(x))
+}
+
 /// Uma fonte de linhas JSONL com cursor. Devolve (entregues, pulados, falhas).
 #[allow(clippy::too_many_arguments)]
 fn fonte(dados: &Path, arq: &str, cur: &str, est: &mut Value, ts: f64, k: &Chaves, ctx: &Ctx, nomes: &Nomes, p: &Portas, limite: &mut usize, cont: &mut [u32; 3]) {
@@ -178,6 +188,10 @@ fn fonte(dados: &Path, arq: &str, cur: &str, est: &mut Value, ts: f64, k: &Chave
                 }
                 i += 1;
             }
+            Err(e) if infra(&e) && !e.starts_with('⛔') && ts - v["ts"].as_f64().unwrap_or(ts) < ESPERA_INFRA_S => {
+                est["tent"][&chave] = json!({ "n": tent, "prox": ts + 120.0 }); // sem gastar tentativa: volta daqui a 2 min
+                break;
+            }
             Err(e) if tent + 1 >= MAX_TENTATIVAS || e.starts_with('⛔') => {
                 cont[2] += 1;
                 if let Some(t) = est["tent"].as_object_mut() {
@@ -196,7 +210,7 @@ fn fonte(dados: &Path, arq: &str, cur: &str, est: &mut Value, ts: f64, k: &Chave
 
 /// O outbox do Claude. Ok(n entregues). Mesmas regras de vigia.enviar_outbox (Python).
 fn outbox(dados: &Path, ts: f64, agora: &Agora, est: &mut Value, k: &Chaves, ctx: &Ctx, nomes: &Nomes, p: &Portas) -> usize {
-    let arq = dados.join("outbox_carlos.txt");
+    let arq = dados.join("outbox_usuarios.txt");
     let Ok(bruto) = std::fs::read_to_string(&arq) else { return 0 };
     let bruto = bruto.trim_start_matches('\u{feff}').trim().to_string();
     if bruto.is_empty() {
@@ -244,7 +258,7 @@ fn outbox(dados: &Path, ts: f64, agora: &Agora, est: &mut Value, k: &Chaves, ctx
                 entregar(Via::Wpp, "outbox", &dono, &corta(t, 1500), ctx, nomes, p).and_then(|()| entregar(Via::Wpp, "alma-audio", &dono, t, ctx, nomes, p).or(Ok(())))
             }
         } else if baixo.starts_with("[jorge]") {
-            // so para a Tia Mae; audio da voz dele e, se falhar, o texto. Nunca vai a hospede.
+            // so para a Mae; audio da voz dele e, se falhar, o texto. Nunca vai a hospede.
             match (k.todos, ctx.contato("mae")) {
                 (true, Some(mae)) => {
                     let t = corta(b[7..].trim(), 900);
@@ -268,6 +282,7 @@ fn outbox(dados: &Path, ts: f64, agora: &Agora, est: &mut Value, k: &Chaves, ctx
         let id = format!("{:x}", b.bytes().fold(14695981039346656037u64, |h, c| (h ^ c as u64).wrapping_mul(1099511628211)));
         match r {
             Ok(()) => { feitos += 1; if let Some(t) = est["tent_outbox"].as_object_mut() { t.remove(&id); } }
+            Err(e) if infra(&e) && !e.starts_with('⛔') => break, // aba do WhatsApp fora: o bloco fica no arquivo para o proximo ciclo
             Err(_) => {
                 let n = est["tent_outbox"][&id].as_i64().unwrap_or(0) + 1;
                 if n >= MAX_TENTATIVAS { feitos += 1; } else { est["tent_outbox"][&id] = json!(n); break; }
@@ -326,7 +341,7 @@ fn ha_trabalho(dados: &Path) -> bool {
     let n = |a: &str| linhas(&dados.join(a)).len() as u64;
     let novo = est["cur_saida"].as_u64().is_none_or(|c| n("saida.jsonl") > c) || est["cur_avisos"].as_u64().is_none_or(|c| n("avisos.jsonl") > c);
     // chave geral recem-ligada: marca o "desde" ja, senao o 1o envio nasce antes da marca e vira sombra
-    (k.todos && est["desde_todos"].is_null()) || (k.dono || k.tg) && novo || (k.todos && crate::cuidado_diario::ha_pendente(dados, &crate::tempo::agora(), crate::fatos::agora_ts())) || dados.join("outbox_carlos.txt").exists() || est["desde_dono"].is_null() != !k.dono
+    (k.todos && est["desde_todos"].is_null()) || (k.dono || k.tg) && novo || (k.todos && crate::cuidado_diario::ha_pendente(dados, &crate::tempo::agora(), crate::fatos::agora_ts())) || dados.join("outbox_usuarios.txt").exists() || est["desde_dono"].is_null() != !k.dono
 }
 
 pub fn estado(dados: &Path) -> Value {
@@ -498,20 +513,20 @@ mod tests {
     fn outbox_segue_as_regras_do_python() {
         let d = pasta("outbox");
         let r = Reg::default();
-        std::fs::write(d.join("outbox_carlos.txt"), "recado velho").unwrap(); // chave desligada: nunca sai
+        std::fs::write(d.join("outbox_usuarios.txt"), "recado velho").unwrap(); // chave desligada: nunca sai
         rodar(&d, &r, 100.0);
-        assert!(r.v.borrow().is_empty() && !d.join("outbox_carlos.txt").exists() && d.join("outbox_antigo.txt").exists());
+        assert!(r.v.borrow().is_empty() && !d.join("outbox_usuarios.txt").exists() && d.join("outbox_antigo.txt").exists());
         chaves_json(&d, json!({ "whatsapp_so_dono": true }));
         rodar(&d, &r, 200.0);
         let arq = d.join("a.bin");
         std::fs::write(&arq, "x").unwrap();
-        std::fs::write(d.join("outbox_carlos.txt"), format!("achei 3 vagas\n---\n[audio] bom dia\n---\n[arquivo] {}\nlegenda\n---\n[jorge] oi tia\n---\n[resumo] aviso comum", arq.display())).unwrap();
+        std::fs::write(d.join("outbox_usuarios.txt"), format!("achei 3 vagas\n---\n[audio] bom dia\n---\n[arquivo] {}\nlegenda\n---\n[jorge] oi tia\n---\n[resumo] aviso comum", arq.display())).unwrap();
         rodar(&d, &r, 1.0e10);
         let v = r.v.borrow().clone();
         assert_eq!(v[0], "texto|Eu(D)|Claudinho (via Braniac): achei 3 vagas");
         assert_eq!(v[1], "audio|jarvis|Eu(D)|bom dia");
         assert!(v[2].starts_with("arquivo|Eu(D)|") && v[2].ends_with("|legenda"));
-        // [jorge] vai a Tia Mae: precisa da chave geral; falha e fica para depois
+        // [jorge] vai a Mae: precisa da chave geral; falha e fica para depois
         assert!(!v.iter().any(|x| x.contains("oi tia")));
         let _ = std::fs::remove_dir_all(&d);
     }
@@ -542,6 +557,36 @@ mod tests {
         escrever(&d, "pedido", "Ana", "agora vai", 313.0);
         rodar(&d, &r, 320.0);
         assert_eq!(*r.v.borrow(), vec!["audio|zelo|Pai|audio ao pai", "texto|Ana|agora vai"]);
+        let _ = std::fs::remove_dir_all(&d);
+    }
+
+    #[test]
+    fn aba_do_whatsapp_fora_nao_descarta_o_bom_dia() {
+        // regressao 24/11/2026: com a aba do WhatsApp nao achada a mensagem gastava as 4 tentativas e era descartada para sempre
+        let d = pasta("infra");
+        let r = Reg::default();
+        chaves_json(&d, json!({ "whatsapp_so_dono": true }));
+        rodar(&d, &r, 100.0); // grava o cursor
+        escrever(&d, "alma", "Dono", "bom dia", 450.0);
+        let enviados = RefCell::new(0u32);
+        let tenta = |ts: f64, fora: bool| {
+            let texto = |_: &str, _: &str| if fora { "Não consegui ler a lista do WhatsApp (a VM esta ligada? HTTP GET abas). Nada foi enviado.".to_string() } else { *enviados.borrow_mut() += 1; "✅".to_string() };
+            let audio = |_: &str, _: &str, _: &str| "falhou".to_string();
+            let wav = |_: &str, _: &[u8]| "✅".to_string();
+            let arq = |_: &str, _: &str, _: &str| "✅".to_string();
+            let tg = |_: &str| Ok(());
+            ciclo(&d, &agora(), ts, &Portas { texto: &texto, audio: &audio, wav: &wav, arquivo: &arq, telegram: &tg })
+        };
+        for k in 0..10 {
+            let v = tenta(460.0 + 200.0 * k as f64, true);
+            assert_eq!(v["desistidos"], 0, "falha de infraestrutura nunca desiste");
+        }
+        assert_eq!(*enviados.borrow(), 0);
+        tenta(3000.0, false); // a aba voltou
+        assert_eq!(*enviados.borrow(), 1, "entrega uma vez, sem perder nem duplicar");
+        tenta(3100.0, false);
+        assert_eq!(*enviados.borrow(), 1);
+        assert!(infra("o agente 'whatsapp' nao tem aba aberta") && !infra("O WhatsApp diz que o número é inválido"));
         let _ = std::fs::remove_dir_all(&d);
     }
 }

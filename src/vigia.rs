@@ -509,9 +509,9 @@ mod tests {
     #[test]
     fn mensagem_lida_e_sem_resposta_e_respondida_e_a_nossa_nao_entra() {
         let mut s = Sim::novo("lida");
-        let r = s.espera_e_atende(&[l("Jr", "17:47", "me explica uma coisa"), l("Bia", "17:55", "oi")]);
-        assert_eq!((r.candidatos.clone(), r.enviados), (v(&["Jr", "Bia"]), v(&["Jr", "Bia"])));
-        assert_eq!(*s.chamadas.borrow(), [v(&["Jr", "Bia"])]);
+        let r = s.espera_e_atende(&[l("Irmao", "17:47", "me explica uma coisa"), l("Bia", "17:55", "oi")]);
+        assert_eq!((r.candidatos.clone(), r.enviados), (v(&["Irmao", "Bia"]), v(&["Irmao", "Bia"])));
+        assert_eq!(*s.chamadas.borrow(), [v(&["Irmao", "Bia"])]);
         let mut s = Sim::novo("nossa");
         s.espera_e_atende(&[nossa("Ana", "17:50", "Tem sim!")]); // alguem ja respondeu: nada a fazer
         assert_eq!(s.n(), 0);

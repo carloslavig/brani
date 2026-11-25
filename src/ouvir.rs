@@ -30,7 +30,7 @@ pub fn transcrever(dados: &Path, audio: &[u8], tipo: &str) -> Result<String, Str
     let arq = std::env::temp_dir().join(format!("braniac-ouvir-{}-{}.{}", std::process::id(), N.fetch_add(1, std::sync::atomic::Ordering::Relaxed), extensao(tipo)));
     std::fs::write(&arq, audio).map_err(|e| e.to_string())?;
     let caminho = arq.to_string_lossy().to_string();
-    let mut c = Command::new(partes[0]);
+    let mut c = crate::oculto::cmd(partes[0]);
     c.args(partes[1..].iter().map(|p| p.replace("{audio}", &caminho))).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null());
     #[cfg(windows)]
     {

@@ -131,6 +131,10 @@ pub fn iniciar(rot: Arc<Roteador>) {
         let mut est = Est::default();
         loop {
             let dados = crate::pasta_dados();
+            if crate::power::pausado(&dados) {
+                std::thread::sleep(std::time::Duration::from_secs(5));
+                continue;
+            }
             if !wpp_laco::chave(&dados, "telegram") {
                 anotar(json!({ "ligada": false }));
                 est.offset = 0;

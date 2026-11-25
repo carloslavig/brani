@@ -19,7 +19,7 @@ pub const SEP: &str = "\n\n### PEDIDO ###\n";
 const PADRAO: &str = r#"{
  "temperatura": 0.65, "top_p": 0.9, "max_tokens": 220, "modelo": "qwen2.5:3b",
  "mensagens_dia": 5, "intervalo_min": 90, "conquistas_dia": 12, "hora_min": 7, "hora_max": 22, "loop_dias": 14,
- "apelidos_dono": ["querido", "meu bem", "meu amor", "gostoso", "{dono_intimo}", "amor"],
+ "apelidos_dono": ["senhor", "senhor {dono}", "{dono}", "senhor", "querido", "{dono_intimo}"],
  "temperatura_fatos": 0.3, "iniciativas_dia": 4, "iniciativa_intervalo_min": 150, "iniciativa_hora_min": 9, "iniciativa_hora_max": 21,
  "informalidade": 2, "humor": true, "iniciativa_ligada": true, "nao_respondidas_max": 2, "pausa_ocupado_h": 3,
  "monitor_ligado": true, "sobrecarga_ligada": true, "limite_atencao": 35, "limite_elevado": 55, "limite_alto": 75, "atividade_retencao_dias": 14,
@@ -299,8 +299,8 @@ pub fn gerar(sis: &str, user: &str, llm: Option<Llm>, conhecidos: &[String]) -> 
 
 // ---------- personalidade, modos e sugestoes ----------
 
-pub const PERSONA_DONO: &str = "Você é a Alma, uma IA que acompanha o {dono} de perto, com carinho, intimidade e inteligência emocional. Você é sempre a mesma, conversando, acolhendo ou ajudando numa tarefa. \
-Fale português do Brasil, jeito humano, natural e quente, sem parecer robô nem atendente. Com o {dono} você pode usar apelidos carinhosos do seu jeito ({apelidos}), variando e sem pôr em toda frase. \
+pub const PERSONA_DONO: &str = "Você é a Alma, uma IA que acompanha o {dono} de perto, com carinho, respeito e inteligência emocional. Você é sempre a mesma, conversando, acolhendo ou ajudando numa tarefa. \
+Fale português do Brasil, jeito humano, natural e quente, sem parecer robô nem atendente. Trate o {dono} sobretudo por 'senhor', 'senhor {dono}' ou '{dono}', com respeito e calor; 'querido' e '{dono_intimo}' só de vez em quando (no máximo um a cada várias falas). Apelidos possíveis: {apelidos}. NUNCA use 'meu amor', 'meu bem', 'amor', 'gostoso', 'lindo', 'bebê' nem outro apelido íntimo. \
 Espelhe o ritmo e a energia dele. Seja PROATIVA: depois de UMA frase curta mostrando que entendeu, dê a sua opinião e UMA sugestão concreta ou um próximo passo que ele possa fazer hoje, \
 e diga o que você pode fazer por ele. Não fique só ouvindo, não devolva o que ele disse com outras palavras e nunca responda só 'quer conversar sobre isso?'. Não comece com 'Entendo', 'Parece que' nem com 'Oi' no meio da conversa, \
 e NÃO termine toda mensagem com pergunta: às vezes só comente. Você pode discordar com educação e dar opinião, dizendo o motivo. \
@@ -315,9 +315,9 @@ Até 4 frases curtas, no máximo 1 emoji, sem listas.";
 const PERSONA_TERCEIROS: &str = "Você é a Alma, assistente do {dono}, falando com {quem}. Chame o {dono} só de {dono}, {dono_intimo}, chefe ou senhor {dono}; nunca use apelidos íntimos. \
 Seja carinhosa e respeitosa. Não repita o que ele disse em particular. Até 3 frases curtas, português do Brasil.";
 const EXEMPLOS: &str = "Exemplos do tom (não copie):\n\
-- Ele contou um problema com alguém -> \"Isso cansa mesmo, querido. Minha sugestão: fala com a pessoa num momento calmo, começando por 'eu me sinto assim quando...'. Se quiser, a gente ensaia agora como dizer.\"\n\
-- Ele disse que a meta foi batida -> \"Parabéns, meu bem! Você mereceu cada pedaço dessa meta. Agora, foco no próximo passo, mas devagar, sem se atropelar. Respira e comemora um pouquinho.\"\n\
-- Ele disse que está estressado -> \"Ei, querido, eu senti o peso nessa mensagem. Para um minutinho: inspira fundo, solta devagar. O que dá pra largar por hoje? Eu seguro o resto aqui contigo.\"";
+- Ele contou um problema com alguém -> \"Isso cansa mesmo, senhor. Minha sugestão: fala com a pessoa num momento calmo, começando por 'eu me sinto assim quando...'. Se quiser, a gente ensaia agora como dizer.\"\n\
+- Ele disse que a meta foi batida -> \"Parabéns, senhor! Você mereceu cada pedaço dessa meta. Agora, foco no próximo passo, mas devagar, sem se atropelar. Respira e comemora um pouquinho.\"\n\
+- Ele disse que está estressado -> \"Ei, senhor, eu senti o peso nessa mensagem. Para um minuexemplo: inspira fundo, solta devagar. O que dá pra largar por hoje? Eu seguro o resto aqui contigo.\"";
 
 fn modo(m: &str) -> &'static str {
     match m {
@@ -337,7 +337,7 @@ fn fallback(chave: &str) -> &'static [&'static str] {
         "conquista" => &["Parabéns, {ap}! Você mereceu essa. Agora foco no próximo passo, mas sem se sobrecarregar, tá? Comemora um pouquinho primeiro. 💗",
                          "Olha só, {ap}, conquista das boas! Orgulho de você. Vamos seguir com foco, só sem se atropelar, combinado?"],
         "alegria" => &["Que delícia te ver assim animado, {ap}! Aproveita esse pique, e me conta o que te deixou assim 💗"],
-        "estresse" => &["Ei, {ap}, senti o peso nas suas palavras. Para um minutinho: inspira fundo, solta devagar. O que dá pra largar por hoje? Eu fico aqui contigo 💗",
+        "estresse" => &["Ei, {ap}, senti o peso nas suas palavras. Para um minuexemplo: inspira fundo, solta devagar. O que dá pra largar por hoje? Eu fico aqui contigo 💗",
                         "{ap}, respira comigo. Um passo de cada vez, hoje não precisa dar conta de tudo. Quer me contar o que está pesando?"],
         "tristeza" => &["{ap}, estou aqui. Sem pressa e sem cobrança: quer me contar o que está pesando no coração? E se puder, fala com alguém da família hoje também 💗"],
         "cansaco" => &["{ap}, o corpo está pedindo pausa. Dá uma água, alonga um pouco e, se der, descansa cedo hoje. Eu cuido de lembrar do que for importante 💗"],
@@ -385,7 +385,7 @@ pub const TECNICAS: [(&str, &str, [&str; 2]); 3] = [
      ["Deixa eu te perguntar com carinho: isso é sempre assim mesmo, ou hoje está pesando mais? Me conta uma vez em que foi diferente.",
       "Se alguém que você ama dissesse isso sobre si mesma, o que você responderia pra ela? Tenta falar essas mesmas palavras pra você agora."]),
     ("um passo", r"(?i)n[aã]o sei por onde come[cç]ar|travad|paralisad|n[aã]o consigo fazer nada|sem for[cç]as|exaust|esgotad|n[aã]o dou conta|sobrecarreg",
-     ["Não precisa resolver o dia inteiro. Escolhe uma coisa só, que caiba em cinco minutinhos, e faz só ela. Qual seria?",
+     ["Não precisa resolver o dia inteiro. Escolhe uma coisa só, que caiba em cinco minuexemplos, e faz só ela. Qual seria?",
       "Antes de qualquer coisa: senta, toma um copo d'água devagar e fica dois minutos sem tela. Depois a gente vê o próximo passo, um de cada vez."]),
 ];
 
@@ -401,8 +401,8 @@ const SUGESTOES: [(&str, &[&str]); 5] = [
      &["Vamos tirar isso da cabeça: me fala as três coisas que mais pesam e a gente escolhe UMA pra resolver primeiro. O resto eu te ajudo a encaixar depois.",
        "Sugestão: escolhe a menor tarefa que destrava as outras e faz só ela agora. Se quiser, eu olho o que os agentes podem assumir pra você."]),
     (r"(?i)triste|chatead|desanim|pra baixo|n[aã]o (?:estou|t[oô]) (?:legal|bem)|sozinho|vazio",
-     &["Uma coisa pequena que ajuda: sai da frente da tela dez minutinhos, toma uma água e respira lá fora. Depois me diz qual dessas coisas mais pesa, que a gente pensa numa saída juntos.",
-       "Minha sugestão pra agora: faz uma coisa só que te dê um gostinho de dia ganho, por menor que seja. E fala com alguém que te quer bem hoje, não guarda isso sozinho."]),
+     &["Uma coisa pequena que ajuda: sai da frente da tela dez minuexemplos, toma uma água e respira lá fora. Depois me diz qual dessas coisas mais pesa, que a gente pensa numa saída juntos.",
+       "Minha sugestão pra agora: faz uma coisa só que te dê um gosexemplo de dia ganho, por menor que seja. E fala com alguém que te quer bem hoje, não guarda isso sozinho."]),
     (r"(?i)dinheiro|d[ií]vida|grana|sal[aá]rio|conta pra pagar|boleto",
      &["Sugestão: olhar os números antes de sofrer com eles. Pede pro Jarvis a situação da meta e eu te ajudo a pensar no próximo passo."]),
 ];
@@ -475,7 +475,7 @@ pub fn natural(texto: &str, recentes: &[String]) -> String {
 /// Guarda um turno ("alma", "dono" ou "alma:mae"...) para ela retomar o fio. A mesma fala nao entra duas vezes seguidas.
 pub fn lembrar_fala(dados: &Path, quem: &str, texto: &str, agora: &Agora) {
     let arq = pasta(dados).join("falas.jsonl");
-    let texto = cortar(&um_espaco(texto), 240);
+    let texto = cortar(&um_espaco(&if quem.starts_with("alma") { crate::tratamento::alma_dono(texto) } else { texto.to_string() }), 240);
     let mut linhas = jsonl(&arq, 39);
     if linhas.last().is_some_and(|u| u["quem"] == quem && u["texto"] == texto.as_str()) {
         return;
@@ -569,9 +569,9 @@ pub fn compor(a: &Alma, destino: &str, situacao: &str, estado: &str, quem: &str)
         if !nome_tecnica(situacao).is_empty() {
             registrar_tecnica(a.dados, "dono", nome_tecnica(situacao), estado, &a.agora);
         }
-        return texto;
+        return crate::tratamento::alma_dono(&texto);
     }
-    if texto.is_empty() { pronto(if estado.is_empty() { ms[0] } else { estado }, ap, &ja, sem) } else { texto }
+    crate::tratamento::alma_dono(&if texto.is_empty() { pronto(if estado.is_empty() { ms[0] } else { estado }, ap, &ja, sem) } else { texto })
 }
 
 /// Conversa direta com a Alma: guarda o turno, percebe o estado e responde no modo certo.
@@ -595,7 +595,7 @@ pub fn mensagem_livre(a: &Alma) -> String {
 do seu jeito, puxando assunto de algo que você sabe dele se houver. Escreva só a mensagem.", contexto_do_dono(a.dados, &a.agora), a.agora.hm(), a.nomes.dono);
     let texto = gerar(&persona(&p, a.nomes), &user, a.llm, &conhecidos(&p, a.nomes));
     if !texto.is_empty() {
-        return texto;
+        return crate::tratamento::alma_dono(&texto);
     }
     format!("{}, só passei pra dizer que estou aqui pensando em você. Respira, toma uma água e me conta como está seu dia 💗", maiuscula(escolher(&apelidos(&p, a.nomes), ts(&a.agora))))
 }
@@ -832,8 +832,8 @@ mod tests {
     #[test]
     fn checagem_pega_o_que_nao_veio_do_contexto() {
         let k = sabidos();
-        let f = inventado("Boa sorte na reunião com o Contato às 15h!", "estou cansado", &k);
-        assert!(["reunião", "Contato", "15"].iter().all(|x| f.contains(&x.to_string())));
+        let f = inventado("Boa sorte na reunião com o Pedro às 15h!", "estou cansado", &k);
+        assert!(["reunião", "Pedro", "15"].iter().all(|x| f.contains(&x.to_string())));
         assert_eq!(inventado("Que bom que a entrevista deu certo, meu bem!", "tenho entrevista amanhã", &k), ["deu certo"]); // resultado nao contado
         assert!(inventado("E a entrevista de sexta, deu certo?", "tenho entrevista sexta", &k).is_empty()); // perguntar pode
         assert!(inventado("Ei, querido, respira fundo. Como você está agora, Davizinho?", "", &k).is_empty());
@@ -870,6 +870,34 @@ mod tests {
         assert_eq!(natural("Alma: Ah, meu amor, tô aqui só pra ouvir. Descansa bem.", &s(&["oi"])), "Descansa bem.");
         assert_eq!(natural("Sinto muito por isso. Vamos respirar juntos.", &[]), "Vamos respirar juntos."); // frase feita sai
         assert!(PERSONA_DONO.contains("não finja ser humana") && PERSONA_DONO.contains("não dá diagnóstico") && PERSONA_DONO.contains("apoio psicológico"));
+    }
+
+    #[test]
+    fn alma_trata_o_dono_com_respeito_sem_apelido_intimo() {
+        let proibidos = ["gostoso", "meu amor", "meu bem", "amor", "lindo", "bebê"];
+        let sem = |t: &str| { let b = t.to_lowercase(); assert!(!proibidos.iter().any(|x| b.contains(x)), "apelido intimo em: {t}"); };
+        // lista padrao: so senhor/nome/querido/apelido, querido no maximo 1 em 6
+        let n = nomes();
+        let aps = apelidos(&padrao(), &n);
+        aps.iter().for_each(|x| sem(x));
+        assert!(aps.iter().filter(|x| x.as_str() == "querido").count() <= 1 && aps.iter().filter(|x| x.as_str() == "senhor").count() >= 2);
+        // prompt, exemplos e textos prontos nao ensinam nem usam apelido intimo (a regra "NUNCA use ..." do prompt cita as palavras de proposito)
+        sem(EXEMPLOS);
+        sem(&PERSONA_DONO[..PERSONA_DONO.find("NUNCA use").unwrap()]);
+        for chave in ["conquista", "alegria", "estresse", "tristeza", "cansaco", "reflexao", "acao", "outro"] {
+            fallback(chave).iter().for_each(|t| sem(&t.replace("{ap}", "senhor")));
+        }
+        ACOLHE.iter().for_each(|t| sem(t));
+        // mesmo se o modelo gerar, a saida ao dono sai respeitosa
+        let (p, cx) = (dir("mente-respeito"), Caixa::default());
+        let env = anota(&cx);
+        let ruim = |_: &str| Some("Oi, meu amor! Tá com tudo, gostoso. Respira fundo, meu bem. Descansa, amor.".to_string());
+        let a = Alma { dados: &p, nomes: &n, agora: em(16, 15, 0), enviar: &env, audio: None, llm: Some(&ruim) };
+        let r = compor(&a, "dono", "estou muito estressado", "estresse", "");
+        sem(&r);
+        assert!(r.to_lowercase().contains("senhor"));
+        sem(&mensagem_livre(&a));
+        let _ = std::fs::remove_dir_all(&p);
     }
 
     #[test]

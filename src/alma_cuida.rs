@@ -350,7 +350,7 @@ pub fn mandar(a: &Alma, apelido: &str, texto: &str) -> Option<String> {
     if rx(PROIBIDOS).is_match(texto) {
         return None;
     }
-    let texto = if apelido == "dono" { texto.to_string() } else { alma_terceiros(texto, &a.nomes.dono_intimo) };
+    let texto = if apelido == "dono" { crate::tratamento::alma_dono(texto) } else { alma_terceiros(texto, &a.nomes.dono_intimo) };
     let mut r = String::new();
     if EM_AUDIO.contains(&apelido) {
         if let Some(f) = a.audio {

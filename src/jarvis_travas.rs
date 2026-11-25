@@ -1,6 +1,6 @@
 //! TRAVAS do Jarvis (porte de braniac/jarvis.py `_gate`, `_gate_envio`, `_eh_familia`, `DONO_CONV`/`DONO_LIVRE`, as travas por
 //! ferramenta do `_Executor`; de braniac/whatsapp.py `resolver_nome`, `melhor_candidato`, `_chave_busca`, `destino_confere`,
-//! `trava_destino`; de braniac/router.py `tem_dado_real`; de braniac/site_magno.py `mandou`).
+//! `trava_destino`; de braniac/router.py `tem_dado_real`; de braniac/site_parceiro.py `mandou`).
 //! Nada aqui envia nem le pagina: quem chama passa a origem, se a autonomia esta armada e o titulo da conversa aberta.
 //! Diferencas do Python: os apelidos da familia que recebem recado sem autonomia armada nao ficam no codigo: so os genericos
 //! ("mae", "mainha", "pai") sao fixos, o resto vem de dados/pessoal.json "familia_livre"; os avisos dizem "o dono" em vez do nome.
@@ -264,9 +264,9 @@ pub fn trava_ferramenta(p: &Pedido, nome: &str, args: &Value, modulo_ativo: &dyn
             para_ia("prompt vazio, longo demais ou com dado sensivel".into()),
         "consultar_ia_web" => ia_web_barrada(arg("ia"), arg("pergunta"), sensivel(arg("pergunta")), false).map_or(Trava::Livre, para_ia),
         // video ja publicado so volta a esteira a pedido de uma PESSOA: chat verificado do dono ou o PC
-        "esteira_magno" if acao == "refazer" && p.conv != DONO_CONV && g("mandar refazer um vídeo que já está no site").is_some() =>
+        "esteira_parceiro" if acao == "refazer" && p.conv != DONO_CONV && g("mandar refazer um vídeo que já está no site").is_some() =>
             para_ia("(refazer vídeo já publicado só a pedido do dono, pelo chat dele ou pelo PC)".into()),
-        "site_magno" if SITE_MEXE.contains(&acao) => {
+        "site_parceiro" if SITE_MEXE.contains(&acao) => {
             if p.conv != DONO_CONV && g("mexer no site").is_some() {
                 para_ia("(mexer no site só a pedido do dono, pelo chat dele ou pelo PC)".into())
             } else if !site_mandou(acao, p.original) {
@@ -359,8 +359,8 @@ mod tests {
     #[test]
     fn melhor_candidato_tolera_erro_e_prefere_todas_as_palavras() {
         let c = ctx();
-        let cands: Vec<String> = ["Caio Obras", "Caio Autista Fresco Da Silva"].iter().map(|s| s.to_string()).collect();
-        assert_eq!(melhor_candidato(&c, "Caio Altista Fresco", &cands).unwrap(), "Caio Autista Fresco Da Silva");
+        let cands: Vec<String> = ["Caio Obras", "Caio Pereira Fresco Da Silva"].iter().map(|s| s.to_string()).collect();
+        assert_eq!(melhor_candidato(&c, "Caio Altista Fresco", &cands).unwrap(), "Caio Pereira Fresco Da Silva");
         assert_eq!(melhor_candidato(&c, "Caio", &cands).unwrap(), "Caio Obras"); // empate: o primeiro
         assert_eq!(melhor_candidato(&c, "caio obras", &cands).unwrap(), "Caio Obras");
         assert!(melhor_candidato(&c, "x", &[]).is_none());
@@ -420,7 +420,7 @@ mod tests {
                        ("compasso_rotinas", "pausar"), ("airbnb_reserva", "aceitar"), ("airbnb_responder", "")] {
             assert!(matches!(trava_ferramenta(&z, n, &json!({ "acao": a }), &sim, &nao), Trava::Bloqueada { direto: Some(_), .. }), "{n} {a}");
         }
-        for (n, a) in [("nexodev", "quadro"), ("investimentos", "propor"), ("vm_windows", "estado"), ("compasso_rotinas", "listar"), ("airbnb_pendentes", ""), ("esteira_magno", "parar")] {
+        for (n, a) in [("nexodev", "quadro"), ("investimentos", "propor"), ("vm_windows", "estado"), ("compasso_rotinas", "listar"), ("airbnb_pendentes", ""), ("esteira_parceiro", "parar")] {
             assert_eq!(trava_ferramenta(&z, n, &json!({ "acao": a }), &sim, &nao), Trava::Livre, "{n} {a}");
         }
         assert!(matches!(trava_ferramenta(&z, "artcraft", &json!({}), &sim, &nao), Trava::Bloqueada { direto: None, .. }));
@@ -434,14 +434,14 @@ mod tests {
         assert!(matches!(trava_ferramenta(&tg, "melhorar_braniac", &json!({}), &sim, &nao), Trava::Bloqueada { direto: Some(_), .. }));
         assert_eq!(trava_ferramenta(&z, "melhorar_braniac", &json!({}), &sim, &nao), Trava::Livre);
         // refazer video publicado e mexer no site: chat do dono ou PC, e a ordem tem que estar na mensagem de agora
-        assert!(matches!(trava_ferramenta(&z, "esteira_magno", &json!({"acao": "refazer", "numero": "170"}), &sim, &nao), Trava::Bloqueada { direto: None, .. }));
+        assert!(matches!(trava_ferramenta(&z, "esteira_parceiro", &json!({"acao": "refazer", "numero": "170"}), &sim, &nao), Trava::Bloqueada { direto: None, .. }));
         let dono = pedido("whatsapp", DONO_CONV, "troca no site o texto antigo por texto novo", false, &c, &f);
-        assert_eq!(trava_ferramenta(&dono, "esteira_magno", &json!({"acao": "refazer", "numero": "170"}), &sim, &nao), Trava::Livre);
-        assert_eq!(trava_ferramenta(&dono, "site_magno", &json!({"acao": "trocar_texto"}), &sim, &nao), Trava::Livre);
-        assert_eq!(trava_ferramenta(&dono, "site_magno", &json!({"acao": "pedidos"}), &sim, &nao), Trava::Livre);
-        assert!(matches!(trava_ferramenta(&z, "site_magno", &json!({"acao": "republicar"}), &sim, &nao), Trava::Bloqueada { .. }));
+        assert_eq!(trava_ferramenta(&dono, "esteira_parceiro", &json!({"acao": "refazer", "numero": "170"}), &sim, &nao), Trava::Livre);
+        assert_eq!(trava_ferramenta(&dono, "site_parceiro", &json!({"acao": "trocar_texto"}), &sim, &nao), Trava::Livre);
+        assert_eq!(trava_ferramenta(&dono, "site_parceiro", &json!({"acao": "pedidos"}), &sim, &nao), Trava::Livre);
+        assert!(matches!(trava_ferramenta(&z, "site_parceiro", &json!({"acao": "republicar"}), &sim, &nao), Trava::Bloqueada { .. }));
         let so_sim = pedido("whatsapp", DONO_CONV, "sim\n\n[Conversa recente no WhatsApp: Jarvis: quer que eu troque o texto do site?]", false, &c, &f);
-        match trava_ferramenta(&so_sim, "site_magno", &json!({"acao": "trocar_texto"}), &sim, &nao) {
+        match trava_ferramenta(&so_sim, "site_parceiro", &json!({"acao": "trocar_texto"}), &sim, &nao) {
             Trava::Bloqueada { para_ia, .. } => assert!(para_ia.contains("não mexi no site")),
             o => panic!("{o:?}"),
         }

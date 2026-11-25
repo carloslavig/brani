@@ -14,9 +14,9 @@ pub const EXT: [&str; 21] = [".html", ".htm", ".js", ".mjs", ".css", ".json", ".
 pub const MAX_ARQ: u64 = 20 << 20;
 pub const MAX_TOTAL: u64 = 120 << 20;
 pub const OLHANDO_S: f64 = 90.0;
-pub const PAGINAS: [(&str, &str); 5] = [("/", "sauraki3d.html"), ("/sauraki", "sauraki3d.html"), ("/mapa", "mapa.html"), ("/pendencias", "pendencias.html"), ("/magno", "magno.html")];
+pub const PAGINAS: [(&str, &str); 5] = [("/", "sauraki3d.html"), ("/sauraki", "sauraki3d.html"), ("/mapa", "mapa.html"), ("/pendencias", "pendencias.html"), ("/parceiro", "parceiro.html")];
 // so GET e so estas rotas; /api/tela (abas do navegador, aceita clique) nunca entra
-pub const APIS: [&str; 7] = ["/api/sauraki", "/api/braincenter", "/api/pendencias", "/api/par/conversa", "/api/par/link", "/api/par", "/api/magno"];
+pub const APIS: [&str; 7] = ["/api/sauraki", "/api/braincenter", "/api/pendencias", "/api/par/conversa", "/api/par/link", "/api/par", "/api/parceiro"];
 pub const CSP: &str = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; form-action 'none'; base-uri 'none'; frame-ancestors http://127.0.0.1:8765 http://localhost:8765";
 pub const ESPERA: &str = "<!doctype html><meta charset=utf-8><title>Predio do par</title><body style='margin:0;display:grid;place-items:center;height:100vh;background:#0b0f17;color:#e6ebf5;font:15px system-ui;text-align:center'><div>O prédio do par ainda não chegou.<br><small style='color:#8b96ad'>Quando o computador dele mandar, ele aparece aqui sozinho.</small></div><script>setTimeout(function(){location.reload()},15000)</script>";
 const JSON: &str = "application/json; charset=utf-8";

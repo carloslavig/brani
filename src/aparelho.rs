@@ -29,6 +29,10 @@ fn agora_ms() -> u64 {
     SystemTime::now().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_millis() as u64)
 }
 
+pub fn microfone_aberto() -> bool {
+    ABERTO.load(Ordering::SeqCst)
+}
+
 pub fn chave(dados: &Path) -> bool {
     crate::wpp_laco::chave(dados, "voz")
 }
@@ -119,12 +123,17 @@ pub fn tocar_wav(wav: Vec<u8>) -> Result<(), String> {
 
 /// Gera a voz do agente (mesma regra de POST /api/voz: escolhida na tela Vozes e reservas, depois a ordem de sempre; texto sensivel so voz local) e toca.
 pub fn falar(dados: &Path, rot: &Roteador, texto: &str, agente: &str) -> Result<(), String> {
+    tocar_wav(gerar(dados, rot, texto, agente)?)
+}
+
+/// So a geracao do audio (a mesma voz de `falar`), para quem encadeia trechos com pausa certa.
+pub fn gerar(dados: &Path, rot: &Roteador, texto: &str, agente: &str) -> Result<Vec<u8>, String> {
     let (agora, nuvem) = (crate::tempo::agora(), !rot.sensivel(texto));
     let estilo = crate::vozes_agentes::escolha(dados, agente)["ajustes"]["estilo"].as_str().unwrap_or("").to_string();
     let wav = crate::vozes_agentes::falar(dados, &agora, agente, texto, nuvem, &|m, v, tx| crate::voz::gerar(&*rot.ler_chave, m, v, tx, &estilo))
         .map(|f| f.wav)
         .or_else(|_| crate::voz::falar_wav(dados, &*rot.ler_chave, texto, nuvem, agente).map(|(w, _)| w))?;
-    tocar_wav(wav)
+    Ok(wav)
 }
 
 // ---------- microfone ----------
@@ -194,7 +203,8 @@ fn laco(rot: Arc<Roteador>) {
     loop {
         std::thread::sleep(Duration::from_millis(50));
         let dados = crate::pasta_dados();
-        match (quer_microfone(chave(&dados), MIC_LIGADO.load(Ordering::SeqCst)), aberto.is_some()) {
+        // Servidor pausado (botao do app / modo jogo): o microfone fecha e so reabre ao retomar
+        match (quer_microfone(chave(&dados), MIC_LIGADO.load(Ordering::SeqCst)) && !crate::power::pausado(&dados), aberto.is_some()) {
             (true, false) => match abrir(buf.clone()) {
                 Ok(s) => {
                     aberto = Some(s);
@@ -238,17 +248,9 @@ pub fn iniciar(rot: Arc<Roteador>) {
     bandeja();
 }
 
-/// Sobe o script da bandeja (icones do Jarvis e da Alma). Ele mesmo recusa uma segunda copia (mutex nomeado). Sem o arquivo, nao faz nada.
+/// Sobe a miniatura de voz (processo proprio, com o unico icone da bandeja). Ela mesma recusa uma segunda copia. Sem o exe, nao faz nada.
 fn bandeja() {
-    let script = std::env::var_os("BRANIAC_BANDEJA").map(std::path::PathBuf::from).or_else(|| {
-        std::env::current_exe().ok()?.ancestors().map(|p| p.join("ferramentas").join("bandeja.ps1")).find(|p| p.exists())
-    });
-    let Some(script) = script else { return };
-    let mut c = std::process::Command::new("powershell.exe");
-    c.args(["-NoProfile", "-STA", "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File"]).arg(script).arg(crate::PORTA.to_string());
-    #[cfg(windows)]
-    std::os::windows::process::CommandExt::creation_flags(&mut c, 0x0800_0000);
-    let _ = c.spawn();
+    crate::miniatura::garantir();
 }
 
 #[cfg(test)]

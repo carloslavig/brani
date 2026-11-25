@@ -76,6 +76,18 @@ fn validar_id(id: &str) -> Result<(), String> {
     }
 }
 
+/// Uma gravacao do mapa por vez: duas threads (ou o Brani novo e o antigo na troca) perdiam a linha uma da outra e a aba ficava sem dono.
+static MAPA: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+/// Liga uma aba que ja existe a um agente (adocao: o Chrome restaurou a aba e o mapa nao a conhece).
+pub fn registrar_agente(dados: &Path, id: &str, agente: &str) -> Result<(), String> {
+    validar_id(id)?;
+    let _g = MAPA.lock().unwrap_or_else(|e| e.into_inner());
+    let mut mapa = carregar_mapa(dados)?;
+    mapa.insert(id.to_string(), agente.to_string());
+    salvar_mapa(dados, &mapa)
+}
+
 /// Carrega o mapa id → agente do arquivo JSON.
 fn carregar_mapa(dados: &Path) -> Result<HashMap<String, String>, String> {
     let dados = &dados.join("vm_abas.json");
@@ -86,7 +98,7 @@ fn carregar_mapa(dados: &Path) -> Result<HashMap<String, String>, String> {
     let mut txt = String::new();
     f.read_to_string(&mut txt)
         .map_err(|e| format!("Ler {}: {}", dados.display(), e))?;
-    serde_json::from_str(&txt).map_err(|e| format!("Parse JSON {}: {}", dados.display(), e))
+    Ok(serde_json::from_str(&txt).unwrap_or_default()) // mapa corrompido vale vazio: a reconciliacao readota as abas pela URL
 }
 
 /// Salva o mapa id → agente no arquivo JSON.
@@ -95,19 +107,16 @@ fn salvar_mapa(dados: &Path, mapa: &HashMap<String, String>) -> Result<(), Strin
     let dados = &dados.join("vm_abas.json");
     let txt = serde_json::to_string_pretty(mapa)
         .map_err(|e| format!("Serializar mapa: {}", e))?;
-    let mut f = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(dados)
-        .map_err(|e| format!("Abrir {}: {}", dados.display(), e))?;
-    f.write_all(txt.as_bytes())
-        .map_err(|e| format!("Escrever {}: {}", dados.display(), e))
+    let tmp = dados.with_extension("json.tmp"); // escreve ao lado e troca: nunca fica meio arquivo
+    let mut f = OpenOptions::new().write(true).create(true).truncate(true).open(&tmp).map_err(|e| format!("Abrir {}: {}", tmp.display(), e))?;
+    f.write_all(txt.as_bytes()).map_err(|e| format!("Escrever {}: {}", tmp.display(), e))?;
+    drop(f);
+    fs::rename(&tmp, dados).map_err(|e| format!("Trocar {}: {}", dados.display(), e))
 }
 
 /// Estado da VM.
 pub fn estado() -> Result<Value, String> {
-    let out = Command::new("wsl.exe")
+    let out = crate::oculto::cmd("wsl.exe")
         .arg("-l")
         .arg("-v")
         .output()
@@ -122,7 +131,7 @@ pub fn estado() -> Result<Value, String> {
 /// Liga a VM sem janela. O ligar.sh fica em primeiro plano de proposito (o WSL desliga a
 /// distro quando o ultimo processo iniciado pelo Windows termina), entao nao esperamos ele.
 pub fn ligar() -> Result<Value, String> {
-    let mut c = Command::new("wsl.exe");
+    let mut c = crate::oculto::cmd("wsl.exe");
     c.args(["-d", DISTRO, "-u", "root", "--", "/opt/braniac/ligar.sh"])
         .stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null());
     #[cfg(windows)]
@@ -134,7 +143,7 @@ pub fn ligar() -> Result<Value, String> {
 
 /// Desligar a VM.
 pub fn desligar() -> Result<Value, String> {
-    let status = Command::new("wsl.exe")
+    let status = crate::oculto::cmd("wsl.exe")
         .arg("--terminate")
         .arg(DISTRO)
         .status()
@@ -204,11 +213,7 @@ fn criar_aba(dados: &Path, agente: &str, url: &str) -> Result<Value, String> {
         .and_then(|v| v.as_str())
         .ok_or("Resposta sem campo id")?;
 
-    // persiste agente
-    let mut mapa = carregar_mapa(dados)?;
-    mapa.insert(id.to_string(), agente.to_string());
-    salvar_mapa(dados, &mapa)?;
-
+    registrar_agente(dados, id, agente)?;
     Ok(json)
 }
 
@@ -233,6 +238,7 @@ pub fn fechar_aba(dados: &Path, id: &str) -> Result<Value, String> {
 
     // mesmo que não haja corpo, consideramos sucesso se código 200
     if resp.status() == 200 {
+        let _g = MAPA.lock().unwrap_or_else(|e| e.into_inner());
         let mut mapa = carregar_mapa(dados)?;
         mapa.remove(id);
         salvar_mapa(dados, &mapa)?;

@@ -20,7 +20,7 @@ const TEMPO_RESPOSTA_S: u64 = 300;
 /// Roda o programa de `c.args[0]` com o resto dos argumentos, o pedido na entrada padrao e um prazo.
 pub fn executar_processo(c: &Chamada) -> Result<Saida, Falha> {
     let exe = c.args.first().ok_or_else(|| Falha::Outra("sem programa".into()))?;
-    let mut cmd = Command::new(exe);
+    let mut cmd = crate::oculto::cmd(exe);
     // se o Braniac subiu de dentro de uma sessao do Claude Code, o filho nao pode achar que esta aninhado nela
     cmd.args(&c.args[1..]).env_remove("CLAUDECODE").env_remove("CLAUDE_CODE_ENTRYPOINT").current_dir(c.pasta)
         .stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());

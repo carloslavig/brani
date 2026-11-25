@@ -1,7 +1,7 @@
-//! Maestro da esteira de videos de prefeitura do Cliente: porta do orquestrador_50.py (fases, vozes, render, site, preparacao continua).
+//! Maestro da esteira de videos de prefeitura do Parceiro: porta do orquestrador_50.py (fases, vozes, render, site, preparacao continua).
 //! Estado e log nos MESMOS arquivos do Python (orquestrador.json, orquestrador.log, comando_esteira.json), porque os paineis leem eles.
 //! O que ainda e Python (ajudante passo_esteira.py, so importa funcoes que ja existem): preparar a cidade (e-TCM, levantamento, auditoria
-//! e guia), escolher a proxima, gravar a voz, copiar PDFs do TCM, avisar o Xandao. Render, site, fases e estado sao daqui.
+//! e guia), escolher a proxima, gravar a voz, copiar PDFs do TCM, avisar o Aliado. Render, site, fases e estado sao daqui.
 //! NASCE DESLIGADO: o laco so anda se existir `<dados>/esteira_ligada` (POST /api/esteira/orq {"ligar":true}).
 #![allow(dead_code)]
 
@@ -14,7 +14,7 @@ use std::time::{Duration, Instant};
 
 pub const RENDERS_POR_RODADA: i64 = 5; // Dono, 14/11: 5 renders, depois 10 vozes
 pub const VOZES_POR_RODADA: i64 = 10;
-pub const MT_INICIO: i64 = 900; // serie 900 = Mato Grosso: vai ao WhatsApp do Dono, nao ao site do Cliente
+pub const MT_INICIO: i64 = 900; // serie 900 = Mato Grosso: vai ao WhatsApp do Dono, nao ao site do Parceiro
 const MAX_TENTATIVAS_VOZ: i64 = 6; // reprovou 6 rodadas: sai da vez ate resolver()
 const PEDIDO_IRECE: &str = "33821a57b3d9";
 const SEM_JANELA: u32 = 0x0800_0000;
@@ -41,7 +41,7 @@ pub type Exec = dyn Fn(&Cmd) -> Saida + Send + Sync;
 pub fn exec_real(c: &Cmd) -> Saida {
     use std::io::Read;
     use std::process::Stdio;
-    let mut cmd = std::process::Command::new(&c.prog);
+    let mut cmd = crate::oculto::cmd(&c.prog);
     cmd.args(&c.args).current_dir(&c.cwd).stdin(Stdio::null());
     match c.arquivo.as_ref().map(|a| std::fs::File::create(a).and_then(|f| Ok((f.try_clone()?, f)))) {
         Some(Ok((o, e))) => cmd.stdout(o).stderr(e),
@@ -99,7 +99,7 @@ fn algum_log_fresco(videos: &Path) -> bool {
     std::fs::read_dir(videos).into_iter().flatten().flatten().any(|e| fresco(&e.path().join("render.log")))
 }
 
-/// Item de fila: [numero, cidade, pedido-do-Xandao|null], como no json do Python.
+/// Item de fila: [numero, cidade, pedido-do-Aliado|null], como no json do Python.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Item {
     pub n: String,
@@ -285,7 +285,7 @@ pub fn depois_do_preparo(d: &mut Value, item: &Item, ok: bool, prioridade: bool)
 }
 
 pub fn aviso_lote(ok: &[String], pendencias: &[String], revisar: &[String]) -> String {
-    let mut t = format!("[Braniac · Jarvis] Parceiro, por favor avise o Cliente no Telegram: lote novo no site dele. Lote entregue pela caixa de entrada do site: {}. Mesmo padrão dos de hoje (seta no centro da cidade, mês certo nos selos, voz Algenib conferida número a número, acelerada só se passar de 3 min). Confira e aprove um por um: VIDEO APROVADO NNN (ou VIDEO REPROVADO NNN: motivo). PDFs do TCM de cada cidade ficam no PC do Dono (RECEITAS-DESPESAS-CIDADE).", ok.join(", "));
+    let mut t = format!("[Braniac · Jarvis] Aliado, por favor avise o Parceiro no Telegram: lote novo no site dele. Lote entregue pela caixa de entrada do site: {}. Mesmo padrão dos de hoje (seta no centro da cidade, mês certo nos selos, voz Algenib conferida número a número, acelerada só se passar de 3 min). Confira e aprove um por um: VIDEO APROVADO NNN (ou VIDEO REPROVADO NNN: motivo). PDFs do TCM de cada cidade ficam no PC do Dono (RECEITAS-DESPESAS-CIDADE).", ok.join(", "));
     if !pendencias.is_empty() {
         t += &format!(" Pendências desde o último lote (prefeitura sem documento no TCM ou soma que não fecha): {}.", pendencias.join(", "));
     }
@@ -338,15 +338,15 @@ pub struct Config {
 impl Config {
     pub fn real(dados: &Path) -> Config {
         let var = |k: &str, padrao: &str| std::env::var_os(k).map(PathBuf::from).unwrap_or_else(|| PathBuf::from(padrao));
-        let pacote = var("BRANIAC_PACOTE", r"C:\Cliente\PACOTE-PRODUCAO-COMPLETA");
+        let pacote = var("BRANIAC_PACOTE", r"C:\Parceiro\PACOTE-PRODUCAO-COMPLETA");
         Config {
-            pasta: var("BRANIAC_ESTEIRA_DADOS", r"%USERPROFILE%\Projetos\Agente\braniac\data\magno"),
+            pasta: var("BRANIAC_ESTEIRA_DADOS", r"C:\Users\usuario\Projetos\Agente\braniac\data\parceiro"),
             estudio: pacote.join("estudio-3d"),
             ajudante: pacote.join("scripts-braniac").join("passo_esteira.py"),
             pacote,
             site: PathBuf::from(r"E:\braniac-link\site"),
             envia: PathBuf::from(r"C:\Braniac\envio\envia_site.py"),
-            raiz: PathBuf::from(r"%USERPROFILE%\Projetos\Agente"),
+            raiz: PathBuf::from(r"C:\Users\usuario\Projetos\Agente"),
             backup: PathBuf::from(r"E:\BACKUP DO ESCRITORIO PREFEITURAS VIDEO"),
             ligada: dados.join("esteira_ligada"),
             python: "python".into(),
@@ -546,7 +546,7 @@ impl Maestro {
         self.preparo(n).ok().is_some_and(|c| self.cfg.backup.join(c["projeto"].as_str().unwrap_or("")).join(format!("{}.mp4", c["nome"].as_str().unwrap_or(""))).exists())
     }
 
-    /// Cidade ja no site do Cliente (a esteira nao refaz sozinha). Pergunta ao Python, com cache de 10 min.
+    /// Cidade ja no site do Parceiro (a esteira nao refaz sozinha). Pergunta ao Python, com cache de 10 min.
     fn bloqueada(&self, n: &str) -> bool {
         if let Some((t, v)) = travar(&self.bloqueios).get(n) {
             if t.elapsed() < self.cfg.segundo * 600 {
@@ -625,7 +625,7 @@ impl Maestro {
             escolhido
         };
         let Some(item) = item else { return 30 };
-        // cota da voz do Cliente: sem cota espera 10 min (a cidade volta para a fila)
+        // cota da voz do Parceiro: sem cota espera 10 min (a cidade volta para a fila)
         if !self.py(&["cota"], 180).ok().is_some_and(|r| r["ok"].as_bool().unwrap_or(false)) {
             travar(&self.em_voz).remove(&item.n);
             return 600;
@@ -796,7 +796,7 @@ impl Maestro {
         Ok(d)
     }
 
-    /// Monta a pasta NNN-CIDADE de cada video, envia pela caixa de entrada do site e avisa o Xandao. Devolve "NNN CIDADE" dos que chegaram.
+    /// Monta a pasta NNN-CIDADE de cada video, envia pela caixa de entrada do site e avisa o Aliado. Devolve "NNN CIDADE" dos que chegaram.
     pub fn mandar_site(&self, lote: &[(String, String)]) -> Vec<String> {
         let mut ok = vec![];
         let envia = self.cfg.envia.to_string_lossy().into_owned();
@@ -837,8 +837,8 @@ impl Maestro {
             }
         }
         let aviso = aviso_lote(&ok, &travar(&self.pend_lote), &travar(&self.revisar));
-        if let Err(e) = self.py(&["avisar_xandao", &aviso], 120) {
-            self.log(&format!("não avisei o Parceiro: {}", corta(&e, 150)));
+        if let Err(e) = self.py(&["avisar_aliado", &aviso], 120) {
+            self.log(&format!("não avisei o Aliado: {}", corta(&e, 150)));
         }
         travar(&self.revisar).clear();
         travar(&self.pend_lote).clear();
@@ -1027,7 +1027,7 @@ impl Maestro {
         0
     }
 
-    /// Meta batida: manda o que sobrou e avisa o Xandao, uma vez. So quando nada esta no meio.
+    /// Meta batida: manda o que sobrou e avisa o Aliado, uma vez. So quando nada esta no meio.
     fn fim(&self) -> u64 {
         if !self.fim_armado.load(Ordering::SeqCst) {
             return 30;
@@ -1037,7 +1037,7 @@ impl Maestro {
         }
         self.enviar_lote();
         let n = lista_de_numeros(&self.estado(), "prontos").len();
-        let _ = self.py(&["avisar_xandao", &format!("[Braniac · Claudinho] Esteira terminou: {n} vídeos prontos e entregues pelo site.")], 120);
+        let _ = self.py(&["avisar_aliado", &format!("[Braniac · Claudinho] Esteira terminou: {n} vídeos prontos e entregues pelo site.")], 120);
         self.log(&format!("FIM {n} prontos"));
         self.fim_armado.store(false, Ordering::SeqCst);
         30
@@ -1088,6 +1088,11 @@ pub fn iniciar(m: &Arc<Maestro>) {
         let _ = std::thread::Builder::new().name(format!("esteira-{nome}")).spawn(move || {
             m.dorme(atraso); // as duas vozes nao comecam juntas
             loop {
+                // servidor pausado: nao comeca passo novo (o que ja esta rodando termina); olha de novo em 15 s
+                if crate::power::pausado(&crate::pasta_dados()) {
+                    m.dorme(15);
+                    continue;
+                }
                 // erro em um passo vira log e nunca derruba o laco
                 let s = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| passo(&m))).unwrap_or_else(|_| {
                     m.log(&format!("erro inesperado na linha {nome}; segue em 60 s"));
@@ -1145,7 +1150,7 @@ mod tests {
 
     fn cfg_teste(base: &Path) -> Config {
         Config {
-            pasta: base.join("magno"),
+            pasta: base.join("parceiro"),
             pacote: base.join("pacote"),
             estudio: base.join("pacote").join("estudio-3d"),
             site: base.join("site"),
@@ -1473,7 +1478,7 @@ mod tests {
         assert!(log.contains("PRONTO COM AVISO") && log.contains("SITE 254 CORAÇÃO DE MARIA ok") && log.contains("PRONTO 254"));
         let chamadas = g.lock().unwrap().join("\n");
         assert!(chamadas.contains("renderizar.mjs videos/254/video.json --nucleos=6 --gl=angle --quadros-por-parte=600"));
-        assert!(chamadas.contains("envia_site.py") && chamadas.contains("--pdfs") && chamadas.contains("avisar_xandao"));
+        assert!(chamadas.contains("envia_site.py") && chamadas.contains("--pdfs") && chamadas.contains("avisar_aliado"));
         assert!(std::fs::read_to_string(pacote.join("videos/254/render.log")).unwrap().contains("ERRO"));
     }
 

@@ -458,7 +458,7 @@ mod tests {
         assert!(intencao_aviso(&format!("fala {}que sim", "palavra ".repeat(9))).is_none()); // "nome" com mais de 40 letras
         assert_eq!(intencao_aviso("avisa a Deusa Bia que cheguei").unwrap(), ("Deusa Bia".to_string(), "cheguei".to_string()));
         assert_eq!(intencao_envio("manda uma mensagem pra Deusa Bia dizendo que cheguei").unwrap().0, "Deusa Bia");
-        assert_eq!(intencao_audio("manda um áudio para Contato Fz dizendo oi").unwrap(), ("Contato Fz".to_string(), "oi".to_string()));
+        assert_eq!(intencao_audio("manda um áudio para Pedro Fz dizendo oi").unwrap(), ("Pedro Fz".to_string(), "oi".to_string()));
         assert_eq!(intencao_aviso("Jarvis, fala pra minha mãe que o hóspede esqueceu a carteira na suíte").unwrap().0, "minha mãe");
     }
 
@@ -479,7 +479,7 @@ mod tests {
     #[test]
     fn erro_numero_solto_e_atalhos_pequenos() {
         assert!(eh_erro("errou") && eh_erro("SEU CU") && !eh_erro("o resto do assunto") && !eh_erro("/errou"));
-        let longa = "o Jarvis errou ontem na agenda mas hoje ele acertou tudo direitinho e eu gostei bastante do resultado final";
+        let longa = "o Jarvis errou ontem na agenda mas hoje ele acertou tudo direiexemplo e eu gostei bastante do resultado final";
         assert!(longa.len() > 80 && !eh_erro(longa)); // frase longa nao dispara
         assert!(numero_solto("11999990000") && numero_solto("+55 (11) 99999-0000"));
         assert!(!numero_solto("me lembra às 15") && !numero_solto("123") && !numero_solto("liga pro 11999990000"));

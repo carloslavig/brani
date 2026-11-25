@@ -97,6 +97,10 @@ pub fn rodar(dados: &Path, agora: &Agora, ts: f64, ia: Ia, lista: &[(String, i64
         let pronto = |linha: String, resposta: String| Some(Atalho { linha, resposta: Some(resposta), apresentar: false });
         match fase {
             Fase::Antes => {
+                // cliente Wallace (sistema Exemplo Auto Pecas): pedido sobre o sistema vira conselho + tickets em segundo plano
+                if let Some(linha) = crate::cliente_exemplo::tratar(dados, nome, entrada, &agora.data.iso(), ts, &texto, &|p| crate::cliente_exemplo::em_segundo_plano(dados, p)) {
+                    return Some(Atalho { linha, ..Default::default() });
+                }
                 let reg = |t: &str| {
                     let _ = memoria::registrar_msg(dados, nome, "C", t, "whatsapp", false, ts);
                 };
@@ -106,7 +110,7 @@ pub fn rodar(dados: &Path, agora: &Agora, ts: f64, ia: Ia, lista: &[(String, i64
                     }
                 };
                 let canais = zelo::Canais { texto: &texto, audio: &audio, audio_alma: &audio };
-                let por_voz = it.msgs.iter().any(|m| m.starts_with('🎙'));
+                let por_voz = it.msgs.iter().any(|m| m.starts_with('🎙') || m.contains("ÁUDIO não compreendido")); // audio que nao deu para ouvir tambem e voz: o pai nunca recebe a resposta neutra
                 let linha = match zelo::quem(nome, &nomes)? {
                     "pai" if !por_voz => guia_pai::tratar(nome, &it.msgs, &audio, Some(&llm), &nomes, Some(&reg)), // texto encaminhado: explica em audio
                     f if f == "pai" || zelo::grave(entrada) => zelo::tratar(nome, &it.msgs, &nomes, &canais, Some(&llm), &avisar, Some(&reg), None),

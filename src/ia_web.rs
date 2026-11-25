@@ -33,7 +33,7 @@ pub struct Site {
 const BOTAO_PARAR: &str = "[...document.querySelectorAll('button')].some(b=>/parar|stop/i.test(b.getAttribute('aria-label')||''))";
 
 pub const SITES: [Site; 6] = [
-    Site { nome: "chatgpt", dominio: "chatgpt.com", nova: "https://chatgpt.com/", entrada: "#prompt-textarea, div.ProseMirror[contenteditable=true]", enviar: "[data-testid=\"send-button\"], button[aria-label*=\"Enviar\"]",
+    Site { nome: "chatgpt", dominio: "chatgpt.com", nova: "https://chatgpt.com/", entrada: "#prompt-textarea, div.ProseMirror[contenteditable=true]", enviar: "[data-testid=\"send-button\"], button[aria-label*=\"Enviar\"], button[aria-label=\"Send\"], button[aria-label*=\"Send prompt\"]",
            resposta: "[data-message-author-role=\"assistant\"], [data-markdown-text-style=\"assistant-message\"]", parar: "!!document.querySelector('[data-testid=\"stop-button\"]')", deslogado: "!!document.querySelector('[data-testid=\"login-button\"]')" },
     Site { nome: "gemini", dominio: "gemini.google.com", nova: "https://gemini.google.com/app", entrada: "rich-textarea .ql-editor", enviar: "button[aria-label=\"Enviar mensagem\"]", resposta: "model-response .model-response-text, model-response message-content",
            parar: "[...document.querySelectorAll('button')].some(b=>/parar|stop|interromper/i.test(b.getAttribute('aria-label')||''))", deslogado: "[...document.querySelectorAll('a,button')].some(e=>/fazer login|sign in/i.test(e.innerText||''))" },

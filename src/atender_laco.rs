@@ -767,15 +767,15 @@ mod tests {
         let (d, env) = (tmp("longa"), Env::default());
         let flags = RefCell::new(vec![]);
         let enviar = anota(&env);
-        let coletar = || Ok(vec![item("Jr", &["oi"])]);
+        let coletar = || Ok(vec![item("Irmao", &["oi"])]);
         let decidir = |_: &Item, f: &str| {
             flags.borrow_mut().push(f.to_string());
             Some(("E".to_string(), if f.contains('L') { "Fala! Em que posso ajudar?".to_string() } else { "x".repeat(700) }))
         };
         let (_, u) = atender(&d, &agora(), TS, &Opcoes::default(), &portas(&coletar, &decidir, &enviar));
-        assert_eq!(u.enviados, v(&["Jr"]));
+        assert_eq!(u.enviados, v(&["Irmao"]));
         assert_eq!(flags.borrow().len(), 2); // uma tentativa a mais, nao um laco
-        assert!(flags.borrow()[1].ends_with('L') && para(&env, "Jr")[0].ends_with("Fala! Em que posso ajudar?"));
+        assert!(flags.borrow()[1].ends_with('L') && para(&env, "Irmao")[0].ends_with("Fala! Em que posso ajudar?"));
     }
 
     #[test]

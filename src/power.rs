@@ -44,6 +44,7 @@ pub fn desligar(dados: &Path, motivo: &str, jogo: &str) {
         e["pausado"] = json!(true);
         e["motivo"] = json!(motivo);
         e["jogo"] = json!(jogo);
+        e["desde"] = json!(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0.0, |d| d.as_secs_f64()));
         e["arma_ate"] = json!(0);
     });
 }

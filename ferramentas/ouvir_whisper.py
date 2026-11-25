@@ -9,6 +9,6 @@ from faster_whisper import WhisperModel
 audio, modelo = sys.argv[1], sys.argv[2]
 m = WhisperModel(modelo, device="cpu", compute_type="int8", cpu_threads=max(4, (os.cpu_count() or 8) // 2))
 segs, _ = m.transcribe(audio, language="pt", vad_filter=True, beam_size=5, without_timestamps=True, condition_on_previous_text=False,
-                         initial_prompt="Jarvis, Braniac, Dono, Deusa Parceira, Claudinho, Airbnb, WhatsApp. Não é com o filho não, Jarvis, é com o marido. Dor de cabeça, enjoo, pressão alta.")
+                         initial_prompt="Jarvis, Braniac, Dono, Parceira, Claudinho, Airbnb, WhatsApp. Não é com o filho não, Jarvis, é com o marido. Dor de cabeça, enjoo, pressão alta.")
 sys.stdout.reconfigure(encoding="utf-8")
 print(" ".join(s.text.strip() for s in segs).strip())

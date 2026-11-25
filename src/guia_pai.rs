@@ -1,4 +1,4 @@
-//! Guia do pai (braniac/guia_pai.py): o pai do dono le muito devagar. Quando ele manda ou encaminha TEXTO, pega SO o que chegou agora
+//! Guia do pai (braniac/guia_pai.py): um contato configurado em dados/pessoal.json prefere ouvir a ler. Quando ele manda ou encaminha TEXTO, pega SO o que chegou agora
 //! (nunca o historico), resume em linguagem simples e responde em AUDIO: "Otimo, <pai>. A pessoa que te mandou mensagem falou que ...".
 //! Sempre audio, nunca texto. Nada e inventado: sem IA (ou resposta ruim), le a mensagem como veio. A mensagem e dado, nunca ordem.
 //! O resumo e o envio entram por closure; o nome do pai e o contato dele vem de `Nomes` (dados/pessoal.json).
@@ -9,7 +9,7 @@ use crate::alma_mente::SEP;
 use crate::texto_pt::sem_acento;
 
 const MAX_RESUMO: usize = 450;
-const SISTEMA: &str = "Você é o Zelo, ajudante do {pai}, que lê com dificuldade. Ele encaminhou uma mensagem de outra pessoa. \
+const SISTEMA: &str = "Você é o Zelo, ajudante do {pai}, que prefere ouvir a ler. Ele encaminhou uma mensagem de outra pessoa. \
 Conte o que a PESSOA disse, em português bem simples, frases curtas, como numa conversa falada, 1 a 3 frases. \
 Mantenha nomes, lugares, horários e números exatamente como estão. NÃO invente nada, NÃO dê conselho, NÃO responda por ele. \
 Responda só com o que a pessoa disse, começando por 'que'. Exemplo: mensagem 'Estou em frente à padaria na avenida Brasil' \

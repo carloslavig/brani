@@ -84,7 +84,7 @@ mod tests {
         let avisos = RefCell::new(vec![]);
         let rodar = |p: &str| -> (i32, String) {
             pedidos.borrow_mut().push(p.to_string());
-            candidaturas::registrar(&d, "enviada", "Dev Jr", &format!("Empresa {}", pedidos.borrow().len()), &format!("https://exemplo.test/{}", pedidos.borrow().len()), "", base + 60.0).unwrap();
+            candidaturas::registrar(&d, "enviada", "Dev Irmao", &format!("Empresa {}", pedidos.borrow().len()), &format!("https://exemplo.test/{}", pedidos.borrow().len()), "", base + 60.0).unwrap();
             (0, "log\n1 enviada, 0 puladas".into())
         };
         let enviar = |m: &str| avisos.borrow_mut().push(m.to_string());

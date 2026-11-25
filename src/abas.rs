@@ -12,15 +12,31 @@ fn base() -> &'static str {
     vm::CDP.trim_start_matches("http://")
 }
 
+/// Id da aba do agente. Nao achou e o agente e de um servico fixo (whatsapp, airbnb...): reconcilia primeiro (adota a aba que o
+/// Chrome restaurou, limpa repetidas, abre so se nao houver nenhuma) e olha de novo.
+fn achar(dados: &Path, agente: &str) -> Result<Option<String>, String> {
+    let ver = |dados: &Path| -> Result<Option<String>, String> {
+        let abas = vm::abas(dados).map_err(|e| format!("a VM esta ligada? ({e})"))?;
+        Ok(abas.as_array().into_iter().flatten().find(|a| a["agente"].as_str().is_some_and(|g| g.eq_ignore_ascii_case(agente.trim()))).and_then(|a| a["id"].as_str()).map(String::from))
+    };
+    if let Some(id) = ver(dados)? {
+        return Ok(Some(id));
+    }
+    if crate::abas_fixas::lista(dados).iter().any(|(a, _)| a.eq_ignore_ascii_case(agente.trim())) {
+        let _ = crate::reconcilia_abas::passo(dados);
+        return ver(dados);
+    }
+    Ok(None)
+}
+
 /// Id da aba do agente; quem ainda nao tem ganha uma nova.
 pub fn aba_do_agente(dados: &Path, agente: &str) -> Result<String, String> {
     let agente = agente.trim();
     if agente.is_empty() {
         return Err("diga qual agente usa a aba".into());
     }
-    let abas = vm::abas(dados).map_err(|e| format!("a VM esta ligada? ({e})"))?;
-    if let Some(id) = abas.as_array().into_iter().flatten().find(|a| a["agente"] == agente).and_then(|a| a["id"].as_str()) {
-        return Ok(id.to_string());
+    if let Some(id) = achar(dados, agente)? {
+        return Ok(id);
     }
     let nova = vm::aba_em_branco(dados, agente)?;
     nova["id"].as_str().map(String::from).ok_or_else(|| "o navegador nao devolveu o id da aba".into())
@@ -39,16 +55,12 @@ pub fn navegar(dados: &Path, agente: &str, url: &str) -> Result<Value, String> {
 
 /// O que a aba do agente esta mostrando agora. Nao cria aba: agente sem aba e erro.
 pub fn ler(dados: &Path, agente: &str) -> Result<Value, String> {
-    let abas = vm::abas(dados).map_err(|e| format!("a VM esta ligada? ({e})"))?;
-    let id = abas.as_array().into_iter().flatten().find(|a| a["agente"] == agente.trim()).and_then(|a| a["id"].as_str())
-        .ok_or_else(|| format!("o agente '{}' nao tem aba aberta", agente.trim()))?.to_string();
+    let id = achar(dados, agente)?.ok_or_else(|| format!("o agente '{}' nao tem aba aberta", agente.trim()))?;
     Aba::conectar(base(), &id)?.ler(MAX_TEXTO)
 }
 
 pub(crate) fn aba_aberta(dados: &Path, agente: &str) -> Result<Aba, String> {
-    let abas = vm::abas(dados).map_err(|e| format!("a VM esta ligada? ({e})"))?;
-    let id = abas.as_array().into_iter().flatten().find(|a| a["agente"] == agente.trim()).and_then(|a| a["id"].as_str())
-        .ok_or_else(|| format!("o agente '{}' nao tem aba aberta", agente.trim()))?.to_string();
+    let id = achar(dados, agente)?.ok_or_else(|| format!("o agente '{}' nao tem aba aberta", agente.trim()))?;
     Aba::conectar(base(), &id)
 }
 

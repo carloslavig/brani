@@ -6,7 +6,7 @@ Quem ja esta "portado" ou "em andamento" no paridade.json continua assim.
 import ast, json, sys
 from pathlib import Path
 
-ORIGEM = Path(sys.argv[1] if len(sys.argv) > 1 else r"%USERPROFILE%\Projetos\Agente\braniac")
+ORIGEM = Path(sys.argv[1] if len(sys.argv) > 1 else r"C:\Users\usuario\Projetos\Agente\braniac")
 AQUI = Path(__file__).parent.parent
 FORA = {"data", "tests", "__pycache__", "graphify-out", "modelos", "wpp_baileys", "kit", "dados-link"}
 

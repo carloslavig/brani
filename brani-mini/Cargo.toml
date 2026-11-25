@@ -1,0 +1,18 @@
+[package]
+name = "brani-mini"
+version = "1.0.0"
+description = "B.R.A.N.I - miniatura de voz (Jarvis e Alma) e icone da bandeja; processo proprio, independente do app e do servidor"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["custom-protocol", "tray-icon"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true

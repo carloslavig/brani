@@ -235,7 +235,7 @@ mod tests {
         let p = pasta("juncao");
         std::fs::create_dir_all(p.join("real")).unwrap();
         std::fs::write(p.join("real/a.bin"), vec![b'x'; 1000]).unwrap();
-        let ok = std::process::Command::new("cmd").args(["/C", "mklink", "/J"]).arg(p.join("atalho")).arg(p.join("real")).output().map(|o| o.status.success()).unwrap_or(false);
+        let ok = crate::oculto::cmd("cmd").args(["/C", "mklink", "/J"]).arg(p.join("atalho")).arg(p.join("real")).output().map(|o| o.status.success()).unwrap_or(false);
         assert!(ok && p.join("atalho/a.bin").exists(), "nao criei a juncao de teste");
         assert_eq!(tamanhos_pastas(&p, 2, 25).iter().find(|(c, _)| *c == p.to_string_lossy()).map(|(_, n)| *n), Some(1000));
         assert!(duplicados(&[p.clone()], 1, 60).is_empty());

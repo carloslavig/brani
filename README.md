@@ -1,6 +1,6 @@
 # Braniac em Rust
 
-Reconstrução do Braniac em Rust, em paralelo ao Braniac atual (Python, `%USERPROFILE%\Projetos\Agente\braniac`, porta 8765). O atual não é tocado nem substituído.
+Reconstrução do Braniac em Rust, em paralelo ao Braniac atual (Python, `C:\Users\usuario\Projetos\Agente\braniac`, porta 8765). O atual não é tocado nem substituído.
 
 ## Rodar
 
@@ -80,9 +80,13 @@ Fortaleza 102/102, Porto Alegre 44/44, Palmas 46/46, Rio de Janeiro 50/50, Curit
 Sao Paulo levantou ("pronto" em 40 s; sem `cidade.json` de referencia no pacote). Natal: pendencia legitima (TCE-RN nao publicou 2026).
 Fortaleza fim a fim: levantar -> roteiro (408 palavras, com legenda) -> conferir -> porta BARRADA ate a releitura do tribunal.
 O roteiro roda em pasta-sombra (`<levantamento>/roteiro`): o pacote de producao nao e alterado (conferido: 0 arquivos mexidos).
-Subir com: `BRANIAC_DADOS`, `BRANIAC_ENV`, `BRANIAC_PACOTE=C:\Cliente\PACOTE-PRODUCAO-COMPLETA`, `BRANIAC_GUIAS=C:\Cliente\guias-estados\estados`.
+Subir com: `BRANIAC_DADOS`, `BRANIAC_ENV`, `BRANIAC_PACOTE=C:\Parceiro\PACOTE-PRODUCAO-COMPLETA`, `BRANIAC_GUIAS=C:\Parceiro\guias-estados\estados`.
 
 ## WhatsApp: audio, arquivo e a chave "so o dono" (21/11/2026)
 
 `src/wpp_midia.rs` (portado de wpp_voz.py e wpp_arquivo.py). ENVIAR AUDIO: o WAV falado vira `dados/mic.wav` (mono 16 bits + 1,5 s de silencio) e o Chromium da VM o le como MICROFONE FALSO (flags em `padrao/ligar.sh`; copiar para `/opt/braniac/ligar.sh` da VM e reiniciar o Chromium; a VM ve o arquivo em `/mnt/e/...`). Um envio por vez, nome conferido no topo antes de gravar, ate 150 s, rascunho na caixa barra, `gravando()` impede aba nova durante a gravacao. OUVIR: gancho em `URL.createObjectURL` pega o blob do audio (se nao veio, aperta o play do ultimo audio dele), 60 s de teto, falhou = 20 min de pausa por contato; transcricao LOCAL por `ouvir.rs` (`ferramentas/ouvir_whisper.py`, faster-whisper `whisper-small` no processador, ~6 s por frase, depende de Python com faster-whisper e do modelo do Braniac antigo, so leitura). ARQUIVO: `wpp_midia::enviar_arquivo` (seletor interceptado por CDP, legenda, confere "enviada"); nenhuma regra do laco o chama ainda. Chave restrita: `dados/troca.json` `{"whatsapp": false, "whatsapp_so_dono": true}` (ou `POST /api/troca {"whatsapp_so_dono": true}`) atende de verdade SO o chat do dono (texto e audio); o resto fica em sombra. As duas nascem false e so o dono liga.
 
+
+## Dados pessoais e preferências por contato
+
+Nada pessoal mora no código. Nomes, contatos, família, regras de tratamento e preferências (por exemplo, um contato que prefere receber só áudio) ficam em `dados/pessoal.json`, que nunca entra no Git. Sem esse arquivo o B.R.A.N.I usa nomes neutros e não aplica nenhuma regra de contato.

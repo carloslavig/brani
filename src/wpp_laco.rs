@@ -276,9 +276,13 @@ pub fn uma_volta(dados: &Path, rot: &Arc<Roteador>) -> Result<Value, String> {
 
 /// A thread do laco: sempre roda (sombra ou viva), de 10 em 10 s. A chave decide se o que ela decide sai de verdade.
 pub fn iniciar(rot: Arc<Roteador>) {
+    crate::cliente_exemplo::registrar_roteador(rot.clone());
     std::thread::spawn(move || loop {
         std::thread::sleep(std::time::Duration::from_secs(10));
         let dados = crate::pasta_dados();
+        if crate::power::pausado(&dados) {
+            continue; // servidor pausado: nada de ler nem atender ate retomar
+        }
         let r = uma_volta(&dados, &rot);
         if let Ok(mut u) = ULTIMO.lock() {
             *u = Some(match r {
@@ -301,7 +305,7 @@ pub fn get(dados: &Path, url: &str) -> Option<Resp> {
 }
 
 pub const AVISO_ANTIGO: &str = "O Braniac antigo ainda está ligado e atendendo. Desligue ele primeiro (passo a passo da troca) para não responderem em dobro.";
-pub const AIRBNB_OBS: &str = "No B.R.A.N.I esta chave so LE a caixa do Airbnb e AVISA o dono e a Tia Mae; nunca responde hospede nem aceita reserva.";
+pub const AIRBNB_OBS: &str = "No B.R.A.N.I esta chave so LE a caixa do Airbnb e AVISA o dono e a Mae; nunca responde hospede nem aceita reserva.";
 /// Canais que o Braniac antigo tambem atende: ligar um deles com o antigo no ar faria os DOIS responderem as mesmas pessoas.
 /// `whatsapp_so_dono` (teste do dono) e desligar qualquer chave ficam de fora da trava.
 const CANAIS_DO_ANTIGO: [&str; 5] = ["whatsapp", "telegram", "airbnb", "voz", "portal"];

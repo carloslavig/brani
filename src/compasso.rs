@@ -40,10 +40,10 @@ fn textos(r: &Value) -> Vec<&str> {
     r["textos"].as_array().into_iter().flatten().filter_map(Value::as_str).collect()
 }
 
-/// "lembrar_carlos" e o nome antigo (arquivo vindo do Braniac em Python).
+/// "lembrar_usuarios" e o nome antigo (arquivo vindo do Braniac em Python).
 fn acao(r: &Value) -> &str {
     match s(r, "acao") {
-        "lembrar_carlos" => "lembrar_dono",
+        "lembrar_usuarios" => "lembrar_dono",
         a => a,
     }
 }

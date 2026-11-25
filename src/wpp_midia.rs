@@ -37,11 +37,13 @@ const JS_RECT: &str = r##"(function(escopo, rot){
   for (var e of els){ var a=(e.getAttribute('aria-label')||'').toLowerCase(); var r=e.getBoundingClientRect();
     if (new RegExp(rot,'i').test(a) && r.width>0) alvo=e; }
   if(!alvo) return null; var r=alvo.getBoundingClientRect(); return JSON.stringify({x:r.x+r.width/2,y:r.y+r.height/2}); })(@ESCOPO@, @ROT@)"##;
-const JS_CONTA_VOZ: &str = r##"document.querySelectorAll('#main [aria-label="Reproduzir mensagem de voz"], #main [aria-label="Pausar mensagem de voz"]').length"##;
+// Assinatura dos audios da conversa (quantidade + marca do ultimo): a lista do WhatsApp e cortada, entao so contar nao percebe o audio novo.
+const JS_CONTA_VOZ: &str = r##"(function(){ var v=[].slice.call(document.querySelectorAll('#main [aria-label="Reproduzir mensagem de voz"], #main [aria-label="Pausar mensagem de voz"]')); var u=v[v.length-1]; var r=u&&(u.closest('[role="row"]')||u.parentElement); var t=r?(r.innerText||''):''; var h=0; for(var i=0;i<t.length;i++){h=(h*31+t.charCodeAt(i))%1000000;} return v.length*1000000+h; })()"##;
 const JS_RASCUNHO: &str = r##"(function(){var c=document.querySelector('footer [contenteditable="true"]'); return c ? (c.innerText||'').trim().length : 0})()"##;
-const JS_GANCHO: &str = r##"(function(){ if(window.__hkp){window.__aud=[]; return true;} window.__hkp=true; window.__aud=[];
-  var o=URL.createObjectURL;
-  URL.createObjectURL=function(b){ try{ if(b && b.type && b.type.indexOf('audio')===0){ window.__aud.push(b); if(window.__aud.length>30) window.__aud.shift(); } }catch(e){} return o.call(this,b); };
+const JS_GANCHO: &str = r##"(function(){ if(window.__hkp2){window.__aud=[]; return true;} window.__hkp2=true; window.__aud=[];
+  var guarda=function(b){ try{ if(b && b.size>0 && (!b.type || b.type.indexOf('audio')===0) && !window.__aud.some(function(x){return x.size===b.size;})){ window.__aud.push(b); if(window.__aud.length>30) window.__aud.shift(); } }catch(e){} };
+  var pl=HTMLMediaElement.prototype.play; // o WhatsApp guarda o blob e reusa a URL: so o play entrega o audio de novo
+  HTMLMediaElement.prototype.play=function(){ try{ var s=this.src; if(s && s.indexOf('blob:')===0) fetch(s).then(function(r){return r.blob();}).then(guarda).catch(function(){}); }catch(e){} return pl.apply(this,arguments); };
   return true; })()"##;
 const JS_CONTA_BLOBS: &str = "(window.__aud||[]).length";
 const JS_BLOB: &str = r##"(async function(i){ var bs=window.__aud||[]; var b=bs[i]; if(!b) return null; var buf=new Uint8Array(await b.arrayBuffer()); var bin='';
@@ -210,7 +212,7 @@ pub fn enviar_audio(p: &mut dyn Pagina, dados: &Path, ctx: &Ctx, nomes: &Nomes, 
         };
         clicar(p, x, y);
         p.dormir(3000);
-        if contar_audios(p) > antes { format!("✅ Áudio enviado para {alvo}.") } else { format!("Cliquei em enviar, mas não vi o áudio aparecer na conversa com {alvo}.") }
+        if contar_audios(p) != antes { format!("✅ Áudio enviado para {alvo}.") } else { format!("Cliquei em enviar, mas não vi o áudio aparecer na conversa com {alvo}.") }
     })();
     GRAVANDO.store(false, Ordering::Relaxed);
     r
@@ -248,20 +250,13 @@ pub fn baixar_audios(p: &mut dyn Pagina, n: usize) -> Result<Vec<Vec<u8>>, Strin
     let passou = || inicio.elapsed().as_secs() >= ESPERA_OUVIR_S;
     p.js(JS_GANCHO)?;
     let conta = |p: &mut dyn Pagina| p.js(JS_CONTA_BLOBS).ok().and_then(|v| v.as_i64()).unwrap_or(0);
-    for _ in 0..3 {
+    // sempre aperta o play do ultimo audio dele: o gancho pega o blob que toca (mesmo o que o WhatsApp ja tinha guardado)
+    let Some((x, y)) = ponto(p, JS_PLAY_DELE) else { return Err("não achei o botão de reproduzir do áudio dele".into()) };
+    clicar(p, x, y);
+    for _ in 0..12 {
         p.dormir(1000);
-        if conta(p) > 0 {
+        if conta(p) > 0 || passou() {
             break;
-        }
-    }
-    if conta(p) == 0 {
-        let Some((x, y)) = ponto(p, JS_PLAY_DELE) else { return Err("não achei o botão de reproduzir do áudio dele".into()) };
-        clicar(p, x, y);
-        for _ in 0..12 {
-            p.dormir(1000);
-            if conta(p) > 0 || passou() {
-                break;
-            }
         }
     }
     let total = conta(p);
@@ -609,7 +604,7 @@ mod tests {
     #[test]
     fn transcricao_que_falha_entra_na_pausa_de_20_minutos() {
         let (d, ctx, nomes) = base("pausa");
-        let mut p = Falsa { blobs: vec!["T2dnUw==".into()], ..ana("Ana") };
+        let mut p = Falsa { blobs: vec!["T2dnUw==".into()], tem_play: true, ..ana("Ana") };
         let falha = |_: &[u8]| Err::<String, _>("transcritor fora do ar".to_string());
         let ts = 1.8e9;
         assert!(ouvir_contato(&mut p, &d, &ctx, &nomes, "Ana", 1, ts, &falha).is_err());

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NexoDev</title>
+<style>
+:root{--bg:#10131a;--card:#1a1f2b;--tx:#e6e9f0;--mut:#8b93a7;--ok:#3fb27f;--ruim:#e5534b;--az:#4c8dff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px system-ui,sans-serif;padding:16px}
+h1{font-size:18px;margin:0 0 4px}.sub{color:var(--mut);margin-bottom:12px}
+.barra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+button{background:var(--az);color:#fff;border:0;border-radius:6px;padding:6px 12px;cursor:pointer;font:inherit}button.s{background:#2a3142}button.r{background:var(--ruim)}button.v{background:var(--ok)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.col{background:#141824;border-radius:8px;padding:8px;min-height:80px}.col h2{font-size:12px;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+.t{background:var(--card);border-radius:6px;padding:8px;margin-bottom:8px;cursor:pointer;border-left:3px solid var(--az)}.t small{color:var(--mut);display:block;margin-top:4px}
+.mot{font-size:12px;color:var(--mut)}pre{background:#0b0e14;padding:10px;border-radius:6px;overflow:auto;max-height:340px;white-space:pre-wrap}
+#det{margin-top:14px}.ok{color:var(--ok)}.ruim{color:var(--ruim)}
+</style></head><body>
+<h1>NexoDev</h1><div class="sub" id="sub">carregando…</div>
+<div class="barra"><button onclick="trab()">Trabalhar agora</button><button class="s" onclick="motores()">Ver motores (ChatGPT/DeepSeek)</button><span class="mot" id="mot"></span></div>
+<div class="cols" id="cols"></div><div id="det"></div>
+<script>
+const H={'X-Braniac':'painel','Content-Type':'application/json'};
+const EST=['novo','desenvolvimento','revisao','qa','pronto','bloqueado','entregue'];
+const g=u=>fetch(u).then(r=>r.json());
+const p=(u,b)=>fetch(u,{method:'POST',headers:H,body:JSON.stringify(b||{})}).then(r=>r.json());
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+async function quadro(){
+  const q=await g('/api/nexodev/quadro');
+  const c=q.ciclo||{};
+  document.getElementById('sub').textContent=(q.rodando?'⏳ trabalhando… ':'')+q.texto.split('\n')[0]+(c.motores&&c.motores.length?' · último motor: '+c.motores[c.motores.length-1]:'');
+  document.getElementById('cols').innerHTML=EST.map(e=>'<div class="col"><h2>'+e+'</h2>'+q.tickets.filter(t=>t.estado===e).map(t=>
+   '<div class="t" onclick="ver(\''+t.id+'\')"><b>'+t.id+'</b> '+esc(t.titulo)+'<small>'+esc(t.projeto)+' · '+esc(t.responsavel||'—')+' · tent. '+t.tentativas+'</small>'+(t.parado?'<small class="ruim">parado: '+esc(t.parado)+'</small>':'')+'</div>').join('')+'</div>').join('');
+}
+async function ver(id){
+  const t=await g('/api/nexodev/ticket/'+id);const k=t.ticket;
+  let h='<h2>'+k.id+' · '+esc(k.titulo)+' <small>['+k.estado+']</small></h2><p>'+esc(k.descricao)+'</p>';
+  if(k.estado==='pronto')h+='<button class="v" onclick="ap(\''+id+'\')">Aprovar (merge na main do projeto)</button> ';
+  h+='<button class="r" onclick="dev(\''+id+'\')">Devolver com motivo</button> <button class="s" onclick="tst(\''+id+'\')">Rodar QA agora</button>';
+  h+='<h3>Histórico</h3><pre>'+esc((k.historico||[]).map(x=>x.quem+': '+x.txt).join('\n'))+'</pre>';
+  for(const n in t.arquivos)h+='<h3>'+esc(n)+'</h3><pre>'+esc(t.arquivos[n])+'</pre>';
+  document.getElementById('det').innerHTML=h;
+}
+async function trab(){const r=await p('/api/nexodev/trabalhar',{});alert(r.erro||'Ciclo iniciado (até '+r.maximo+' passos).');quadro()}
+async function ap(id){const r=await p('/api/nexodev/aprovar',{id});alert(r.resultado||r.erro);quadro();ver(id)}
+async function dev(id){const m=prompt('Motivo da devolução:');if(!m)return;const r=await p('/api/nexodev/devolver',{id,motivo:m});alert(r.resultado||r.erro);quadro();ver(id)}
+async function tst(id){const r=await p('/api/nexodev/testar',{id});alert((r.passou===true?'PASSOU':r.passou===false?'FALHOU':'sem o que compilar')+'\n'+(r.log||r.erro||''))}
+async function motores(){const r=await g('/api/nexodev/motores');document.getElementById('mot').textContent=r.motores.map(m=>m.motor+': '+m.situacao).join(' | ')}
+quadro();setInterval(quadro,5000);
+</script></body></html>

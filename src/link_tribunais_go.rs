@@ -24,7 +24,7 @@ pub fn tribunal() -> Value {
         "tribunal_estado": "TCM-GO (Tribunal de Contas dos Municípios do Estado de Goiás)", "site_tribunal": "portalcidadao.tcmgo.tc.br",
         "fonte_md": "Tudo do Portal do Cidadão do TCM-GO (Tribunal de Contas dos Municípios do Estado de Goiás), portalcidadao.tcmgo.tc.br, dados do SICOM: Contabilidade > Receitas (total da receita por rubrica, já líquido das deduções do Fundeb), Contabilidade > Despesas (empenhos com órgão, unidade, função e subfunção; \"Gastou\" = LIQUIDADO, todos os órgãos do município) e Planejamento > Orçamento (\"Previa\" = valor da lei do orçamento).",
         "setores_md": "Setores = soma do liquidado dos empenhos (Portal do Cidadão do TCM-GO) por órgão, unidade, função e subfunção; festas e eventos separados da cultura; segurança pública fora.",
-        "pendencias_md": ["O TCM-GO não publica o liquidado por ação (projeto/atividade): a execução do Portal do Cidadão vem por empenho, só com órgão, unidade, função e subfunção. Nem a dotação atualizada.", "A lei do orçamento de Cidade (Portal do Cidadão > Orçamento, 2024 a 2026) não tem ação de festas e eventos."],
+        "pendencias_md": ["O TCM-GO não publica o liquidado por ação (projeto/atividade): a execução do Portal do Cidadão vem por empenho, só com órgão, unidade, função e subfunção. Nem a dotação atualizada.", "A lei do orçamento de Goiânia (Portal do Cidadão > Orçamento, 2024 a 2026) não tem ação de festas e eventos."],
         "orgaos": "Prefeitura, Câmara, autarquias, fundos e previdência (todos os órgãos do município no SICOM)",
         "legenda_docs": ["• Receita: Portal do Cidadão do TCM-GO, Contabilidade > Receitas, de 2024, 2025 e 2026", "• Despesa e setores: Portal do Cidadão do TCM-GO, Contabilidade > Despesas (liquidado) e Planejamento > Orçamento", "• portalcidadao.tcmgo.tc.br"] })
 }
@@ -216,7 +216,7 @@ pub fn ler(consulta: Consulta, nome: &str) -> Result<(Dados, String), String> {
 /// O que a esteira chama. Molde testado so com Goiania.
 pub fn preparar(consulta: Consulta, setores: &dyn Fn(&Path) -> Result<(), String>, numero: &str, nome: &str, pasta: &Path) -> Result<Value, String> {
     if sem_acento(nome).to_uppercase() != "GOIANIA" {
-        return Err("molde do GO testado só com Cidade (IBGE 5208707); outra cidade precisa do código IBGE dela".into());
+        return Err("molde do GO testado só com Goiânia (IBGE 5208707); outra cidade precisa do código IBGE dela".into());
     }
     let (dados, mes26) = ler(consulta, nome)?;
     base::montar(pasta, numero, nome, "GO", IBGE, &tribunal(), &dados, &mes26, &base::Opcoes::default(), setores)
@@ -237,7 +237,7 @@ mod tests {
         let q = &cmd["SemanticQueryDataShapeCommand"]["Query"];
         let (tabela, ncol) = (q["From"][0]["Entity"].as_str().unwrap(), q["Select"].as_array().unwrap().len());
         let ano = q["Where"][1]["Condition"]["In"]["Values"][0][0]["Literal"]["Value"].as_str().unwrap();
-        assert_eq!(q["Where"][0]["Condition"]["In"]["Values"][0][0]["Literal"]["Value"], "'Cidade'");
+        assert_eq!(q["Where"][0]["Condition"]["In"]["Values"][0][0]["Literal"]["Value"], "'Goiânia'");
         Ok(match (pag, tabela, ncol) {
             // Prefeitura liquida todo mes ate agosto; Camara ate julho; fundo pequeno so em marco
             ("despesas", "chat_despesa", 3) => dsr(3, &(1..=8).flat_map(|m| [json!(["PREFEITURA", m, 10.5]), json!(["CAMARA", m, if m <= 7 { 1.0 } else { 0.0 }])]).chain([json!(["FUNDO DO IDOSO", 3, 2])]).collect::<Vec<_>>()),
@@ -278,7 +278,7 @@ mod tests {
 
     #[test]
     fn le_por_orgao_unidade_funcao_e_subfuncao() {
-        let (dados, m) = ler(&portal, "Cidade").unwrap();
+        let (dados, m) = ler(&portal, "Goiânia").unwrap();
         assert_eq!(m, "07"); // a Camara parou em julho; o fundo que liquida de vez em quando nao conta; a receita vai ate setembro
         let a = &dados["2026"];
         assert_eq!(a.acoes.len(), 4);
@@ -293,13 +293,13 @@ mod tests {
     #[test]
     fn recusa_o_que_falta() {
         let troca = |de: &'static str, para: &'static str| move |pag: &str, cmd: &Value| portal(pag, cmd).map(|t| t.replace(de, para));
-        assert!(ler(&troca("Difusão Cultural", "Economia Criativa"), "Cidade").unwrap_err().contains("função/subfunção nova no TCM-GO, pôr o código no molde: Cultura / Economia Criativa"));
-        assert!(ler(&troca("250.5", "\"muito\""), "Cidade").unwrap_err().contains("não é número"));
-        assert!(ler(&troca("\"PH\"", "\"RT\":[[1]],\"PH\""), "Cidade").unwrap_err().contains("passou de 30 mil linhas"));
+        assert!(ler(&troca("Difusão Cultural", "Economia Criativa"), "Goiânia").unwrap_err().contains("função/subfunção nova no TCM-GO, pôr o código no molde: Cultura / Economia Criativa"));
+        assert!(ler(&troca("250.5", "\"muito\""), "Goiânia").unwrap_err().contains("não é número"));
+        assert!(ler(&troca("\"PH\"", "\"RT\":[[1]],\"PH\""), "Goiânia").unwrap_err().contains("passou de 30 mil linhas"));
         assert!(corte26(&[], &[]).unwrap_err().contains("nenhum órgão com liquidado"));
         assert!(corte26(&[json!({ "orgao": "A", "mes": 1, "total_liquidacao": 1 })], &[]).unwrap_err().contains("nenhuma receita"));
-        assert!(ler(&|_, _| Err("token vencido".into()), "Cidade").is_err());
+        assert!(ler(&|_, _| Err("token vencido".into()), "Goiânia").is_err());
         let p = std::env::temp_dir().join(format!("braniac-link_tribunais_go-{}", std::process::id()));
-        assert!(preparar(&portal, &|_| Ok(()), "1", "Anápolis", &p).unwrap_err().contains("só com Cidade"));
+        assert!(preparar(&portal, &|_| Ok(()), "1", "Anápolis", &p).unwrap_err().contains("só com Goiânia"));
     }
 }

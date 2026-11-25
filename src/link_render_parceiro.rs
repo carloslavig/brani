@@ -1,4 +1,4 @@
-//! Pedido no formato do PACOTE de videos de prefeitura (link/render_magno.py): chega UM zip por cidade; o Braniac confere, extrai por
+//! Pedido no formato do PACOTE de videos de prefeitura (link/render_parceiro.py): chega UM zip por cidade; o Braniac confere, extrai por
 //! cima do pacote instalado e roda o orquestrador do pacote. O zip traz CODIGO de cena, entao as travas sao o que importa:
 //! so entram arquivos de cena e dados (lista EXT) dentro das pastas RAIZES; script, programa e config NAO sao extraidos; caminho que
 //! tenta sair da pasta derruba o pedido inteiro; arquivo de texto com cara de chave de API derruba; os campos da ficha viram argumento
@@ -301,7 +301,7 @@ pub fn ficha_de_meta(meta: &Value, base: &Value, n: &str, dur_audio: f64) -> Res
     }
     let dur = ((dur_audio + 0.9) * 100.0).round() / 100.0;
     let capa = meta["capa"]["t"].as_f64().map_or(((dur - 3.0) * 30.0) as i64, |t| (t * 30.0).round() as i64);
-    let ficha = json!({ "_explica": "Montada pelo Braniac (render_magno.processar_meta) a partir do meta.json + audio do pedido.", "numero": n, "nome": nome, "projeto": projeto,
+    let ficha = json!({ "_explica": "Montada pelo Braniac (render_parceiro.processar_meta) a partir do meta.json + audio do pedido.", "numero": n, "nome": nome, "projeto": projeto,
         "composicao_estudio": base["composicao_estudio"], "composicao_kit": base["composicao_kit"], "arquivo_mapa": base["arquivo_mapa"],
         "folhas": if folhas.is_empty() { Value::Null } else { json!(format!("videos/{n}/folhas.json")) }, "quadro_capa": capa, "duracao_esperada_s": dur });
     Ok((ficha, folhas))

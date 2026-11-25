@@ -189,7 +189,7 @@ pub fn importar(dados: &Path, origem: &Path) -> Value {
         c[f] = json!(mesclar_linhas(&origem.join(f), &dados.join(f)));
     }
     rel["claudinho_e_erros"] = c;
-    rel["funil"] = json!(copiar_se_falta(&origem.join("funil_carlos.json"), &dados.join("funil_dono.json")));
+    rel["funil"] = json!(copiar_se_falta(&origem.join("funil_usuarios.json"), &dados.join("funil_dono.json")));
     rel["candidaturas"] = json!(mesclar_lista(&origem.join("candidaturas.json"), &dados.join("candidaturas.json"), None, "chave"));
     rel["silenciados"] = json!(copiar_se_falta(&origem.join("silenciados.json"), &dados.join("silenciados.json")));
     rel["vozes_agentes"] = json!(copiar_se_falta(&origem.join("vozes_agentes.json"), &dados.join("vozes_agentes.json")));

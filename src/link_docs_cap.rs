@@ -483,7 +483,7 @@ pub mod go {
 
     pub fn montar(o: &Onde) -> Result<(PathBuf, Value), String> {
         let dados = o.pacote.join("RECEITAS-DESPESAS-GOIANIA-GO");
-        let (p, src) = (d::nova_pasta(o.site, "992", "Cidade")?, dados.join("tcm-go"));
+        let (p, src) = (d::nova_pasta(o.site, "992", "Goiânia")?, dados.join("tcm-go"));
         let mes26 = mes26_txt(&src)?;
         let marca = marca(&cod_texto::cods(&dados)?);
         let mut arqs = vec![];
@@ -499,7 +499,7 @@ pub mod go {
                     t = com_coluna(CHAVE, l.iter().map(|x| chave(x).map(|c| marca(&c))).collect::<Result<_, _>>()?, t);
                 }
                 let out = d::gravar(&p, &format!("{ano}-{mes}_GO-{rot}.txt"), &t)?;
-                arqs.push(Arq::novo(ano, tipo, out, format!("TCM-GO Portal do Cidadão ({PORTAL}?pag={nome}&municipio=Cidade), relatório Power BI do tribunal, tabela '{tab}', município Cidade, ano {ano}{} ({meses}); consulta agrupada gravada como veio, uma linha por registro",
+                arqs.push(Arq::novo(ano, tipo, out, format!("TCM-GO Portal do Cidadão ({PORTAL}?pag={nome}&municipio=Goiânia), relatório Power BI do tribunal, tabela '{tab}', município Goiânia, ano {ano}{} ({meses}); consulta agrupada gravada como veio, uma linha por registro",
                     if ano == "2026" && nome != "orcamento" { format!(", meses 1 a {}", sem_zero(mes)) } else { String::new() })));
             }
         }
@@ -507,7 +507,7 @@ pub mod go {
         let mut ad = Adaptador { pasta: p, tribunal: "TCM-GO".into(), arquivos: arqs, partes: &partes, codigos: None, faixa_mx: 6,
             col: colunas("'total_liquidacao' (arquivo GO-DESPESAS)", "'valor_fonte' (arquivo GO-ORCAMENTO-LOA, lei do orçamento)", "'total_empenho' (arquivo GO-DESPESAS)", "'total_receita' (arrecadado menos anulado; deduções do Fundeb vêm negativas, natureza 9...)"),
             filtro: filtros(&|a, t| if t == "receita" { "todas as linhas do arquivo GO-RECEITAS".to_string() } else { format!("todas as linhas do arquivo GO-DESPESAS (todos os órgãos do município{})", if a == "2026" { format!(", meses 1 a {})", sem_zero(&mes26)) } else { ")".to_string() }) }) };
-        cod_texto::montar(o, "992", "Cidade", "GO", &mut ad, &dados)
+        cod_texto::montar(o, "992", "Goiânia", "GO", &mut ad, &dados)
     }
 }
 

@@ -24,14 +24,14 @@ pub type R = Result<String, String>;
 pub const MINHAS: [&str; 51] = [
     "airbnb_ler", "airbnb_pendentes", "airbnb_reserva", "airbnb_responder", "animacao", "artcraft", "compras", "consultar_conhecimento", "consultar_ia_web",
     "consultar_lei", "cortes", "cortes_video", "criar_habilidade", "criar_video", "delegar_ao_claude", "desenhar_vetor", "desfazer_automelhoria",
-    "desfazer_melhoria_alma", "email", "esteira_magno", "estudio_3d", "gerar_imagem", "gerar_imagem_meta", "investimentos", "juridico", "leads_maps", "ler_aba",
-    "marketing", "melhorar_alma", "melhorar_braniac", "nexodev", "organizar_sessoes", "pc", "procurar_conversas", "rede_braniac", "resumo_whatsapp", "site_magno",
+    "desfazer_melhoria_alma", "email", "esteira_parceiro", "estudio_3d", "gerar_imagem", "gerar_imagem_meta", "investimentos", "juridico", "leads_maps", "ler_aba",
+    "marketing", "melhorar_alma", "melhorar_braniac", "nexodev", "organizar_sessoes", "pc", "procurar_conversas", "rede_braniac", "resumo_whatsapp", "site_parceiro",
     "spotify", "temperatura_notebook", "trabalho_profundo", "usar_notebook", "usar_skill", "ver_imagem_arquivo", "ver_imagem_whatsapp", "vm_windows",
     "whatsapp_atender", "whatsapp_enviar", "whatsapp_enviar_arquivo", "whatsapp_enviar_audio", "whatsapp_ler_conversa", "whatsapp_nao_lidas",
 ];
 /// O modulo de cada uma ainda nao existe no Rust: passam pelas travas e devolvem o aviso, nada e feito.
 pub const NAO_LIGADAS: [&str; 12] = ["consultar_conhecimento", "consultar_ia_web", "cortes", "desenhar_vetor", "gerar_imagem_meta", "juridico", "procurar_conversas",
-    "rede_braniac", "site_magno", "spotify", "usar_notebook", "vm_windows"];
+    "rede_braniac", "site_parceiro", "spotify", "usar_notebook", "vm_windows"];
 
 /// Pastas fora de `dados` (vem de configuracao; `seguro` poe tudo o que pode debaixo de `dados`).
 pub struct Locais {

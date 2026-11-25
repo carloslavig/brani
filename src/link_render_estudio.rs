@@ -9,7 +9,7 @@
 //! baixar malhas e satelite do mapa e o render. Trocas de texto da legenda (ex.: o arroba do canal) vem de configuracao.
 #![allow(dead_code)]
 use crate::estudio3d;
-use crate::link_preparar_magno::{opcodes, Op};
+use crate::link_preparar_parceiro::{opcodes, Op};
 use crate::texto_pt::sem_acento;
 use regex::Regex;
 use serde_json::{json, Map, Value};
@@ -70,9 +70,9 @@ pub fn audio_do_pedido(nomes: &[&str]) -> Option<String> {
 
 #[derive(Debug, PartialEq)]
 pub enum Motor {
-    /// Pedido em zip no formato do pacote: `link_render_magno` (mesmas travas de entrada).
+    /// Pedido em zip no formato do pacote: `link_render_parceiro` (mesmas travas de entrada).
     PacoteZip,
-    /// Numero que talvez ja tenha codigo no pacote: tentar `link_render_magno::ficha_de_meta`; sem codigo la, cai no estudio.
+    /// Numero que talvez ja tenha codigo no pacote: tentar `link_render_parceiro::ficha_de_meta`; sem codigo la, cai no estudio.
     PacoteMeta,
     Estudio,
 }
@@ -504,14 +504,14 @@ mod tests {
         let troca = vec![(Regex::new(r"(?i)\barroba\s+canal\b").unwrap(), "@canal".to_string())];
         assert_eq!(limpar_texto("Gastou 3 ,7 milhões. Educação,2 e Saúde, 1,5. Siga Arroba Canal", &troca), "Gastou 3,7 milhões. Educação, 2 e Saúde, 1,5. Siga @canal");
         let mut ro = json!({
-            "legenda": [{"inicio": 1.0, "fim": 2.0, "texto": "No estado da Bahia,"}, {"inicio": 3.0, "fim": 4.0, "texto": "fica a cidade de Cidade."}, {"inicio": 6.0, "fim": 7.0, "texto": "Educação levou 5"}, {"inicio": 8.0, "fim": 9.0, "texto": "e saúde levou 3"}],
+            "legenda": [{"inicio": 1.0, "fim": 2.0, "texto": "No estado da Bahia,"}, {"inicio": 3.0, "fim": 4.0, "texto": "fica a cidade de Ilhéus."}, {"inicio": 6.0, "fim": 7.0, "texto": "Educação levou 5"}, {"inicio": 8.0, "fim": 9.0, "texto": "e saúde levou 3"}],
             "cenas": [
-                {"peca": "mapa", "inicio": 0.5, "fim": 5.0, "dados": {"uf": "BA", "municipio": "Cidade"}},
+                {"peca": "mapa", "inicio": 0.5, "fim": 5.0, "dados": {"uf": "BA", "municipio": "Ilhéus"}},
                 {"peca": "maquete", "inicio": 5.0, "fim": 10.0, "dados": {"setores": [{"nome": "Educação básica"}, {"nome": "Saúde"}, {"nome": "Obras"}]}},
                 {"peca": "maquete", "inicio": 20.0, "fim": 30.0, "dados": {"setores": [{"nome": "A", "t": 22.0}, {"nome": "B", "t": 25.0}]}},
             ]
         });
-        let geo = |uf: &str, mun: &str| (uf == "ba" && mun == "ilheus").then(|| json!({"nome_uf": "Bahia", "alvo": {"nome": "Cidade"}}));
+        let geo = |uf: &str, mun: &str| (uf == "ba" && mun == "ilheus").then(|| json!({"nome_uf": "Bahia", "alvo": {"nome": "Ilhéus"}}));
         let p = validar(&meta(), true).unwrap();
         let p = Pedido { com_tempo: true, ..p };
         fechar_roteiro(&mut ro, &p, &json!({}), None, &troca, &geo);

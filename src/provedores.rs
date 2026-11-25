@@ -28,6 +28,29 @@ pub fn erro_de_status(status: u16, retry_after: Option<&str>, corpo: &str) -> Er
     }
 }
 
+/// "2m59.56s", "7.6s", "120ms", "30" ou instante Unix (OpenRouter manda em ms) -> segundos a esperar.
+pub fn segundos_reset(v: &str) -> Option<f64> {
+    let v = v.trim();
+    if let Ok(n) = v.parse::<f64>() {
+        let agora = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).ok()?.as_secs_f64();
+        return Some(if n > 1e12 { n / 1000.0 - agora } else if n > 1e9 { n - agora } else { n }.max(0.0));
+    }
+    let (mut total, mut num) = (0.0, String::new());
+    let mut it = v.chars().peekable();
+    while let Some(c) = it.next() {
+        if c.is_ascii_digit() || c == '.' { num.push(c); continue; }
+        let n: f64 = std::mem::take(&mut num).parse().ok()?;
+        total += match c {
+            'h' => n * 3600.0,
+            'm' if it.peek() == Some(&'s') => { it.next(); n / 1000.0 }
+            'm' => n * 60.0,
+            's' => n,
+            _ => return None,
+        };
+    }
+    num.is_empty().then_some(total)
+}
+
 pub fn texto_openai(v: &Value) -> Result<String, ErroProvedor> {
     let t = v["choices"][0]["message"]["content"].as_str().ok_or_else(|| erro("resposta sem conteudo", 0))?;
     if t.trim().is_empty() {
@@ -102,7 +125,11 @@ fn postar(req: ureq::Request, corpo: Value, rede: &str) -> Result<Value, ErroPro
     match req.send_json(corpo) {
         Ok(r) => r.into_json().map_err(|e| erro(format!("resposta ilegivel: {e}"), 0)),
         Err(ureq::Error::Status(codigo, r)) => {
-            let espera = r.header("retry-after").map(String::from);
+            // sem retry-after, usa o aviso de quando a cota volta (Groq, Cerebras, OpenRouter...)
+            let espera = r.header("retry-after").map(String::from).or_else(|| {
+                ["x-ratelimit-reset-requests", "x-ratelimit-reset-tokens", "x-ratelimit-reset"].iter()
+                    .filter_map(|h| r.header(h).and_then(segundos_reset)).reduce(f64::max).map(|n| n.ceil().to_string())
+            });
             Err(erro_de_status(codigo, espera.as_deref(), &r.into_string().unwrap_or_default()))
         }
         Err(e) => Err(erro(format!("{rede}: {e}"), 60)),
@@ -195,5 +222,16 @@ mod tests {
         assert_eq!(ida[0], json!({"role": "user", "content": "oi"}));
         assert_eq!(ida[1]["tool_calls"][0], json!({"function": {"name": "f", "arguments": {"x": 1}}}));
         assert_eq!(msg_ollama(&json!({"message": {"content": " "}})).unwrap_err().msg, "resposta vazia");
+    }
+
+    #[test]
+    fn cota_429_usa_aviso_de_reset_do_provedor() {
+        assert_eq!(segundos_reset("2m59.56s").map(|n| (n * 100.0).round()), Some(17956.0));
+        assert_eq!(segundos_reset("120ms"), Some(0.12));
+        assert_eq!(segundos_reset("1h"), Some(3600.0));
+        assert_eq!(segundos_reset("45"), Some(45.0));
+        assert_eq!(segundos_reset("lixo"), None);
+        // reset em 3 min vira descanso de 3 min, nao os 15 min fixos
+        assert_eq!(erro_de_status(429, Some("180"), "").descanso, 180);
     }
 }

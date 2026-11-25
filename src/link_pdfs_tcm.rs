@@ -1,6 +1,6 @@
 //! PDFs do tribunal de contas que vao junto do video (link/pdfs_tcm.py). Regras: so sobe documento de prefeitura com nome
 //! AAAA-MM_NOME.pdf (outro PDF nunca sobe); so a serie 100-899 (a 900 e as capitais 1001+ ficam de fora); o que ja subiu fica em
-//! dados/magno/pdfs_enviados.json e nao sobe de novo; para no primeiro erro (em geral o limite diario do site).
+//! dados/parceiro/pdfs_enviados.json e nao sobe de novo; para no primeiro erro (em geral o limite diario do site).
 //! Daqui NADA sai para fora: copiar arquivo e mandar ao site sao closures (`copia`, `enviar`) que quem chama decide, por comando
 //! de pessoa ou pela rotina. Ficou de fora: a linha de comando e os caminhos fixos do PC (viraram o parametro `Locais`).
 #![allow(dead_code)]
@@ -28,7 +28,7 @@ pub fn doc(nome: &str) -> bool {
     DOC.get_or_init(|| Regex::new(r"(?i)^[0-9]{4}-[0-9]{2}_[A-Za-z0-9_.-]{3,80}\.pdf$").expect("regex fixa")).is_match(nome)
 }
 
-/// "Barra do Proprietaria" -> "BARRA-DO-ROCHA".
+/// "Barra do Rocha" -> "BARRA-DO-ROCHA".
 pub fn asc(s: &str) -> String {
     let limpo: String = sem_acento(s).chars().filter(char::is_ascii).map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_uppercase() } else { '-' }).collect();
     limpo.split('-').filter(|p| !p.is_empty()).collect::<Vec<_>>().join("-")
@@ -85,16 +85,16 @@ pub fn copiar(l: &Locais, numero: &str, cidade: &str, destino: Option<&Path>, co
     Some(pdfs_validos(&sub).len())
 }
 
-/// {numero: nome} da serie 100-899: os ja entregues (dados/magno/orquestrador.json, "enviados": ["NNN Nome"]) e os que so tem preparo.
+/// {numero: nome} da serie 100-899: os ja entregues (dados/parceiro/orquestrador.json, "enviados": ["NNN Nome"]) e os que so tem preparo.
 pub fn cidades(dados: &Path, l: &Locais) -> BTreeMap<String, String> {
     let mut cid = BTreeMap::new();
-    let o = json_de(&dados.join("magno").join("orquestrador.json")).unwrap_or(Value::Null);
+    let o = json_de(&dados.join("parceiro").join("orquestrador.json")).unwrap_or(Value::Null);
     for e in o["enviados"].as_array().into_iter().flatten().filter_map(|e| e.as_str()) {
         if let Some((n, nome)) = e.split_once(' ') {
             cid.insert(n.to_string(), nome.to_string());
         }
     }
-    for (n, nome) in [("143", "Itatim"), ("153", "Barra do Proprietaria")] {
+    for (n, nome) in [("143", "Itatim"), ("153", "Barra do Rocha")] {
         cid.insert(n.into(), nome.into()); // entregues antes da esteira de 50
     }
     for d in std::fs::read_dir(l.pacote.join("videos")).into_iter().flatten().flatten() {
@@ -142,7 +142,7 @@ pub fn enviar_numero(l: &Locais, n: &str, nome: &str, copia: &dyn Fn(&Path, &Pat
 /// Sobe os PDFs de toda cidade que ainda nao esta em pdfs_enviados.json. `so` vazio = todas. Devolve (numero, subiu?) de cada
 /// tentativa; para no primeiro erro (roda de novo amanha).
 pub fn enviar_faltando(dados: &Path, l: &Locais, so: &[&str], copia: &dyn Fn(&Path, &Path) -> Result<(), String>, enviar: &dyn Fn(&Path) -> bool) -> Vec<(String, bool)> {
-    let reg = dados.join("magno").join("pdfs_enviados.json");
+    let reg = dados.join("parceiro").join("pdfs_enviados.json");
     let mut feitos: Vec<String> = json_de(&reg).and_then(|v| serde_json::from_value(v).ok()).unwrap_or_default();
     let mut todas: Vec<(String, String)> = cidades(dados, l).into_iter().collect();
     todas.sort_by_key(|(n, _)| n.parse::<u32>().unwrap_or(0));
@@ -156,7 +156,7 @@ pub fn enviar_faltando(dados: &Path, l: &Locais, so: &[&str], copia: &dyn Fn(&Pa
             feitos.push(n.clone());
             feitos.sort_by_key(|x| x.parse::<u32>().unwrap_or(0));
             // sem registro, o proximo ciclo subiria de novo: melhor parar aqui
-            if std::fs::create_dir_all(dados.join("magno")).and_then(|_| std::fs::write(&reg, json!(feitos).to_string())).is_err() {
+            if std::fs::create_dir_all(dados.join("parceiro")).and_then(|_| std::fs::write(&reg, json!(feitos).to_string())).is_err() {
                 out.push((n, false));
                 break;
             }
@@ -177,7 +177,7 @@ mod tests {
     fn locais(nome: &str) -> (PathBuf, Locais) {
         let p = std::env::temp_dir().join(format!("braniac-link_pdfs_tcm-{nome}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&p);
-        for d in ["pacote/videos", "site", "tmp", "dados/magno"] {
+        for d in ["pacote/videos", "site", "tmp", "dados/parceiro"] {
             std::fs::create_dir_all(p.join(d)).unwrap();
         }
         let l = Locais { pacote: p.join("pacote"), site: p.join("site"), tmp: p.join("tmp") };
@@ -213,7 +213,7 @@ mod tests {
         assert_eq!(copiar(&l, "143", "Itatim", None, &copia), None); // sem pasta de entrega
         assert_eq!(copiar(&l, "143", "Itatim", Some(&dest), &|_, _| Err("nao era para copiar de novo".into())), Some(1)); // ja esta la, mesmo tamanho
         assert!(doc("2025-06_A01.pdf") && doc("2025-06_a.b-c.PDF") && !doc("2025-06_A01.pdf.exe") && !doc("../2025-06_A01.pdf") && !doc("2025-06_a b.pdf"));
-        assert_eq!((asc("Barra do Proprietaria"), asc("São Félix do Coribe"), asc(" d'Ávila ")), ("BARRA-DO-ROCHA".into(), "SAO-FELIX-DO-CORIBE".into(), "D-AVILA".into()));
+        assert_eq!((asc("Barra do Rocha"), asc("São Félix do Coribe"), asc(" d'Ávila ")), ("BARRA-DO-ROCHA".into(), "SAO-FELIX-DO-CORIBE".into(), "D-AVILA".into()));
         let _ = std::fs::remove_dir_all(&p);
     }
 
@@ -233,7 +233,7 @@ mod tests {
     fn sobe_so_o_que_falta_da_serie_certa_e_para_no_erro() {
         let (p, l) = locais("faltando");
         let dados = p.join("dados");
-        std::fs::write(dados.join("magno/orquestrador.json"), json!({ "enviados": ["150 Alfa", "160 Beta", "901 Fora do Estado", "1001 Capital"] }).to_string()).unwrap();
+        std::fs::write(dados.join("parceiro/orquestrador.json"), json!({ "enviados": ["150 Alfa", "160 Beta", "901 Fora do Estado", "1001 Capital"] }).to_string()).unwrap();
         for (n, cidade) in [("150", "ALFA"), ("160", "BETA"), ("901", "FORA-DO-ESTADO"), ("1001", "CAPITAL")] {
             origem(&l, cidade, &["2025-06_A01.pdf", "outro.pdf"]);
             std::fs::create_dir_all(l.site.join(format!("{n}-{cidade}"))).unwrap();
@@ -254,11 +254,11 @@ mod tests {
         assert_eq!(e.iter().map(|x| x.0.as_str()).collect::<Vec<_>>(), ["150-ALFA", "160-BETA", "170-GAMA"]);
         assert!(e.iter().all(|x| x.1.len() == 1 && doc(&x.1[0])) && e[2].2.contains("\"cidade\":\"Gama\""));
         assert!(!l.tmp.join("170-GAMA").exists()); // a temporaria some
-        assert_eq!(std::fs::read_to_string(dados.join("magno/pdfs_enviados.json")).unwrap(), "[\"150\",\"160\",\"170\"]");
+        assert_eq!(std::fs::read_to_string(dados.join("parceiro/pdfs_enviados.json")).unwrap(), "[\"150\",\"160\",\"170\"]");
         assert!(enviar_faltando(&dados, &l, &[], &copia, &|_| panic!("subiu de novo")).is_empty()); // o que ja subiu nao sobe de novo
         assert!(!enviar_numero(&l, "901", "Fora do Estado", &copia, &|_| panic!("serie 900 subiu")));
 
-        std::fs::remove_file(dados.join("magno/pdfs_enviados.json")).unwrap();
+        std::fs::remove_file(dados.join("parceiro/pdfs_enviados.json")).unwrap();
         let tentou = RefCell::new(0);
         let r = enviar_faltando(&dados, &l, &[], &copia, &|_| { *tentou.borrow_mut() += 1; false });
         assert_eq!((r, *tentou.borrow()), (vec![("150".to_string(), false)], 1)); // para no primeiro erro

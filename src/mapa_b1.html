@@ -21,8 +21,8 @@ button.parar{background:var(--er)}
 <button id="ouvir">🔊 Ouvir o que falta</button></header>
 <svg id="mapa"></svg><div class="dica" id="dica"></div>
 <script>
-const COR={dono:"var(--ca)",ok:"var(--ok)",erro:"var(--er)",claude:"var(--cl)"};
-const NOME={dono:"Falta você",ok:"Seu OK",erro:"Erro",claude:"Comigo"};
+const COR={usuarios:"var(--ca)",ok:"var(--ok)",erro:"var(--er)",claude:"var(--cl)"};
+const NOME={usuarios:"Falta você",ok:"Seu OK",erro:"Erro",claude:"Comigo"};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const curto=(s,n)=>s.length>n?s.slice(0,n-1)+"…":s;
 let dados=null;
@@ -30,10 +30,10 @@ function montar(d){
   // cada área vira um ramo; erros da mesma área viram UMA folha com a contagem (eram 36 soltos)
   const ramos={};
   const por=(x,tipo)=>{(ramos[x.agente]??=[]).push({...x,tipo})};
-  (d.so_carlos||[]).forEach(x=>por(x,"dono"));(d.aguardando||[]).forEach(x=>por(x,"ok"));(d.comigo||[]).forEach(x=>por(x,"claude"));
+  (d.so_usuarios||[]).forEach(x=>por(x,"usuarios"));(d.aguardando||[]).forEach(x=>por(x,"ok"));(d.comigo||[]).forEach(x=>por(x,"claude"));
   const er={};(d.erros||[]).forEach(x=>(er[x.agente]??=[]).push(x));
   for(const[a,l]of Object.entries(er))(ramos[a]??=[]).push({tipo:"erro",titulo:l.length>1?`${l.length} itens com erro`:l[0].titulo,detalhe:l.map(x=>x.titulo).join(" · ")});
-  const ordem={dono:0,ok:1,erro:2,claude:3};
+  const ordem={usuarios:0,ok:1,erro:2,claude:3};
   const lista=Object.entries(ramos).map(([a,f])=>[a,f.sort((x,y)=>ordem[x.tipo]-ordem[y.tipo])])
     .sort((x,y)=>ordem[x[1][0].tipo]-ordem[y[1][0].tipo]||y[1].length-x[1].length);
   // árvore da esquerda para a direita: Dono -> área -> pendência (em roda ficava embolado, 13/11)
@@ -62,7 +62,7 @@ function falar(t){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(
   const v=speechSynthesis.getVoices().find(v=>v.lang.startsWith("pt"));if(v)u.voice=v;
   u.onend=()=>{ouvir.textContent="🔊 Ouvir o que falta";ouvir.className=""};speechSynthesis.speak(u);}
 ouvir.onclick=()=>{if(speechSynthesis.speaking){speechSynthesis.cancel();ouvir.textContent="🔊 Ouvir o que falta";ouvir.className="";return;}
-  const c=(dados?.so_carlos||[]);const t=c.length?`Dono, faltam ${c.length} coisas que só você pode fazer. `+c.map((x,i)=>`${i+1}: ${x.agente}. ${x.titulo.split("(")[0]}`).join(". "):"Nada esperando você agora.";
+  const c=(dados?.so_usuarios||[]);const t=c.length?`Dono, faltam ${c.length} coisas que só você pode fazer. `+c.map((x,i)=>`${i+1}: ${x.agente}. ${x.titulo.split("(")[0]}`).join(". "):"Nada esperando você agora.";
   ouvir.textContent="⏹ Parar";ouvir.className="parar";falar(t);};
 document.body.onclick=e=>{if(!e.target.closest(".folha,button"))dica.style.display="none"};
 addEventListener("resize",()=>dados&&montar(dados));

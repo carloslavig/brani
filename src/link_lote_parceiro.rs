@@ -1,5 +1,5 @@
-//! Lupa, o agente da esteira de videos de orcamento de prefeitura (link/lote_magno.py): andamento de cada cidade e PENDENCIAS em
-//! dados/magno/lote.json, lote de 5 para aprovacao, meta e parada da esteira (comando_esteira.json), lote atual do painel
+//! Lupa, o agente da esteira de videos de orcamento de prefeitura (link/lote_parceiro.py): andamento de cada cidade e PENDENCIAS em
+//! dados/parceiro/lote.json, lote de 5 para aprovacao, meta e parada da esteira (comando_esteira.json), lote atual do painel
 //! (lotes_esteira.json), fila de prioridade (pendencia resolvida, serie 900 de outro estado, capitais) e o checklist dos PDFs.
 //! So registra e avisa: quem produz o video e outro processo. Recado ao par fica SEGURADO (avisos_segurados.txt) a nao ser que o
 //! dono tenha pedido; aviso ao dono sai como bloco `[resumo]` no outbox (vai no resumo do funil, nunca na hora).
@@ -49,7 +49,7 @@ fn peso(etapa: &str) -> f64 {
 }
 
 fn m(dados: &Path, nome: &str) -> PathBuf {
-    dados.join("magno").join(nome)
+    dados.join("parceiro").join(nome)
 }
 
 fn jler(arq: &Path) -> Option<Value> {
@@ -204,7 +204,7 @@ pub fn avisar_par(dados: &Path, texto: &str, pedido: bool, agora: &Agora) -> Res
 
 /// Aviso ao dono: bloco `[resumo]` no outbox (append: regravar perdia blocos de outros). Vai no resumo do funil, nao na hora.
 pub fn avisar_dono(dados: &Path, texto: &str) -> Result<(), String> {
-    anexar(&dados.join("outbox_carlos.txt"), &format!("\n---\n[resumo] {texto}"))
+    anexar(&dados.join("outbox_usuarios.txt"), &format!("\n---\n[resumo] {texto}"))
 }
 
 /// Registra a etapa da cidade. Etapa fora da lista e erro. `agora_s` = relogio em segundos.
@@ -571,7 +571,7 @@ pub fn resolver(dados: &Path, numero: &str, nota: &str, agora_s: f64, agora: &Ag
 pub fn mt(dados: &Path, nome: &str, religar: &dyn Fn(), agora_s: f64, agora: &Agora) -> Result<String, String> {
     let n = {
         let _t = TRAVA.lock().map_err(|e| e.to_string())?;
-        let mut nums = jler(&m(dados, "mt.json")).filter(Value::is_object).unwrap_or_else(|| json!({ "Cidade": "901" }));
+        let mut nums = jler(&m(dados, "mt.json")).filter(Value::is_object).unwrap_or_else(|| json!({ "Barra do Garças": "901" }));
         let maior = nums.as_object().into_iter().flatten().filter_map(|(_, v)| v.as_str()?.parse::<i64>().ok()).fold(900, i64::max);
         let n = nums[nome].as_str().map(String::from).unwrap_or_else(|| (maior + 1).to_string());
         nums[nome] = json!(n);
@@ -642,9 +642,9 @@ mod tests {
     use std::cell::RefCell;
 
     fn pasta(nome: &str) -> PathBuf {
-        let p = std::env::temp_dir().join(format!("braniac-link_lote_magno-{nome}-{}", std::process::id()));
+        let p = std::env::temp_dir().join(format!("braniac-link_lote_parceiro-{nome}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&p);
-        std::fs::create_dir_all(p.join("magno")).unwrap();
+        std::fs::create_dir_all(p.join("parceiro")).unwrap();
         p
     }
 
@@ -681,24 +681,24 @@ mod tests {
         let d = pasta("etapa");
         let (check, barra) = (RefCell::new(vec![]), RefCell::new(vec![]));
         let f = Fora { checklist: &|c, n, feito| check.borrow_mut().push(format!("{c}|{n}|{feito}")), barramento: &|de, para, tipo, t| barra.borrow_mut().push(format!("{de}>{para} {tipo}: {t}")) };
-        etapa(&d, "153", "Barra do Proprietaria", "levantamento", "números fecharam", true, 10.0, &ag(), &f).unwrap();
-        pendencia(&d, "152", "Aurelino Leal", "documento de dez/2024 não entregue", true, 20.0, &ag(), &f).unwrap();
-        pendencia(&d, "152", "Aurelino Leal", "documento de dez/2024 não entregue", true, 21.0, &ag(), &f).unwrap(); // de novo: nao duplica
+        etapa(&d, "153", "Barra do Rocha", "levantamento", "números fecharam", true, 10.0, &ag(), &f).unwrap();
+        pendencia(&d, "152", "Cidade B", "documento de dez/2024 não entregue", true, 20.0, &ag(), &f).unwrap();
+        pendencia(&d, "152", "Cidade B", "documento de dez/2024 não entregue", true, 21.0, &ag(), &f).unwrap(); // de novo: nao duplica
         let l = ler(&d);
         assert_eq!((txt(&l["cidades"]["153"], "etapa"), txt(&l["cidades"]["152"], "etapa")), ("levantamento", "pendencia"));
         assert_eq!(l["cidades"]["153"]["inicio"], 10.0);
         assert_eq!(lista(&l["pendencias"]).len(), 1);
-        assert_eq!(resumo(&d)["por_etapa"]["pendencia"], json!(["152 Aurelino Leal"]));
+        assert_eq!(resumo(&d)["por_etapa"]["pendencia"], json!(["152 Cidade B"]));
         // automatico: nada vai ao par, so fica registrado
         assert!(!d.join("link/outbox_par.txt").exists());
-        assert!(le(d.join("link/avisos_segurados.txt")).contains("152 Aurelino Leal: pendencia"));
-        assert_eq!(check.borrow()[0], "Barra do Proprietaria|Braniac: levantamento (números fecharam)|false");
-        assert!(barra.borrow().iter().any(|b| b.starts_with("Lupa>Jarvis alerta: Vídeo de prefeitura 152 Aurelino Leal parado")));
-        assert!(barra.borrow().iter().any(|b| b == "Lupa>Compasso status: 153 Barra do Proprietaria: levantamento · números fecharam"));
+        assert!(le(d.join("link/avisos_segurados.txt")).contains("152 Cidade B: pendencia"));
+        assert_eq!(check.borrow()[0], "Barra do Rocha|Braniac: levantamento (números fecharam)|false");
+        assert!(barra.borrow().iter().any(|b| b.starts_with("Lupa>Jarvis alerta: Vídeo de prefeitura 152 Cidade B parado")));
+        assert!(barra.borrow().iter().any(|b| b == "Lupa>Compasso status: 153 Barra do Rocha: levantamento · números fecharam"));
         assert!(etapa(&d, "1", "X", "inventada", "", true, 1.0, &ag(), &f).unwrap_err().contains("etapa desconhecida"));
         etapa(&d, "153", "X", "pronto", "", false, 30.0, &ag(), &f).unwrap();
         assert_eq!(check.borrow().last().unwrap(), "X|Braniac: pronto|true");
-        assert_eq!(txt(&ler(&d)["cidades"]["153"], "cidade"), "Barra do Proprietaria"); // o nome registrado fica
+        assert_eq!(txt(&ler(&d)["cidades"]["153"], "cidade"), "Barra do Rocha"); // o nome registrado fica
         let _ = std::fs::remove_dir_all(&d);
     }
 
@@ -723,7 +723,7 @@ mod tests {
         assert_eq!(tick(&d, 11.0, &ag(), &status, &rodar), Ok(Some("proximo_lote")));
         assert_eq!(tick(&d, 12.0, &ag(), &status, &rodar), Ok(None)); // um disparo so por lote
         assert_eq!(disparos.borrow().as_slice(), [PROMPT_PROXIMO]);
-        assert!(le(d.join("outbox_carlos.txt")).starts_with("\n---\n[resumo] Claudinho (via Braniac): os 5 vídeos foram aprovados (153, 154")); // pelo funil
+        assert!(le(d.join("outbox_usuarios.txt")).starts_with("\n---\n[resumo] Claudinho (via Braniac): os 5 vídeos foram aprovados (153, 154")); // pelo funil
         assert!(!d.join("link/outbox_par.txt").exists());
         let _ = std::fs::remove_dir_all(&d);
     }
@@ -861,7 +861,7 @@ mod tests {
         let d = pasta("mt");
         let r = mt(&d, "Nova Xavantina", &|| (), 1.0, &ag()).unwrap();
         assert!(r.contains("902"), "{r}");
-        assert!(mt(&d, "Cidade", &|| (), 1.0, &ag()).unwrap().starts_with("Cidade (MT) entrou na esteira como 901"));
+        assert!(mt(&d, "Barra do Garças", &|| (), 1.0, &ag()).unwrap().starts_with("Barra do Garças (MT) entrou na esteira como 901"));
         assert!(mt(&d, "Nova Xavantina", &|| (), 1.0, &ag()).unwrap().contains("como 902")); // o mesmo numero se ja tiver
         assert_eq!(proxima_prioridade(&d), Ok(Some(json!(["902", "Nova Xavantina"]))));
         assert_eq!(comando(&d), (53, false, false));

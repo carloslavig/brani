@@ -822,7 +822,7 @@ pub mod tests {
         assert_eq!(sem_pessoa("Rua Deputado Fulano de Tal, 10"), "Rua Deputado [nome omitido], 10");
         assert_eq!(sem_pessoa("Clube - Vereador Gabrielzinho R$ 100.000,00 (PRE.1)"), "Clube - Vereador [nome omitido] R$ 100.000,00 (PRE.1)");
         // ate 6 palavras, com de/dos/e no meio; nunca atravessa a coluna
-        assert_eq!(sem_pessoa("emenda dep. José D'Ávila dos Santos e Silva Jr. Neto Filho;10|Ver. - Ana"), "emenda dep. [nome omitido] Filho;10|Ver. - [nome omitido]");
+        assert_eq!(sem_pessoa("emenda dep. José D'Ávila dos Santos e Silva Irmao. Neto Filho;10|Ver. - Ana"), "emenda dep. [nome omitido] Filho;10|Ver. - [nome omitido]");
         assert_eq!(sem_pessoa("DEPUTADA ESTADUAL - Maria das Dores\nSENADORA: Bia E Cia"), "DEPUTADA ESTADUAL - [nome omitido]\nSENADORA: [nome omitido]");
         for fica in ["GABINETE DO PREFEITO\t10", "PREFEITURA MUNICIPAL DE PALMAS", "GABINETE DO PREFEITO E VICE", "SUBSIDIO DOS VEREADORES\t1", "DEPUTADO FEDERAL", "SUPERVEREADOR Fulano", "PREFEITO: de 2024", "VEREADOR 123"] {
             assert_eq!(sem_pessoa(fica), fica);

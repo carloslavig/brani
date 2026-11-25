@@ -39,13 +39,15 @@ pub fn get(dados: &Path, rot: &Arc<Roteador>, url: &str) -> Option<Resp> {
         "/" | "/painel" => crate::pagina(include_str!("painel_b1.html")),
         // a tela de projetos antiga continua em /b2?antigo=1 (o link esta no proprio painel)
         "/b2" if !url.contains("antigo=1") => crate::pagina(include_str!("painel_b1.html")),
+        "/tema-antigravity.js" => crate::resposta(include_str!("tema_antigravity.js").into(), "application/javascript", 200),
+        "/tema-antigravity.css" => crate::resposta(include_str!("tema_antigravity.css").into(), "text/css", 200),
         "/inicio" => crate::pagina(include_str!("inicio.html")),
         // 21/11: sem a fonte a tela caia na letra padrao do navegador e nao ficava igual ao B.R.A.N.I.A.C 1 (Instrument Sans, licenca SIL OFL em src/fontes)
         "/claw/fonts/instrument-sans-latin.woff2" => fonte(include_bytes!("fontes/instrument-sans-latin.woff2")),
         "/claw/fonts/instrument-sans-latin-ext.woff2" => fonte(include_bytes!("fontes/instrument-sans-latin-ext.woff2")),
         // telas embutidas: as que o B.R.A.N.I tem com outro nome apontam para ela, as outras avisam
         "/sauraki" => crate::pagina(include_str!("escritorio.html")),
-        "/magno" => crate::pagina(include_str!("esteira.html")),
+        "/parceiro" => crate::pagina(include_str!("esteira.html")),
         "/hud" => ainda_nao("Voz"),
         "/email" => ainda_nao("E-mail"),
         "/api/b2/estado" => match b2::estado(dados, &agentes::nomes(dados), ts) {
@@ -65,7 +67,7 @@ pub fn get(dados: &Path, rot: &Arc<Roteador>, url: &str) -> Option<Resp> {
         "/api/painel2" => {
             let agora = tempo::agora();
             let hoje = agenda::ferramenta(&dados.join("agenda.json"), &json!({ "acao": "listar" }), &agora);
-            dado(painel_claw::dados(dados, Path::new("."), ts, &hoje))
+            dado(painel_claw::dados(dados, dados.parent().unwrap_or(Path::new(".")), ts, &hoje))
         }
         "/api/termico" => dado(json!({ "pronto": false, "aviso": format!("temperatura {AINDA_NAO}") })),
         // perguntado=true: a tela nao abre a janela de instalar habilidades de terceiros
@@ -118,7 +120,6 @@ pub fn post(dados: &Path, caminho: &str, v: &Value) -> Option<Resp> {
             Ok(()) => dado(json!({ "ok": true })),
             Err(x) => erro(x, 400),
         },
-        "/api/vozes/amostra" => erro(format!("amostra falada {AINDA_NAO}"), 503),
         "/api/vozes/baixar" => erro(format!("baixar voz {AINDA_NAO}"), 503),
         _ => return None,
     })
@@ -134,7 +135,6 @@ mod tests {
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(&d).unwrap();
         let codigo = |c: &str, v: Value| post(&d, c, &v).map(|r| r.status_code().0);
-        assert_eq!(codigo("/api/vozes/amostra", json!({})), Some(503));
         assert_eq!(codigo("/api/habilidades-terceiros/instalar", json!({})), Some(501));
         assert_eq!(codigo("/api/wpp_direto/iniciar", json!({})), Some(501));
         assert_eq!(codigo("/api/autonomia", json!({ "minutos": 0 })), Some(200));

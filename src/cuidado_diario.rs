@@ -99,9 +99,9 @@ mod tests {
         let d = std::env::temp_dir().join(format!("braniac-cuid-{n}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(&d).unwrap();
-        std::fs::write(d.join("pessoal.json"), json!({ "nome": "Dono", "contatos": { "dono": "Eu(D)", "jana": "Parceira", "mae": "Mae", "pai": "Pai" } }).to_string()).unwrap();
+        std::fs::write(d.join("pessoal.json"), json!({ "nome": "Dono", "contatos": { "dono": "Eu(D)", "parceira": "Parceira", "mae": "Mae", "pai": "Pai" } }).to_string()).unwrap();
         std::fs::write(d.join("cuidado_diario.json"), json!({ "ate_hora": 21, "rotinas": [
-            { "chave": "c_jana", "apelido": "jana", "hora": 7, "textos": ["bom dia A ☀️"] },
+            { "chave": "c_jana", "apelido": "parceira", "hora": 7, "textos": ["bom dia A ☀️"] },
             { "chave": "c_mae", "apelido": "mae", "hora": 8, "textos": ["bom dia B. E o braço?"], "apos": { "data": "2026-11-15", "textos": ["bom dia B."] }, "sufixo": " Remédio?" },
             { "chave": "c_pai", "apelido": "pai", "hora": 9, "so_audio": true, "textos": ["bom dia C"] } ] }).to_string()).unwrap();
         d
@@ -125,11 +125,11 @@ mod tests {
         let d = pasta("hora");
         let r = Reg::default();
         assert!(rodar(&d, &r, &agora(21, 6), 1.0).is_empty()); // cedo demais
-        assert_eq!(rodar(&d, &r, &agora(21, 7), 2.0), vec!["jana"]);
+        assert_eq!(rodar(&d, &r, &agora(21, 7), 2.0), vec!["parceira"]);
         assert_eq!(rodar(&d, &r, &agora(21, 9), 3.0), vec!["mae", "pai"]);
         assert!(rodar(&d, &r, &agora(21, 10), 4.0).is_empty(), "1x por dia");
         assert!(rodar(&d, &r, &agora(21, 22), 5.0).is_empty());
-        assert_eq!(rodar(&d, &r, &agora(22, 8), 6.0), vec!["jana", "mae"]); // dia seguinte
+        assert_eq!(rodar(&d, &r, &agora(22, 8), 6.0), vec!["parceira", "mae"]); // dia seguinte
         let v = r.v.borrow().clone();
         assert_eq!(v[0], "audio|jarvis|Parceira|bom dia A"); // sem emoji na voz
         assert_eq!(v[1], "audio|jarvis|Mae|bom dia B. Remédio?"); // depois da data: sem a pergunta antiga; com o sufixo
@@ -143,7 +143,7 @@ mod tests {
         let d = pasta("pai");
         let r = Reg::default();
         *r.audio_falha.borrow_mut() = true;
-        assert_eq!(rodar(&d, &r, &agora(21, 10), 100.0), vec!["jana", "mae"]);
+        assert_eq!(rodar(&d, &r, &agora(21, 10), 100.0), vec!["parceira", "mae"]);
         let v = r.v.borrow().clone();
         assert!(v.iter().filter(|x| x.contains("|Pai|")).all(|x| x.starts_with("audio|zelo")), "{v:?}");
         // jana e mae cairam no texto de reserva; o pai nao
@@ -161,7 +161,7 @@ mod tests {
         let d = pasta("reserva");
         let r = Reg::default();
         *r.audio_falha.borrow_mut() = true;
-        assert_eq!(rodar(&d, &r, &agora(21, 8), 1.0), vec!["jana", "mae"]);
+        assert_eq!(rodar(&d, &r, &agora(21, 8), 1.0), vec!["parceira", "mae"]);
         assert!(r.v.borrow().contains(&"texto|Parceira|bom dia A ☀️".to_string()));
         let _ = std::fs::remove_dir_all(&d);
     }

@@ -146,6 +146,14 @@ pub fn acao(dados: &Path, skills: &Path, d: &Value, disponiveis: &[String], ts: 
             c.execute("UPDATE conversas SET arquivada=1 WHERE id=?", [id]).map_err(e)?;
             id
         }
+        "deletar" | "apagar" => {
+            let id = inteiro(&d["id"])?;
+            c.execute("DELETE FROM conversas WHERE id=?", [id]).map_err(e)?;
+            if let Ok(st) = Connection::open(dados.join("braniac.db")) {
+                let _ = st.execute("DELETE FROM msgs WHERE conv = ?", [format!("b2:{id}")]);
+            }
+            id
+        }
         "aparencia" => {
             let a = salvar_aparencia(dados, d["nome"].as_str().unwrap_or(""), d["cor"].as_str().unwrap_or(""))?;
             return Ok(junta(json!({ "aparencia": a }), estado(dados, disponiveis, ts)?));
@@ -417,6 +425,9 @@ mod tests {
         assert!(titulos(17.0).is_empty()); // arquivar so esconde
         let n: i64 = db(&d, 17.0).unwrap().query_row("SELECT COUNT(*) FROM conversas", [], |r| r.get(0)).unwrap();
         assert_eq!(n, 1);
+        a(json!({ "acao": "deletar", "id": c }), 17.5).unwrap();
+        let n: i64 = db(&d, 17.5).unwrap().query_row("SELECT COUNT(*) FROM conversas", [], |r| r.get(0)).unwrap();
+        assert_eq!(n, 0);
         for ruim in [json!({ "acao": "criar_projeto", "nome": "" }), json!({ "acao": "criar_projeto", "nome": "x".repeat(81) }), json!({ "acao": "renomear", "id": "abc", "titulo": "x" }),
                      json!({ "acao": "apagar_tudo" }), json!({ "acao": "abrir_conta", "nome": "chatgpt" })] {
             assert!(a(ruim, 18.0).is_err());

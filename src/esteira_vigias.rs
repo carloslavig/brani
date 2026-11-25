@@ -1,7 +1,7 @@
-//! Os tres vigias da esteira do Cliente (scripts-braniac/vigia_painel.py, vigia_mp4.py e vigia_esteira.py), agora dentro do B.R.A.N.I.
+//! Os tres vigias da esteira do Parceiro (scripts-braniac/vigia_painel.py, vigia_mp4.py e vigia_esteira.py), agora dentro do B.R.A.N.I.
 //! Cada um e um laco proprio numa thread propria (o relogio de 60 s so os garante no ar, uma vez) e le/grava os MESMOS arquivos e formatos
 //! do Python, entao o historico continua de onde estava:
-//! - painel: a cada 20 s junta orquestrador.json + log + lote.json + checklist em `lote.json["esteira"]` (o que o /api/magno devolve);
+//! - painel: a cada 20 s junta orquestrador.json + log + lote.json + checklist em `lote.json["esteira"]` (o que o /api/parceiro devolve);
 //! - mp4: a cada 5 s espelha (hardlink) e guarda no E: todo .mp4 final que o Lupa marcou "pronto"; se um sumir, volta do espelho;
 //! - esteira: a cada 60 s acusa LOOP, TENTATIVAS e SEM AVANCO no orquestrador.log e chama o agente (com permissao de editar) para achar a
 //!   causa. Teto: 1 chamada por ocorrencia a cada 3 h e 3 por dia. Esteira parada ou meta batida: nao vigia. Nunca publica, envia nem paga.
@@ -131,7 +131,7 @@ fn contar_pdfs(p: &Path) -> usize {
 pub struct Vigias {
     pub cfg: Config,
     exec: Box<Exec>,
-    /// A pasta que tem `magno/` dentro (o `dados` do link_lote_magno): a pai da pasta da esteira.
+    /// A pasta que tem `parceiro/` dentro (o `dados` do link_lote_parceiro): a pai da pasta da esteira.
     dados_lote: PathBuf,
 }
 
@@ -157,7 +157,7 @@ impl Vigias {
     // ============================================================ painel (vigia_painel.py)
 
     fn fila_md(&self) -> String {
-        let arq = std::env::var_os("BRANIAC_FILA").map(PathBuf::from).unwrap_or_else(|| self.cfg.pacote.join("videos").join("_fila-magno.md")); // a mesma fonte do municipios.py
+        let arq = std::env::var_os("BRANIAC_FILA").map(PathBuf::from).unwrap_or_else(|| self.cfg.pacote.join("videos").join("_fila-parceiro.md")); // a mesma fonte do municipios.py
         std::fs::read_to_string(arq).unwrap_or_default()
     }
 
@@ -212,7 +212,7 @@ impl Vigias {
             let pasta = self.cfg.pacote.join(format!("RECEITAS-DESPESAS-{}", ascii(&nome).to_uppercase().replace(' ', "-")));
             let mut etapa = texto(&d["cidades"][n.as_str()], "etapa").to_string();
             if no_site.contains(&n) {
-                etapa = "no_site".into(); // mostrar quais ja foram para o site do Cliente
+                etapa = "no_site".into(); // mostrar quais ja foram para o site do Parceiro
             } else if prontos.contains(n.as_str()) {
                 etapa = "pronto".into();
             } else if etapa == "render" {
@@ -237,7 +237,7 @@ impl Vigias {
             }
         }
         let linhas: Vec<String> = std::fs::read(self.arq("orquestrador.log")).map(|b| String::from_utf8_lossy(&b).lines().map(String::from).collect()).unwrap_or_default();
-        let d = crate::link_lote_magno::ler(&self.dados_lote);
+        let d = crate::link_lote_parceiro::ler(&self.dados_lote);
         let cid = &d["cidades"];
         let re_atual = Regex::new(r"(?:COMEÇANDO|PREPARANDO|VOZ\+RENDER) (\d+) (.+)$").expect("regex fixa");
         let feitas: BTreeSet<&str> = lista(&o["feitas"]).iter().filter_map(Value::as_str).collect();
@@ -335,7 +335,7 @@ impl Vigias {
         let peso_v = |e: &str| match e { "baixando_tcm" => 0.05, "levantamento" | "guia" => 0.15, "roteiro" => 0.30, "esperando_voz" => 0.45, "voz" => 0.55, "esperando_render" => 0.70, "render" => 0.75, "pronto" | "no_site" => 1.0, _ => 0.0 };
         let mut pct = 100.0 * vagas.iter().map(|v| peso_v(texto(v, "estado"))).sum::<f64>() / meta_l as f64;
         // o painel mostra so o LOTE ATUAL (o ultimo "mais N"); os quadrados sao as cidades desse lote
-        let lote = crate::link_lote_magno::painel_lote(&self.dados_lote, &seq, if caps.is_empty() { &falta } else { &[] }, true).unwrap_or_else(|e| {
+        let lote = crate::link_lote_parceiro::painel_lote(&self.dados_lote, &seq, if caps.is_empty() { &falta } else { &[] }, true).unwrap_or_else(|e| {
             eprintln!("esteira_vigias: lote {}", e.chars().take(200).collect::<String>());
             None
         });
@@ -345,7 +345,7 @@ impl Vigias {
             pct = l["pct"].as_f64().unwrap_or(0.0);
         }
         let prontos_s: Vec<&str> = prontos_oc.iter().map(String::as_str).collect();
-        let pdfs = crate::link_lote_magno::checklist_pdfs(&self.dados_lote, &seq, &prontos_s, &linhas.join("\n"));
+        let pdfs = crate::link_lote_parceiro::checklist_pdfs(&self.dados_lote, &seq, &prontos_s, &linhas.join("\n"));
         let pendencias: Vec<Value> = lista(&oc["feitas"]).iter().filter_map(Value::as_str).filter(|n| !prontos_oc.iter().any(|p| p == n)).map(|n| {
             let motivo = lista(&d["pendencias"]).iter().find(|p| texto(p, "numero") == n).map_or("", |p| texto(p, "motivo"));
             json!({ "numero": n, "cidade": nome(n), "motivo": motivo })
@@ -373,10 +373,10 @@ impl Vigias {
     pub fn volta_painel(&self, rel: Relogio) -> Result<(), String> {
         let r = self.resumo(rel);
         for _ in 0..3 {
-            let mut d = crate::link_lote_magno::ler(&self.dados_lote);
+            let mut d = crate::link_lote_parceiro::ler(&self.dados_lote);
             d["esteira"] = r.clone();
-            gravar_json(&self.dados_lote.join("magno").join("lote.json"), &d, self.cfg.segundo / 4)?;
-            if crate::link_lote_magno::ler(&self.dados_lote)["esteira"]["atualizado"] == r["atualizado"] {
+            gravar_json(&self.dados_lote.join("parceiro").join("lote.json"), &d, self.cfg.segundo / 4)?;
+            if crate::link_lote_parceiro::ler(&self.dados_lote)["esteira"]["atualizado"] == r["atualizado"] {
                 break;
             }
         }
@@ -646,10 +646,10 @@ fn lista_py(v: &[String]) -> String {
 fn prompt(achados: &[(String, String)], linhas: &[String], orq: &Value) -> String {
     let nums = |k: &str| lista_py(&lista(&orq[k]).iter().filter_map(primeiro).collect::<Vec<_>>());
     let fase = if orq["fase"].is_null() { "None".to_string() } else { orq["fase"].as_str().map_or_else(|| orq["fase"].to_string(), String::from) };
-    format!("VIGIA DA ESTEIRA DO MAGNO. A esteira agora é conduzida pelo B.R.A.N.I em Rust (E:\\braniac-rs\\src\\esteira_orq.rs, que grava o mesmo log e o mesmo estado: \
-C:\\Users\\carlo\\Projetos\\Agente\\braniac\\data\\magno\\orquestrador.log e orquestrador.json). O orquestrador Python (orquestrador_50.py) NÃO deve ser religado. \
+    format!("VIGIA DA ESTEIRA DO PARCEIRO. A esteira agora é conduzida pelo B.R.A.N.I em Rust (E:\\braniac-rs\\src\\esteira_orq.rs, que grava o mesmo log e o mesmo estado: \
+C:\\Users\\usuario\\Projetos\\Agente\\braniac\\data\\parceiro\\orquestrador.log e orquestrador.json). O orquestrador Python (orquestrador_50.py) NÃO deve ser religado. \
 A esteira travou ou está em loop. Ocorrências:\n- {}\n\nFase: {fase}. Com voz pronta esperando render: {}. Na fila da voz: {}. Tentativas de voz: {}.\nÚltimas linhas do log:\n{}\n\n\
-Faça: 1) ache a CAUSA RAIZ (reproduza o erro sem gastar cota de voz: rode o passo que quebra com traceback; ex.: preparar_magno.py ou magno_velocidade.py sem --voz-nova); \
+Faça: 1) ache a CAUSA RAIZ (reproduza o erro sem gastar cota de voz: rode o passo que quebra com traceback; ex.: preparar_parceiro.py ou parceiro_velocidade.py sem --voz-nova); \
 2) corrija a causa NO CÓDIGO e rode os testes que tocar (cargo test em E:\\braniac-rs para o que for do B.R.A.N.I, usando outro CARGO_TARGET_DIR e nunca cargo build --release em target\\release, onde o servidor está rodando; \
 braniac/tests para os scripts em Python); 3) se a cidade continuar impossível, tire-a da vez (resolver/pendência) para a fila andar. \
 Regras: número só do tribunal de contas e só pelos programas (levantar.py, gera_cidade.py, gera_legenda.py): você NUNCA digita, arredonda nem edita à mão \
@@ -772,7 +772,7 @@ mod tests {
 
     fn cfg(base: &Path) -> Config {
         Config {
-            pasta: base.join("magno"),
+            pasta: base.join("parceiro"),
             pacote: base.join("pacote"),
             estudio: base.join("pacote").join("estudio-3d"),
             site: base.join("site"),
@@ -787,7 +787,7 @@ mod tests {
     }
 
     fn vigias(base: &Path) -> Vigias {
-        std::fs::create_dir_all(base.join("magno")).unwrap();
+        std::fs::create_dir_all(base.join("parceiro")).unwrap();
         Vigias::novo(cfg(base), Box::new(|_| Saida { codigo: 0, texto: "123 python fake".into() }))
     }
 

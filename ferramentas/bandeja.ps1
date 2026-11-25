@@ -19,15 +19,22 @@ function Criar($nome, $cor, $extra) {
     $ni = New-Object System.Windows.Forms.NotifyIcon
     $ni.Icon = Anel $cor; $ni.Text = "B.R.A.N.I - $nome"; $ni.Visible = $true
     $m = New-Object System.Windows.Forms.ContextMenuStrip
-    $abrir = $m.Items.Add("Abrir o painel"); $abrir.Add_Click({ Start-Process "$base/" })
-    $ni.Add_MouseClick({ param($s, $e) if ($e.Button -eq 'Left') { Start-Process "$base/" } })
+    # sempre o APLICATIVO (o servidor abre ou traz a janela do app para a frente), nunca o navegador
+    $abrir = $m.Items.Add("Abrir o painel"); $abrir.Add_Click({ Mandar '/api/app/abrir' @{ rota = '/' } })
+    $ni.Add_MouseClick({ param($s, $e) if ($e.Button -eq 'Left') { Mandar '/api/app/abrir' @{ rota = '/' } } })
+    $srv = $m.Items.Add("Servidor: ...")
+    $srv.Add_Click({ $s = Pegar '/api/servidor'; if ($s.estado -eq 'ligado') { Mandar '/api/servidor/pausa' @{} } elseif ($s.estado -eq 'pausado') { Mandar '/api/servidor/retomar' @{} } })
     $dormir = $m.Items.Add("Acordar / Descansar"); $mic = $m.Items.Add("Ligar / desligar microfone"); $sil = $m.Items.Add("Silenciar por 1 hora")
     $dormir.Add_Click({ $e = Pegar '/api/escuta-estado'; Mandar '/api/escuta-acao' @{ acao = $(if ($e.estado -eq 'acordado') { 'descansar' } else { 'acordar' }) } })
     $mic.Add_Click({ $e = Pegar '/api/escuta-estado'; Mandar '/api/escuta-acao' @{ acao = $(if ($e.microfone.microfone_ligado) { 'desligar' } else { 'ligar' }) } })
     $sil.Add_Click({ Mandar '/api/mudo' @{ minutos = 60 } })
     if ($extra) { $dormir.Visible = $false; $mic.Visible = $false }
     # com a chave "voz" desligada o aparelho nao existe: so "Abrir o painel" fica ligado
-    $m.Add_Opening({ $e = Pegar '/api/aparelho/voz'; $on = [bool]($e -and $e.chave); $dormir.Enabled = $on; $mic.Enabled = $on; $sil.Enabled = $on })
+    $m.Add_Opening({
+        $s = Pegar '/api/servidor'
+        $srv.Text = switch ($s.estado) { 'ligado' { 'Servidor: ligado (clique para desligar)' } 'parando' { 'Servidor: parando...' } 'pausado' { 'Servidor: desligado (clique para ligar)' } default { 'Servidor: sem resposta' } }
+        $srv.Enabled = ($s.estado -eq 'ligado' -or $s.estado -eq 'pausado')
+        $e = Pegar '/api/aparelho/voz'; $on = [bool]($e -and $e.chave); $dormir.Enabled = $on; $mic.Enabled = $on; $sil.Enabled = $on })
     $ni.ContextMenuStrip = $m
     $ni
 }

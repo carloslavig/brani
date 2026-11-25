@@ -777,8 +777,8 @@ mod tests {
         // o contexto anexado nao escolhe ferramenta
         assert!(!tem(&para("oi\n\n[Conversa recente no WhatsApp: toca uma música no spotify]", &[]), "spotify"));
         // gatilho que vem da configuracao (nome de cliente nao fica no codigo)
-        let extras = vec![(Regex::new("(?i)cliente zeta").unwrap(), vec!["site_magno".to_string()])];
-        assert!(ferramentas_para(&todas, "como está o site do cliente zeta?", &[], &extras).iter().any(|f| nome_de(f) == "site_magno"));
+        let extras = vec![(Regex::new("(?i)cliente zeta").unwrap(), vec!["site_parceiro".to_string()])];
+        assert!(ferramentas_para(&todas, "como está o site do cliente zeta?", &[], &extras).iter().any(|f| nome_de(f) == "site_parceiro"));
         let faltam = faltam_no_rust();
         assert!(faltam.contains(&"whatsapp_enviar".to_string()) && !faltam.contains(&"agenda".to_string()) && !faltam.contains(&"consultar_banco".to_string()));
     }

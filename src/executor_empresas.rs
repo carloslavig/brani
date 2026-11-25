@@ -1,11 +1,11 @@
-//! Executor, grupo EMPRESAS: nexodev, marketing, investimentos, compras, cortes_video e esteira_magno (as travas ja passaram em
+//! Executor, grupo EMPRESAS: nexodev, marketing, investimentos, compras, cortes_video e esteira_parceiro (as travas ja passaram em
 //! `executor::executar`). Aprovar/depositar/fechar levam `pedido_do_dono` ao modulo, que recusa de novo se nao for.
 //! "Não ligado ainda" aqui: build/commit/merge do NexoDev, gerar/medir/subir da Fornalha, baixar/transcrever/montar da Claquete,
 //! o checklist compartilhado da esteira e a acao 'capitais' (a lista de capitais nao esta no Rust).
 #![allow(dead_code)]
 use crate::executor::{arg, corta, do_dono, Ambiente, NAO_LIGADO};
 use crate::jarvis_travas::Pedido;
-use crate::{barramento, empresa_compras, empresa_cortes, empresa_dev, empresa_inv, empresa_mkt, link_concluidos, link_lote_magno, painel_rede};
+use crate::{barramento, empresa_compras, empresa_cortes, empresa_dev, empresa_inv, empresa_mkt, link_concluidos, link_lote_parceiro, painel_rede};
 use serde_json::{json, Value};
 
 const FILA_VAZIA: &str = "Nada na fila (ou teto do dia atingido).";
@@ -32,15 +32,9 @@ pub fn executar(amb: &Ambiente, p: &Pedido, nome: &str, args: &Value) -> Option<
     Some(match nome {
         "nexodev" => match acao {
             "abrir" => ou(empresa_dev::abrir(d, if a("projeto").is_empty() { "geral" } else { a("projeto") }, a("titulo"), a("descricao"), a("area"), args["critico"] == true, ts)),
-            "aprovar" => empresa_dev::aprovar(d, a("id"), do_dono(p), ts, &|t| (amb.processo)("nexodev_mesclar", &[t["id"].as_str().unwrap_or("").to_string()]).is_ok()),
-            "trabalhar" => {
-                let f = empresa_dev::Ferramentas {
-                    gerar: &*amb.ia, ia: &*amb.ia, contexto: &|_| String::new(), commit: &|_, _, _, _| false, build: &|_| (None, String::new()),
-                    senior: &|t, tarefa| (amb.segundo_plano)("nexodev_senior", &json!({ "id": t["id"], "tarefa": tarefa })).map(drop),
-                    recado: &|de, para, tipo, txt| drop(barramento::enviar(d, de, para, tipo, txt, 0, None)),
-                };
-                fila(empresa_dev::trabalhar(d, &f, agora, ts, Some(passos(if ignorar { 6 } else { 2 })), 1, ignorar))
-            }
+            "aprovar" if !do_dono(p) => "Só o dono aprova a entrega de um ticket.".into(),
+            "aprovar" => crate::nexodev::aprovar(d, a("id"), ts),
+            "trabalhar" => fila(crate::nexodev::com_motor(d, &*amb.ia, |f| empresa_dev::trabalhar(d, f, agora, ts, Some(passos(if ignorar { 6 } else { 2 })), 1, ignorar))),
             _ => empresa_dev::quadro(d, agora),
         },
         "marketing" => {
@@ -100,7 +94,7 @@ pub fn executar(amb: &Ambiente, p: &Pedido, nome: &str, args: &Value) -> Option<
             }
             _ => empresa_cortes::quadro(d),
         },
-        "esteira_magno" => esteira(amb, p, args),
+        "esteira_parceiro" => esteira(amb, p, args),
         _ => return None,
     })
 }
@@ -120,14 +114,14 @@ fn esteira(amb: &Ambiente, p: &Pedido, args: &Value) -> String {
             if n.is_empty() || !n.chars().all(|c| c.is_ascii_digit()) {
                 return "Qual o número do vídeo para refazer?".into();
             }
-            let fora = link_lote_magno::Fora { checklist: &|_, _, _| {}, barramento: &|de, para, tipo, txt| drop(barramento::enviar(d, de, para, tipo, txt, 0, None)) };
+            let fora = link_lote_parceiro::Fora { checklist: &|_, _, _| {}, barramento: &|de, para, tipo, txt| drop(barramento::enviar(d, de, para, tipo, txt, 0, None)) };
             link_concluidos::pedir_refazer(d, n, &format!("dono ({})", p.origem), &corta(p.original, 200), agora)
-                .and_then(|n| link_lote_magno::resolver(d, &n, "pedido do dono para refazer", ts, agora, &fora).map(|_| n))
+                .and_then(|n| link_lote_parceiro::resolver(d, &n, "pedido do dono para refazer", ts, agora, &fora).map(|_| n))
                 .map(|n| format!("Pedido registrado: o vídeo {n} volta para a esteira como o próximo, mesmo já estando no site."))
         }
         "mt" if arg(args, "cidade").is_empty() => Ok("Qual cidade de Mato Grosso?".into()),
-        "mt" => link_lote_magno::mt(d, arg(args, "cidade"), &religar, ts, agora),
-        acao => link_lote_magno::esteira(d, if acao.is_empty() { "status" } else { acao }, args["quantos"].as_i64().unwrap_or(50), &matar, &religar, ts, agora),
+        "mt" => link_lote_parceiro::mt(d, arg(args, "cidade"), &religar, ts, agora),
+        acao => link_lote_parceiro::esteira(d, if acao.is_empty() { "status" } else { acao }, args["quantos"].as_i64().unwrap_or(50), &matar, &religar, ts, agora),
     };
     r.unwrap_or_else(|e| format!("Não consegui na esteira: {e}"))
 }
@@ -185,7 +179,7 @@ mod tests {
         assert!(ex("cortes_video", json!({ "acao": "abrir", "fonte": "video.mp4" })).starts_with("Sem autor"));
         assert!(!ex("cortes_video", json!({ "acao": "quadro" })).is_empty());
         // Fornalha: a foto do WhatsApp nao esta ligada no ambiente seguro; sem contato o pedido abre
-        assert!(ex("marketing", json!({ "acao": "abrir", "cliente": "Padaria", "tipo": "imagem", "briefing": "pão quentinho", "contato": "Padaria Central" })).starts_with("Não consegui pegar a foto"));
+        assert!(ex("marketing", json!({ "acao": "abrir", "cliente": "Padaria", "tipo": "imagem", "briefing": "pão quenexemplo", "contato": "Padaria Central" })).starts_with("Não consegui pegar a foto"));
         assert!(ex("marketing", json!({ "acao": "abrir", "cliente": "Padaria", "tipo": "filme", "briefing": "x" })).starts_with("Tipo inválido"));
         assert!(!ex("marketing", json!({ "acao": "quadro" })).is_empty());
         assert!(saida(&d).is_empty()); // nenhuma empresa envia nada
@@ -211,18 +205,18 @@ mod tests {
         let a = Ambiente { processo: Box::new(move |n, _| { ch.borrow_mut().push(n.to_string()); Ok("1".into()) }), ..amb(&d) };
         let fora = ped("whatsapp", "jarvis", "para a esteira", false, &c, &[]);
         // o dono comanda de qualquer canal
-        assert!(executar(&a, &fora, "esteira_magno", &json!({ "acao": "status" })).unwrap().0.starts_with("Esteira"));
-        let r = executar(&a, &fora, "esteira_magno", &json!({ "acao": "parar" })).unwrap().0;
+        assert!(executar(&a, &fora, "esteira_parceiro", &json!({ "acao": "status" })).unwrap().0.starts_with("Esteira"));
+        let r = executar(&a, &fora, "esteira_parceiro", &json!({ "acao": "parar" })).unwrap().0;
         assert!(r.starts_with("⏸") && r.contains("volta para a fila") && *chamados.borrow() == ["esteira_matar"]);
-        assert!(executar(&a, &fora, "esteira_magno", &json!({ "acao": "painel" })).unwrap().0.contains("ainda não tem endereço"));
-        assert_eq!(executar(&a, &fora, "esteira_magno", &json!({ "acao": "mt" })).unwrap().0, "Qual cidade de Mato Grosso?");
-        assert!(executar(&a, &fora, "esteira_magno", &json!({ "acao": "capitais" })).unwrap().0.contains("não ligado ainda"));
+        assert!(executar(&a, &fora, "esteira_parceiro", &json!({ "acao": "painel" })).unwrap().0.contains("ainda não tem endereço"));
+        assert_eq!(executar(&a, &fora, "esteira_parceiro", &json!({ "acao": "mt" })).unwrap().0, "Qual cidade de Mato Grosso?");
+        assert!(executar(&a, &fora, "esteira_parceiro", &json!({ "acao": "capitais" })).unwrap().0.contains("não ligado ainda"));
         // refazer video publicado: de fora, so pelo chat verificado do dono
-        assert!(executar(&a, &fora, "esteira_magno", &json!({ "acao": "refazer", "numero": "170" })).unwrap().0.starts_with("(refazer"));
+        assert!(executar(&a, &fora, "esteira_parceiro", &json!({ "acao": "refazer", "numero": "170" })).unwrap().0.starts_with("(refazer"));
         assert!(!crate::link_concluidos::pedido_humano(&d, "170"));
         let dono = ped("whatsapp", DONO_CONV, "refaz o 170", false, &c, &[]);
-        assert_eq!(executar(&a, &dono, "esteira_magno", &json!({ "acao": "refazer", "numero": "abc" })).unwrap().0, "Qual o número do vídeo para refazer?");
-        let r = executar(&a, &dono, "esteira_magno", &json!({ "acao": "refazer", "numero": "170" })).unwrap().0;
+        assert_eq!(executar(&a, &dono, "esteira_parceiro", &json!({ "acao": "refazer", "numero": "abc" })).unwrap().0, "Qual o número do vídeo para refazer?");
+        let r = executar(&a, &dono, "esteira_parceiro", &json!({ "acao": "refazer", "numero": "170" })).unwrap().0;
         assert!(r.starts_with("Pedido registrado: o vídeo 170"), "{r}");
         assert!(crate::link_concluidos::pedido_humano(&d, "170") && saida(&d).is_empty());
     }

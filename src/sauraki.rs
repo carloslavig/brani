@@ -1,7 +1,7 @@
 //! SAURAKI, a camada VISUAL: monta o retrato (o JSON de GET /api/sauraki) do "escritorio", um personagem por agente real.
 //! So LE o que ja existe: registro de agentes, barramento, HORA de modificacao dos arquivos de estado, propostas, equipes das empresas.
 //! Estado so e afirmado com dado real; sem dado = null + "dado não disponível". Nunca devolve conteudo de mensagem de pessoa,
-//! o que o dono diz ao Jarvis (recados `carlos_disse`/`dono_disse`), segredo ou token. Nenhuma IA, nenhuma escrita.
+//! o que o dono diz ao Jarvis (recados `usuarios_disse`/`dono_disse`), segredo ou token. Nenhuma IA, nenhuma escrita.
 //! Ficou de fora (entra pronto em `Extras`, quem chama monta): situacao do Compasso, leitura termica, resumo publico da esteira,
 //! predios da rede, resumos das conversas da loja e do Link. Diferenca do Python: as mensagens dizem "dono" no lugar do nome.
 #![allow(dead_code)]
@@ -35,7 +35,7 @@ const FONTES: &[(&str, &[&str])] = &[
     ("Monza", &["monza.json"]),
     ("Zelo", &["atendimentos.log"]),
     ("Vaquinha", &["vaquinha.json"]),
-    ("Lupa", &["magno/lote.json"]),
+    ("Lupa", &["parceiro/lote.json"]),
 ];
 
 /// O que o Braniac ainda nao sabe montar sozinho em Rust; vazio = "dado não disponível".
@@ -67,7 +67,7 @@ fn arq(dados: &Path, rel: &str) -> Value {
 
 /// O que o dono diz ao Jarvis nunca vira texto na tela.
 fn privado(tipo: &str) -> bool {
-    matches!(tipo, "carlos_disse" | "dono_disse")
+    matches!(tipo, "usuarios_disse" | "dono_disse")
 }
 
 /// Propostas de melhoria esperando o dono (so conta; le o cabecalho do arquivo).
@@ -431,7 +431,7 @@ mod tests {
         gravar(&d.join("airbnb_estado.json"), &json!({ "consultas": { "1": { "hospede": "Davi Teste", "estado": "consulta" } } })).unwrap();
         let j = por_nome(&d, &json!({})).1["Jorge"].clone();
         assert!(j["estado"] == "aguardando_autorizacao" && !j.to_string().contains("Davi") && j["avisos"].as_array().unwrap().len() == 1);
-        barramento::enviar(&d, "Jarvis", "Alma", "carlos_disse", "segredo pessoal do dono", 0, None).unwrap();
+        barramento::enviar(&d, "Jarvis", "Alma", "usuarios_disse", "segredo pessoal do dono", 0, None).unwrap();
         barramento::enviar(&d, "Jarvis", "Alma", "dono_disse", "outro segredo pessoal", 0, None).unwrap();
         assert!(!por_nome(&d, &json!({})).0.to_string().contains("segredo"));
         std::fs::create_dir_all(d.join("propostas")).unwrap();

@@ -407,7 +407,7 @@ fn script(dados: &Path) -> PathBuf {
 
 /// Linha de comando e ambiente do filho (testavel: nada e executado aqui).
 pub fn comando(dados: &Path) -> Command {
-    let mut c = Command::new(std::env::var("BRANIAC_PYTHON").unwrap_or_else(|_| "py".into()));
+    let mut c = crate::oculto::cmd(std::env::var("BRANIAC_PYTHON").unwrap_or_else(|_| "py".into()));
     if std::env::var_os("BRANIAC_PYTHON").is_none() {
         c.arg("-3");
     }

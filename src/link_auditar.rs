@@ -479,7 +479,7 @@ pub fn consertar(l: &Locais, pasta: &Path, prob: &[String], f: &Fora, pode_refaz
 }
 
 fn hist(dados: &Path) -> PathBuf {
-    dados.join("magno").join("auditoria_historico.jsonl")
+    dados.join("parceiro").join("auditoria_historico.jsonl")
 }
 
 fn historico(dados: &Path) -> Vec<Value> {
@@ -495,7 +495,7 @@ fn quando_de(h: &Value) -> String {
     format!("{} {:02}:{:02}", Data(t.div_euclid(86400)).dia_mes(), t.rem_euclid(86400) / 3600, t.rem_euclid(3600) / 60)
 }
 
-/// Relatorio para o dono, montado por codigo a partir da auditoria (nenhuma IA escreve aqui). Grava dados/magno/relatorio_auditoria.md.
+/// Relatorio para o dono, montado por codigo a partir da auditoria (nenhuma IA escreve aqui). Grava dados/parceiro/relatorio_auditoria.md.
 pub fn relatorio(dados: &Path, conf: &Map<String, Value>, agora: &Agora, sem_auditar: &[String]) -> Result<PathBuf, String> {
     let ruim = |v: &Value| v["ok"] != true && v["agora_ok"] != true;
     let n_ruins = conf.values().filter(|v| ruim(v)).count();
@@ -527,7 +527,7 @@ pub fn relatorio(dados: &Path, conf: &Map<String, Value>, agora: &Agora, sem_aud
         t.push(String::new());
     }
     // videos ja publicados cujos dados sairam do PC: reauditados baixando os PDFs de novo
-    match json_de(&dados.join("magno").join("reauditoria.json")).ok().and_then(|v| v.as_object().cloned()) {
+    match json_de(&dados.join("parceiro").join("reauditoria.json")).ok().and_then(|v| v.as_object().cloned()) {
         Some(re) => {
             let mal: Vec<(&String, &Value)> = re.iter().filter(|(_, v)| v["ok"] == false).collect();
             t.extend(["## Vídeos já publicados (PDFs baixados de novo)".to_string(), String::new(), format!("- Reauditados: {}", re.len()), format!("- Com divergência: {}", mal.len()), String::new()]);
@@ -546,8 +546,8 @@ pub fn relatorio(dados: &Path, conf: &Map<String, Value>, agora: &Agora, sem_aud
     }
     let certos: Vec<String> = conf.iter().filter(|(_, v)| !ruim(v)).map(|(n, v)| format!("{n} {}", txt(&v["cidade"]))).collect();
     t.extend(["## Certos".to_string(), String::new(), if certos.is_empty() { "nenhum".to_string() } else { certos.join(", ") }, String::new()]);
-    let arq = dados.join("magno").join("relatorio_auditoria.md");
-    std::fs::create_dir_all(dados.join("magno")).map_err(|e| e.to_string())?;
+    let arq = dados.join("parceiro").join("relatorio_auditoria.md");
+    std::fs::create_dir_all(dados.join("parceiro")).map_err(|e| e.to_string())?;
     std::fs::write(&arq, t.join("\n")).map_err(|e| e.to_string())?;
     Ok(arq)
 }
@@ -566,9 +566,9 @@ pub struct Rodada<'a> {
     pub arrumar: bool,
 }
 
-/// Audita as cidades do pacote e grava dados/magno/auditoria.json e o relatorio. Devolve o conferido {numero: {...}}.
+/// Audita as cidades do pacote e grava dados/parceiro/auditoria.json e o relatorio. Devolve o conferido {numero: {...}}.
 pub fn rodar(dados: &Path, l: &Locais, r: &Rodada, agora: &Agora, f: &Fora) -> Result<Map<String, Value>, String> {
-    let arq = dados.join("magno").join("auditoria.json");
+    let arq = dados.join("parceiro").join("auditoria.json");
     let mut conf: Map<String, Value> = json_de(&arq).ok().and_then(|v| v.as_object().cloned()).unwrap_or_default();
     let (mut novos, mut sem) = (vec![], vec![]);
     let mut pastas: Vec<PathBuf> = std::fs::read_dir(&l.pacote).into_iter().flatten().flatten().map(|e| e.path())
@@ -596,7 +596,7 @@ pub fn rodar(dados: &Path, l: &Locais, r: &Rodada, agora: &Agora, f: &Fora) -> R
             }
         } else if !prob.is_empty() && r.arrumar {
             let ja = historico(dados).iter().any(|h| txt(&h["numero"]) == n && h["categoria"] == "refazer" && ts(agora) - h["t"].as_f64().unwrap_or(0.0) < 7.0 * 86400.0);
-            let (cat, texto, depois) = match consertar(l, &pasta, &prob, f, !ja, &dados.join("magno").join("tmp")) {
+            let (cat, texto, depois) = match consertar(l, &pasta, &prob, f, !ja, &dados.join("parceiro").join("tmp")) {
                 Ok((cat, texto)) if cat == "legenda" || cat == "levantamento" => match conferir(l, &pasta, &(f.docs)(&pasta)) {
                     Ok((depois, _)) => (cat, texto, depois),
                     Err(e) => (cat, texto, vec![e]),
@@ -610,7 +610,7 @@ pub fn rodar(dados: &Path, l: &Locais, r: &Rodada, agora: &Agora, f: &Fora) -> R
             let linha = json!({ "t": ts(agora), "quando": quando(agora), "numero": n, "cidade": nome, "categoria": cat, "texto": texto, "agora_ok": depois.is_empty() });
             let mut tudo = std::fs::read_to_string(hist(dados)).unwrap_or_default();
             tudo.push_str(&format!("{linha}\n"));
-            std::fs::create_dir_all(dados.join("magno")).and_then(|_| std::fs::write(hist(dados), tudo)).map_err(|e| e.to_string())?;
+            std::fs::create_dir_all(dados.join("parceiro")).and_then(|_| std::fs::write(hist(dados), tudo)).map_err(|e| e.to_string())?;
         }
         if prob.iter().any(|p| !antes.contains(p)) {
             let o_que = novo["feito"].as_str().filter(|x| !x.is_empty()).map(String::from).unwrap_or_else(|| prob.iter().take(2).cloned().collect::<Vec<_>>().join("; "));
@@ -618,7 +618,7 @@ pub fn rodar(dados: &Path, l: &Locais, r: &Rodada, agora: &Agora, f: &Fora) -> R
         }
         conf.insert(n, novo);
     }
-    std::fs::create_dir_all(dados.join("magno")).map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(dados.join("parceiro")).map_err(|e| e.to_string())?;
     std::fs::write(&arq, serde_json::to_string_pretty(&conf).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
     relatorio(dados, &conf, agora, &sem)?;
     if !novos.is_empty() && r.avisar {
@@ -629,11 +629,11 @@ pub fn rodar(dados: &Path, l: &Locais, r: &Rodada, agora: &Agora, f: &Fora) -> R
 
 /// No relogio da rotina: uma rodada a cada 3 h, so nas cidades que mudaram, ja consertando. None = ainda nao e hora.
 pub fn tick(dados: &Path, l: &Locais, agora: &Agora, f: &Fora) -> Option<Result<Map<String, Value>, String>> {
-    let marca = dados.join("magno").join("auditoria.ultima");
+    let marca = dados.join("parceiro").join("auditoria.ultima");
     if std::fs::read_to_string(&marca).ok().and_then(|t| t.trim().parse::<f64>().ok()).is_some_and(|u| ts(agora) - u < INTERVALO) {
         return None;
     }
-    if let Err(e) = std::fs::create_dir_all(dados.join("magno")).and_then(|_| std::fs::write(&marca, ts(agora).to_string())) {
+    if let Err(e) = std::fs::create_dir_all(dados.join("parceiro")).and_then(|_| std::fs::write(&marca, ts(agora).to_string())) {
         return Some(Err(e.to_string()));
     }
     Some(rodar(dados, l, &Rodada { alvos: &[], avisar: true, so_novas: true, arrumar: true }, agora, f))
@@ -693,7 +693,7 @@ mod tests {
         grava(&tmp.join("pacote/videos/777/preparo.json"), &json!({ "projeto": "777. x", "nome": "X" }).to_string());
         grava(&tmp.join("pacote/estudio-3d/projetos/777. x/audio/roteiro-falado.txt"), roteiro);
         grava(&tmp.join("pacote/estudio-3d/edicoes/777. x/X - legenda.txt"), legenda);
-        std::fs::create_dir_all(tmp.join("dados/magno")).unwrap();
+        std::fs::create_dir_all(tmp.join("dados/parceiro")).unwrap();
         let l = Locais { pacote: tmp.join("pacote"), backup: tmp.join("sem-backup") };
         (tmp, l, pasta)
     }
@@ -730,7 +730,7 @@ mod tests {
         let d = |_: &Path| docs();
         let conf = rodar(&tmp.join("dados"), &l, &Rodada { alvos: &[], avisar: false, so_novas: false, arrumar: false }, &agora(), &nada(&d)).unwrap();
         assert_eq!(conf["777"]["ok"], true);
-        assert!(tmp.join("dados/magno/auditoria.json").exists() && tmp.join("dados/magno/relatorio_auditoria.md").exists());
+        assert!(tmp.join("dados/parceiro/auditoria.json").exists() && tmp.join("dados/parceiro/relatorio_auditoria.md").exists());
         // so_novas: nada mudou, nem le os documentos de novo
         let nunca = |_: &Path| -> Docs { panic!("auditou de novo sem mudanca") };
         rodar(&tmp.join("dados"), &l, &Rodada { alvos: &[], avisar: false, so_novas: true, arrumar: true }, &agora(), &nada(&nunca)).unwrap();
@@ -950,10 +950,10 @@ mod tests {
         grava(&tmp.join("pacote/estudio-3d/projetos/777. x/audio/roteiro-falado.txt"), "Festas, 919 mil.");
         let conf = rodar(&dados, &l, &tudo, &Agora { data: Data(agora().data.0 + 2), ..agora() }, &f).unwrap();
         assert!(*refeitos.borrow() == 1 && conf["777"]["feito"].as_str().unwrap().contains("agora é com uma pessoa"));
-        let t = std::fs::read_to_string(dados.join("magno/relatorio_auditoria.md")).unwrap();
+        let t = std::fs::read_to_string(dados.join("parceiro/relatorio_auditoria.md")).unwrap();
         assert!(t.contains("## Vídeo não bate com o tribunal: refazer") && t.contains("### 777 X") && t.contains("- 18/11 10:30 · 777 X: "), "{t}");
         // tick: uma rodada a cada 3 h
-        let _ = std::fs::remove_file(dados.join("magno/auditoria.ultima"));
+        let _ = std::fs::remove_file(dados.join("parceiro/auditoria.ultima"));
         assert!(tick(&dados, &l, &agora(), &f).is_some() && tick(&dados, &l, &Agora { hora: 12, ..agora() }, &f).is_none());
         assert!(tick(&dados, &l, &Agora { hora: 13, min: 31, ..agora() }, &f).is_some());
         let _ = std::fs::remove_dir_all(&tmp);

@@ -14,7 +14,7 @@ use std::path::Path;
 
 pub const LIMIAR_REPETICAO: f64 = 0.55;
 /// Resposta segura quando a decisao proposta e barrada e ninguem revisa.
-pub const NEUTRA: &str = "Recebi sua mensagem! Vou conferir isso direitinho e já te retorno.";
+pub const NEUTRA: &str = "Recebi sua mensagem! Vou conferir isso direiexemplo e já te retorno.";
 const PARADAS: &str = "a o as os um uma uns umas de do da dos das em no na nos nas por para pra pro com sem e ou que se eu voce vc tu ele ela \
                        nao sim ja mais mas so tambem eh sao foi ser esta estao tem ter como qual quais quem onde quando isso isto esse essa \
                        aquele aquela meu minha seu sua nosso me te lhe ao aos";

@@ -120,9 +120,54 @@ pub fn alma_terceiros(texto: &str, apelido: &str) -> String {
     out
 }
 
+re!(intimo_meu, r"(?i)\b(?:meu|minha)\s+(?:bem|amor|rei|vida|beb[eê]|cora[cç][aã]o|gostos[oa]|lind[oa]|princ[ei]p[ei]?)\b");
+// so no vocativo (entre pontuacao ou nas pontas): "tá lindo mesmo" e "o amor é grande" ficam
+re!(intimo_solo, r"(?i)(^|[,.!?;:]\s*)(?:gostos[oa]|amor|lind[oa]|beb[eê])(\s*[,.!?;:]|\s*$)");
+
+/// Falando com o DONO: a Alma e calorosa mas respeitosa. "meu amor", "meu bem", "gostoso", "amor", "lindo", "bebê"... viram "senhor"
+/// (mesmo se o modelo errar); "querido" e "Chefe" ficam (so moderados, pelo prompt e pela lista de apelidos). Pura.
+pub fn alma_dono(texto: &str) -> String {
+    // "Oi, amor. Fala" -> "Oi, senhor. Fala"; no comeco da frase fica "Senhor"
+    let ini = |antes: &str| antes.trim_end().chars().last().map_or(true, |c| ".!?\n".contains(c));
+    let (mut a, mut ult) = (String::new(), 0);
+    for m in intimo_meu().find_iter(texto) {
+        a.push_str(&texto[ult..m.start()]);
+        a.push_str(if ini(&texto[..m.start()]) { "Senhor" } else { "senhor" });
+        ult = m.end();
+    }
+    a.push_str(&texto[ult..]);
+    let (mut t, mut copiado, mut pos) = (String::new(), 0, 0);
+    while let Some(c) = intimo_solo().captures_at(&a, pos) {
+        let (Some(antes), Some(depois)) = (c.get(1), c.get(2)) else { break };
+        t.push_str(&a[copiado..antes.end()]);
+        t.push_str(if ini(&a[..antes.end()]) { "Senhor" } else { "senhor" });
+        copiado = depois.start();
+        pos = depois.start();
+    }
+    t.push_str(&a[copiado..]);
+    // dois apelidos vizinhos ("Senhor, senhor") viram um so
+    Regex::new(r"(?i)\b(senhor)\s*[,!.]?\s*senhor\b").map(|r| r.replace_all(&t, "$1").into_owned()).unwrap_or(t)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn alma_respeita_o_dono_sem_apelido_intimo() {
+        assert_eq!(alma_dono("Oi, meu bem! Tô aqui."), "Oi, senhor! Tô aqui.");
+        assert_eq!(alma_dono("Meu amor, descansa."), "Senhor, descansa.");
+        assert_eq!(alma_dono("Hum, me conta mais disso, gostoso."), "Hum, me conta mais disso, senhor.");
+        assert_eq!(alma_dono("Tá bom, amor. Tô por aqui."), "Tá bom, senhor. Tô por aqui.");
+        assert_eq!(alma_dono("Parabéns, meu lindo!"), "Parabéns, senhor!");
+        assert_eq!(alma_dono("Meu amor, amor, vem"), "Senhor, vem");
+        // moderados continuam: querido e Chefe
+        assert_eq!(alma_dono("Ei, querido. Tô por aqui, Chefe."), "Ei, querido. Tô por aqui, Chefe.");
+        for proibido in ["gostoso", "meu amor", "meu bem", "amor", "lindo", "bebê"] {
+            let r = alma_dono(&format!("Oi, {proibido}! Tudo bem, {proibido}?")).to_lowercase();
+            assert!(!r.contains(proibido) && r.contains("senhor"), "{proibido}: {r}");
+        }
+    }
 
     fn regras_teste() -> Vec<Regra> {
         let v = |x: &[&str]| x.iter().map(|s| s.to_string()).collect::<Vec<_>>();

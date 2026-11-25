@@ -38,7 +38,7 @@ pub fn canto(pos: &Value, sw: i64, sh: i64, k: f64) -> (i64, i64) {
     }
 }
 
-/// (largura, altura, x, y) da janela. Nivel 0/1 = cantinho (a legenda cresce para a ESQUERDA; a esfera fica onde estava); 2 = conversa,
+/// (largura, altura, x, y) da janela. Nivel 0/1 = canexemplo (a legenda cresce para a ESQUERDA; a esfera fica onde estava); 2 = conversa,
 /// embaixo a direita; 3 = atencao, no centro (grande, mas e so uma janela: nunca a tela toda).
 pub fn geometria(nivel: i64, tem_legenda: bool, sw: i64, sh: i64, k: f64, pos: &Value) -> (i64, i64, i64, i64) {
     let lado = r(64.0 * k);

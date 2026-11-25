@@ -181,6 +181,92 @@ pub fn resumo(dados: &Path) -> String {
     format!("🛡 Segurança: {}{}", partes.join(" · "), if exp.is_empty() { String::new() } else { format!("\n⚠️ Portas de risco abertas para a rede: {}", exp.join(", ")) })
 }
 
+/// Sites hospedados no celular-servidor (S20 FE, Termux + tunel da Cloudflare). Pingados 1 vez por dia, a partir das 9h.
+pub const SITES: [(&str, &str); 3] = [
+    ("Katupy (katupyoka.dpdns.org)", "https://katupyoka.dpdns.org"),
+    ("Site (site.katupyoka.dpdns.org)", "https://site.katupyoka.dpdns.org"),
+    ("Arquivos (arquivos.katupyoka.dpdns.org)", "https://arquivos.katupyoka.dpdns.org"),
+];
+const ARQ_SITES: &str = "guarda_sites.json";
+const HORA_SITES: u32 = 9;
+
+fn dia_dos_sites(dados: &Path) -> Option<i64> {
+    serde_json::from_str::<Value>(&std::fs::read_to_string(dados.join(ARQ_SITES)).ok()?).ok()?["dia"].as_i64()
+}
+
+/// Ja esta na hora de pingar os sites hoje? (barato: so le o estado do dia)
+pub fn sites_pendente(dados: &Path, dia: i64, hora: u32) -> bool {
+    hora >= HORA_SITES && dia_dos_sites(dados) != Some(dia)
+}
+
+/// Pinga os sites UMA vez por dia (a partir das 9h). `ping` devolve o codigo HTTP; qualquer resposta abaixo de 500 conta como "no ar"
+/// (401 e a tela de login). Quem nao responde ou devolve 5xx (530 = tunel caido) entra no aviso, que vai por `enviar`.
+/// So OBSERVA: nao liga nem reinicia nada. None = nao era hora ou ja rodou hoje.
+pub fn sites_do_dia(dados: &Path, dia: i64, hora: u32, ping: &dyn Fn(&str) -> Result<u16, String>, enviar: &dyn Fn(&str)) -> Option<Vec<String>> {
+    if !sites_pendente(dados, dia, hora) {
+        return None;
+    }
+    let mut falhas = vec![];
+    for (nome, url) in SITES {
+        match ping(url) {
+            Ok(c) if c < 500 => {}
+            Ok(c) => falhas.push(format!("{nome}: erro {c}")),
+            Err(e) => falhas.push(format!("{nome}: sem resposta ({e})")),
+        }
+    }
+    // grava o dia ANTES de avisar: se o aviso demorar, o laço de 1 minuto não repete a checagem
+    let _ = std::fs::create_dir_all(dados);
+    let _ = std::fs::write(dados.join(ARQ_SITES), json!({ "dia": dia, "falhas": falhas }).to_string());
+    if !falhas.is_empty() {
+        // "urgente" faz o funil mandar na hora de dia; o resto do texto diz o que olhar
+        enviar(&format!(
+            "Urgente: o servidor do celular não está respondendo. Sem resposta hoje: {}. Veja se o celular está ligado, no Wi-Fi e com o Termux e o Tailscale abertos.",
+            falhas.join("; ")
+        ));
+    }
+    Some(falhas)
+}
+
+#[cfg(test)]
+mod tests_sites {
+    use super::*;
+
+    fn pasta(nome: &str) -> std::path::PathBuf {
+        let d = std::env::temp_dir().join(format!("braniac-guarda-sites-{}-{nome}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&d);
+        d
+    }
+
+    #[test]
+    fn site_fora_avisa_uma_vez_no_dia_e_so_depois_das_9h() {
+        let d = pasta("fora");
+        let avisos = std::cell::RefCell::new(vec![]);
+        let enviar = |t: &str| avisos.borrow_mut().push(t.to_string());
+        let fora = |u: &str| if u.contains("arquivos") { Ok(530) } else { Ok(200) };
+        assert!(sites_do_dia(&d, 100, 8, &fora, &enviar).is_none(), "antes das 9h não checa");
+        let f = sites_do_dia(&d, 100, 9, &fora, &enviar).unwrap();
+        assert_eq!(f.len(), 1);
+        assert!(f[0].contains("Arquivos") && f[0].contains("530"));
+        assert_eq!(avisos.borrow().len(), 1);
+        assert!(crate::funil::urgente(&avisos.borrow()[0]), "o funil precisa mandar na hora");
+        assert!(sites_do_dia(&d, 100, 15, &fora, &enviar).is_none(), "já rodou hoje");
+        assert!(sites_do_dia(&d, 101, 9, &fora, &enviar).is_some(), "no dia seguinte checa de novo");
+        assert_eq!(avisos.borrow().len(), 2);
+    }
+
+    #[test]
+    fn tudo_no_ar_ou_login_401_nao_avisa_e_erro_de_rede_avisa() {
+        let d = pasta("ok");
+        let avisos = std::cell::RefCell::new(0);
+        let enviar = |_: &str| *avisos.borrow_mut() += 1;
+        assert_eq!(sites_do_dia(&d, 5, 10, &|_| Ok(401), &enviar).unwrap().len(), 0);
+        assert_eq!(*avisos.borrow(), 0);
+        let f = sites_do_dia(&d, 6, 10, &|_| Err("timeout".into()), &enviar).unwrap();
+        assert_eq!(f.len(), 3);
+        assert_eq!(*avisos.borrow(), 1, "um aviso só, com os três");
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

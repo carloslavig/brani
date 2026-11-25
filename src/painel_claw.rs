@@ -76,4 +76,25 @@ mod tests {
         assert!(p["assuntos"].as_array().unwrap().iter().all(|a| a["fatos"].is_u64()));
         let _ = std::fs::remove_dir_all(&d);
     }
+
+    #[test]
+    fn plugins_e_skills_vem_do_pai_de_dados_regressao_painel_vazio() {
+        let raiz = std::env::temp_dir().join(format!("braniac-pai-dados-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&raiz);
+        let d = raiz.join("dados");
+        std::fs::create_dir_all(raiz.join("skills").join("falsa")).unwrap();
+        std::fs::create_dir_all(&d).unwrap();
+        std::fs::write(raiz.join(".mcp.json"), r#"{"mcpServers": {"photocraft": {}}}"#).unwrap();
+        std::fs::write(raiz.join("skills").join("falsa").join("SKILL.md"), "---
+name: falsa
+description: teste
+---
+corpo").unwrap();
+        let p = dados(&d, d.parent().unwrap(), 1.0, "");
+        assert_eq!(p["plugins"].as_array().unwrap().len(), 1);
+        let sk = crate::executor::Ambiente::seguro(&d).locais.skills;
+        assert_eq!(sk, raiz.join("skills"));
+        assert!(!crate::skills::catalogo(&sk, 80).is_empty());
+        let _ = std::fs::remove_dir_all(&raiz);
+    }
 }

@@ -1,6 +1,6 @@
 //! Moldes por estado (link/tribunais/__init__.py): o numero do video vem SO do tribunal de contas que fiscaliza o municipio, do
 //! jeito que o guia daquele estado manda. Nunca do Tesouro/RREO nem do portal da prefeitura. Estado sem molde = pendencia.
-//! Aqui: o que o guia diz (`guia`), a situacao do molde para o painel (`situacao`), os moldes conferidos (dados/magno/moldes.json)
+//! Aqui: o que o guia diz (`guia`), a situacao do molde para o painel (`situacao`), os moldes conferidos (dados/parceiro/moldes.json)
 //! e os moldes PENDENTES (al, ap, pa, rr, se): o tribunal nao publica o que o video precisa, entao `pendente` devolve o motivo e
 //! `preparar_pendente` sempre recusa. Nada e estimado.
 //! Ficou de fora: a conferencia ao vivo que os moldes pendentes do Python fazem (rede/navegador) para ver se o tribunal abriu
@@ -57,14 +57,14 @@ pub fn guia(uf: &str, d: &Value, capital: bool) -> Result<Value, String> {
 
 /// Moldes conferidos: {UF: data}.
 pub fn conferidos(dados: &Path) -> Map<String, Value> {
-    std::fs::read_to_string(dados.join("magno").join("moldes.json")).ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
+    std::fs::read_to_string(dados.join("parceiro").join("moldes.json")).ok().and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
 }
 
 pub fn marcar_conferido(dados: &Path, uf: &str, quando: &str) -> Result<(), String> {
     let mut d = conferidos(dados);
     d.insert(uf.into(), json!(quando));
-    std::fs::create_dir_all(dados.join("magno")).map_err(|e| e.to_string())?;
-    std::fs::write(dados.join("magno").join("moldes.json"), Value::Object(d).to_string()).map_err(|e| e.to_string())
+    std::fs::create_dir_all(dados.join("parceiro")).map_err(|e| e.to_string())?;
+    std::fs::write(dados.join("parceiro").join("moldes.json"), Value::Object(d).to_string()).map_err(|e| e.to_string())
 }
 
 /// Para o painel: molde conferido, em teste (existe mas ninguem conferiu), pendente ou em construcao, e de onde (pelo guia) vem os numeros.

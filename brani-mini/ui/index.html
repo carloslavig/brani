@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B.R.A.N.I · Miniatura de voz</title>
+<meta name="color-scheme" content="dark">
+<script>/* o servidor exige X-Braniac em todo POST (so na pagina aberta no navegador). Dentro do Tauri NAO se mexe no fetch: o IPC manda os cabecalhos
+ como objeto Headers e a copia por Object.assign os perdia ("missing Tauri-Invoke-Key": nenhum botao funcionava, nem Abrir aplicativo). */
+if(!window.__TAURI_INTERNALS__){var _f=window.fetch;window.fetch=function(u,o){if(o&&o.method==="POST")o.headers=Object.assign({"X-Braniac":"mini"},o.headers||{});return _f(u,o)}}</script>
+<!-- sem o servidor o tema nao carrega: as variaveis abaixo bastam; com ele, o tema global assume as cores base -->
+<link rel="stylesheet" href="http://127.0.0.1:8865/tema-antigravity.css" onerror="this.remove()">
+<style>
+:root{--m-fundo:rgba(20,20,26,.80);--m-tinta:var(--ag-tx,#e7e7ec);--m-mudo:var(--ag-mu,#9a9aa6);--m-bt:rgba(255,255,255,.07);--m-bt-h:rgba(255,255,255,.14);
+ --m-jarvis:#f08a4b;--m-alma:#a875f5;--m-ac:var(--m-jarvis);--m-font:var(--ag-font,"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif)}
+body[data-ag=alma]{--m-ac:var(--m-alma)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:transparent!important;overflow:hidden;font-family:var(--m-font);user-select:none;-webkit-user-select:none}
+#m{position:fixed;inset:4px;border-radius:18px;background:var(--m-fundo);color:var(--m-tinta);display:grid;grid-template-columns:60px 1fr;grid-template-rows:auto 1fr auto;column-gap:12px;padding:12px 12px 10px 14px;transition:opacity .25s,transform .25s}
+#m.off{opacity:.62}
+#o{grid-row:1/3;width:60px;height:60px;align-self:center}
+#topo{display:flex;align-items:baseline;gap:8px;min-width:0}
+#nome{font-weight:700;font-size:15px;color:var(--m-ac)}
+#rot{font-size:12px;color:var(--m-mudo);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#fala{font-size:13px;line-height:1.35;color:var(--m-tinta);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;align-self:start;margin-top:4px;min-height:2.7em}
+#fala:empty::before{content:"Pode falar.";color:var(--m-mudo)}
+#chat,#ent{display:none;grid-column:1/3}
+#bt{grid-row:3}
+body.exp #m{grid-template-rows:auto auto 1fr auto auto}
+body.exp #chat{display:flex;flex-direction:column;gap:6px;overflow-y:auto;grid-row:3;margin-top:8px;padding-right:4px;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}
+body.exp #chat::-webkit-scrollbar{width:5px}body.exp #chat::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:9px}
+body.exp #ent{display:flex;gap:6px;align-items:flex-end;grid-row:4;margin-top:8px}
+#ent #txt{flex:1;min-width:0}
+#bEnv{flex:none;width:34px;height:32px}
+body.exp #bt{grid-row:5}
+.b{max-width:88%;padding:6px 10px;border-radius:12px;font-size:13px;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text}
+.b.u{align-self:flex-end;background:var(--m-bt-h)}
+.b.j{align-self:flex-start;background:rgba(240,138,75,.16)}
+.b.a{align-self:flex-start;background:rgba(168,117,245,.20)}
+.b.s{align-self:center;background:none;color:var(--m-mudo);font-size:12px}
+#txt{all:unset;box-sizing:border-box;width:100%;min-height:32px;max-height:92px;padding:7px 10px;border-radius:10px;background:var(--m-bt);color:var(--m-tinta);font:13px/1.35 var(--m-font);overflow-y:auto;white-space:pre-wrap;user-select:text;-webkit-user-select:text}
+#txt:focus-visible{outline:2px solid var(--m-ac);outline-offset:0}
+#txt:empty::before{content:attr(data-ph);color:var(--m-mudo)}
+#bt{grid-column:1/3;display:flex;flex-wrap:nowrap;white-space:nowrap;flex:none;gap:6px;justify-content:flex-end;align-items:center;margin-top:6px}
+button{all:unset;box-sizing:border-box;width:30px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--m-bt);color:var(--m-tinta);cursor:pointer;transition:background .15s,transform .1s}
+button:hover{background:var(--m-bt-h)}button:active{transform:scale(.93)}button:focus-visible{outline:2px solid var(--m-ac);outline-offset:1px}
+button.lig{background:var(--m-ac);color:#111}
+button.abrir{width:auto;padding:0 10px;font-size:12px;font-weight:600;margin-right:auto}
+button svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#x{position:absolute;top:6px;right:6px;width:22px;height:22px;background:none;color:var(--m-mudo)}
+#x:hover{background:var(--m-bt);color:var(--m-tinta)}
+@media (prefers-reduced-motion:reduce){#m,button{transition:none}}
+</style>
+</head>
+<body data-ag="jarvis">
+<div id="m" data-arrastar>
+  <canvas id="o" width="120" height="120"></canvas>
+  <div id="topo"><span id="nome">Jarvis</span><span id="rot">dormindo</span></div>
+  <div id="fala"></div>
+  <div id="chat" aria-live="polite"></div>
+  <div id="ent"><div id="txt" contenteditable="plaintext-only" role="textbox" aria-label="Escrever ao agente" data-ph="Escreva e tecle Enter"></div><button id="bEnv" class="lig" title="Enviar" aria-label="Enviar"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+  <button id="x" title="Fechar" aria-label="Fechar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div id="bt">
+    <button class="abrir" id="bApp" title="Abrir aplicativo">Abrir aplicativo</button>
+    <button id="bExp" title="Expandir" aria-label="Expandir"><svg viewBox="0 0 24 24"><path d="M12 4v16M8 8l4-4 4 4M8 16l4 4 4-4"/></svg></button>
+    <button id="bMic" title="Microfone" aria-label="Microfone"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button id="bMudo" title="Silenciar por 1 hora" aria-label="Silenciar"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zM17 9l4 6M21 9l-4 6"/></svg></button>
+    <button id="bDorme" title="Descansar" aria-label="Descansar"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+  </div>
+</div>
+<script>
+var $=function(s){return document.querySelector(s)},Q={est:"dormindo",energia:0,agente:"jarvis"},T=window.__TAURI_INTERNALS__,dem=new URLSearchParams(location.search).get("demo");
+function cor(){return getComputedStyle(document.body).getPropertyValue("--m-ac").trim()||"#f08a4b"}
+window.estado=function(q){Q=q;document.body.dataset.ag=q.agente;$("#nome").textContent=q.nome;$("#rot").textContent=q.rotulo;
+ $("#fala").textContent=q.fala||"";var ex=!!q.expandida;if(ex!==document.body.classList.contains("exp")){document.body.classList.toggle("exp",ex);if(ex)setTimeout(function(){$("#txt").focus()},120)}
+ $("#bExp").title=ex?"Recolher":"Expandir";chat(q.chat||[]);$("#m").classList.toggle("off",!!q.offline||q.est==="dormindo");
+ $("#bMic").classList.toggle("lig",!!q.mic);$("#bMudo").classList.toggle("lig",!!q.mudo);
+ $("#bMic").title=q.mic?"Desligar microfone":"Ligar microfone";$("#bMudo").title=q.mudo?"Voltar a falar":"Silenciar por 1 hora"};
+function post(u,b){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b||{})}).catch(function(){})}
+function cmd(n){if(dem)return;if(T){T.invoke("acao",{nome:n}).catch(function(){});return}
+ // aberta como pagina (sem o processo da miniatura): as mesmas acoes pelas rotas de sempre
+ if(n==="app")post("/api/app/abrir",{rota:"/app"});else if(n==="dormir")post("/api/escuta-acao",{acao:"descansar"});
+ else if(n==="mic")post("/api/escuta-acao",{acao:Q.mic?"desligar":"ligar"});else if(n==="mudo")post("/api/mudo",Q.mudo?{mudo:false}:{minutos:60});else if(n==="fechar")try{window.close()}catch(e){}}
+var CHAT="",LOC=[];
+function chat(l){l=l.concat(LOC);var k=JSON.stringify(l);if(k===CHAT)return;CHAT=k;var c=$("#chat"),fim=c.scrollHeight-c.scrollTop-c.clientHeight<40||!c.childNodes.length;c.textContent="";
+ l.forEach(function(x){var d=document.createElement("div");d.className="b "+x[0];d.textContent=x[1];c.appendChild(d)});if(fim)c.scrollTop=c.scrollHeight}
+function enviar(t){t=t.trim();if(!t)return;if(T){T.invoke("enviar",{texto:t}).catch(function(){});return}
+ if(dem){LOC.push(["u",t]);chat([]);return}
+ LOC.push(["u",t]);fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({texto:t})}).then(function(r){return r.json()}).then(function(r){LOC.push([Q.agente==="alma"?"a":"j",r.resposta||r.erro||"sem resposta"]);CHAT=""}).catch(function(){LOC.push(["s","sem conexão"]);CHAT=""})}
+$("#txt").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();var t=this.innerText;this.textContent="";enviar(t)}});
+$("#bEnv").onclick=function(){var t=$("#txt").innerText;$("#txt").textContent="";enviar(t);$("#txt").focus()};
+var ult=0;["keydown","mousedown","focusin"].forEach(function(n){document.addEventListener(n,function(){var a=Date.now();if(T&&a-ult>4000){ult=a;T.invoke("toque").catch(function(){})}},true)});
+$("#bExp").onclick=function(){if(dem){document.body.classList.toggle("exp")}else cmd("expandir")};
+$("#bApp").onclick=function(){cmd("app")};$("#bMic").onclick=function(){cmd("mic")};$("#bMudo").onclick=function(){cmd("mudo")};
+$("#bDorme").onclick=function(){cmd("dormir")};$("#x").onclick=function(){cmd("fechar")};
+$("#m").addEventListener("mousedown",function(e){if(T&&e.button===0&&!e.target.closest("button"))T.invoke("arrastar").catch(function(){})});
+// esfera: anel que respira; ouvindo = pulsa com a voz, pensando = gira, falando = ondula, dormindo = quase parado
+var c=$("#o"),g=c.getContext("2d"),t0=performance.now(),suave=0;
+function quadro(){var t=(performance.now()-t0)/1000,e=Q.est,alvo=e==="falando"||e==="ouvindo"?Math.min(1,(Q.energia||0.3)):e==="pensando"?.3:0;
+ suave+=(alvo-suave)*.15;var W=120,r=36+suave*9+(e==="dormindo"||e==="offline"?0:Math.sin(t*2)*1.5),a=cor();
+ g.clearRect(0,0,W,W);g.lineCap="round";
+ g.globalAlpha=.18+.2*suave;g.strokeStyle=a;g.lineWidth=14;g.beginPath();g.arc(60,60,r,0,7);g.stroke();
+ g.globalAlpha=e==="dormindo"||e==="offline"?.45:1;g.lineWidth=5;g.beginPath();
+ if(e==="pensando"){g.arc(60,60,r,t*4,t*4+4.2)}else if(e==="falando"){for(var i=0;i<=64;i++){var an=i/64*6.2832,rr=r+Math.sin(an*5+t*10)*3*suave*2;g[i?"lineTo":"moveTo"](60+Math.cos(an)*rr,60+Math.sin(an)*rr)}g.closePath()}else{g.arc(60,60,r,0,7)}
+ g.stroke();g.globalAlpha=1;requestAnimationFrame(quadro)}
+quadro();
+if(dem){var p=dem.split(":");if(new URLSearchParams(location.search).get("exp")){document.body.classList.add("exp");Q.chat=[["u","oi, tudo bem?"],["j","Tudo certo, senhor. Em que posso ajudar?"],["u","que horas são e como está o tempo hoje por aí"]]}window.estado({agente:p[0]||"jarvis",nome:(p[0]==="alma"?"Alma":"Jarvis"),est:p[1]||"ouvindo",rotulo:p[1]||"ouvindo",fala:"Boa noite, senhor. Tudo em ordem por aqui.",energia:.6,mic:true,mudo:false,offline:false,expandida:document.body.classList.contains("exp"),chat:Q.chat||[]})}
+else if(!T){(function p(){fetch("/api/miniatura/quadro").then(function(r){return r.json()}).then(window.estado).catch(function(){window.estado({agente:"jarvis",nome:"Jarvis",est:"offline",rotulo:"sem conexão",fala:"",offline:true})}).then(function(){setTimeout(p,700)})})()}
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@ use std::path::Path;
 
 pub const PREFIXO: &str = "dpapi:";
 /// Amarra o segredo a este programa. E a mesma do Braniac em Python, para os dois lerem o mesmo arquivo.
-const ENTROPIA: &[u8] = b"braniac-dono";
+const ENTROPIA: &[u8] = b"braniac-usuarios";
 const NOMES_DE_SEGREDO: [&str; 7] = ["KEY", "TOKEN", "SECRET", "SENHA", "PASSWORD", "CHAVE", "USER_ID"];
 
 #[cfg(windows)]

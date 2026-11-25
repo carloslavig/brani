@@ -17,7 +17,7 @@ pub const PORTA: u16 = 8765;
 pub const FRAME: usize = 30000; // caracteres base64 por mensagem do canal (limite seguro)
 pub const JANELA_S: f64 = 120.0;
 /// So no PC: nada que arme ou ligue alguma coisa pode vir pelo celular.
-pub const SO_NO_PC: [&str; 6] = ["/par", "/api/par", "/api/remoto", "/api/autonomia", "/api/atendimento-auto", "/api/airbnb-auto"];
+pub const SO_NO_PC: [&str; 7] = ["/par", "/api/par", "/api/remoto", "/api/autonomia", "/api/atendimento-auto", "/api/airbnb-auto", "/api/nexodev"];
 
 fn ler(dados: &Path) -> Value {
     std::fs::read_to_string(dados.join("remoto.json")).ok().and_then(|t| serde_json::from_str(&t).ok()).filter(Value::is_object).unwrap_or_else(|| json!({}))

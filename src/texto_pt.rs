@@ -23,7 +23,7 @@ pub fn titulo_vazio(titulo: &str) -> bool {
     let txt = sem_acento(titulo);
     let cleaned: String = txt.chars().map(|c| if c.is_ascii_lowercase() { c } else { ' ' }).collect();
     let stop_words = [
-        "me", "lembre", "lembra", "lembrar", "lembrete", "dono", "de", "do", "da", "um", "uma", "o", "a",
+        "me", "lembre", "lembra", "lembrar", "lembrete", "usuarios", "dono", "de", "do", "da", "um", "uma", "o", "a",
         "para", "pra", "tarefa", "compromisso", "evento", "amanha", "hoje",
     ];
     cleaned.split_whitespace().filter(|w| !stop_words.contains(w)).map(str::len).sum::<usize>() < 3
@@ -43,7 +43,7 @@ mod tests {
         for c in ["", "Lembrar", "Lembrar Dono", "lembrete", "Me lembra amanhã", "tarefa 1"] {
             assert!(titulo_vazio(c), "{c}");
         }
-        for c in ["Dentista", "Lembrar de ligar pro Jr", "Reunião", "pão"] {
+        for c in ["Dentista", "Lembrar de ligar pro Irmao", "Reunião", "pão"] {
             assert!(!titulo_vazio(c), "{c}");
         }
     }

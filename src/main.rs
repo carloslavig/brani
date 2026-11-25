@@ -1,7 +1,10 @@
 //! Braniac em Rust: roda em paralelo ao Braniac atual (Python, porta 8765), sem tocar nele.
 //! Codigo e padrao/ sao iguais em todo PC; tudo que e pessoal mora so na pasta de dados.
+#![cfg_attr(not(test), windows_subsystem = "windows")]
 mod abas;
+mod oculto;
 mod abas_fixas;
+mod reconcilia_abas;
 mod agenda;
 mod agentes;
 mod avisos;
@@ -13,11 +16,13 @@ mod bomdia;
 mod cdp;
 mod base64;
 mod claude_cli;
+mod ponte_agentes;
 mod codigo;
 mod cofre;
 mod cuidado_diario;
 mod compasso;
 mod conselho;
+mod pc_metricas;
 mod consulta;
 mod contradiz;
 mod delegacao;
@@ -26,8 +31,11 @@ mod ferramentas;
 mod modulos;
 mod ouvir;
 mod aparelho;
+mod app_painel;
+mod saudacao;
 mod para_fala;
 mod parecer;
+mod poda;
 mod provedores;
 mod roteador;
 mod segredos;
@@ -46,10 +54,16 @@ mod latencia;
 mod limpeza;
 mod mudo;
 mod pendencias;
+mod cerebro;
+mod projetos;
+mod projetos_eventos;
 mod power;
 mod qualidade;
 mod recado_falado;
 mod recados;
+mod rosto;
+mod rosto_detector;
+mod rosto_nucleo;
 mod reuniao_matinal;
 mod termico;
 mod airbnb_base;
@@ -88,6 +102,9 @@ mod leads_maps;
 mod leis;
 mod monitor_dono;
 mod mostrar;
+mod miniatura;
+#[path = "miniatura_logica.rs"]
+mod miniatura_logica;
 mod organizador;
 mod organizar_sessoes;
 mod pc;
@@ -100,6 +117,7 @@ mod correio;
 mod empresa_compras;
 mod empresa_cortes;
 mod empresa_dev;
+mod nexodev;
 mod empresa_inv;
 mod empresa_mkt;
 mod fornalha_estudio;
@@ -128,6 +146,7 @@ mod wpp_doc;
 mod alma_aprende;
 mod alma_evolucao;
 mod alma_orbe;
+mod janela;
 mod alma_voz;
 mod animacoes;
 mod artcraft;
@@ -138,11 +157,11 @@ mod imagem;
 mod sala;
 mod sentinela;
 mod video_analise;
-mod voz_do_carlos;
+mod voz_do_usuarios;
 mod vozes_agentes;
 mod vozes_catalogo;
 mod link_fonte_siconfi;
-mod link_lote_magno;
+mod link_lote_parceiro;
 mod link_predio;
 mod link_radar_mt;
 mod link_tribunais;
@@ -155,6 +174,7 @@ mod andares;
 mod automelhoria;
 mod avaliar_jarvis;
 mod b2;
+mod conversa_cmd;
 mod braincenter;
 mod claude_agent;
 mod claudinho;
@@ -181,6 +201,7 @@ mod wpp_arquivo;
 mod wpp_img;
 mod wpp_voz;
 mod saida;
+mod cliente_exemplo;
 mod liga_atendimento;
 mod wpp_laco;
 mod wpp_midia;
@@ -246,9 +267,9 @@ mod link_conferir;
 mod link_fila_cliente;
 mod link_integracao;
 mod link_no;
-mod link_preparar_magno;
+mod link_preparar_parceiro;
 mod link_render_estudio;
-mod link_render_magno;
+mod link_render_parceiro;
 mod orbe;
 mod organiza_claude;
 mod par_webrtc;
@@ -273,6 +294,8 @@ use std::{cell::RefCell, io::Read, path::{Path, PathBuf}, sync::{Arc, LazyLock, 
 use tiny_http::{Header, Method, Request, Response, Server};
 
 const PORTA: u16 = 8865;
+/// BRANIAC_PORTA so para teste em copia de dados; sem ela, a de sempre.
+fn porta() -> u16 { std::env::var("BRANIAC_PORTA").ok().and_then(|p| p.parse().ok()).unwrap_or(PORTA) }
 const PARIDADE: &str = include_str!("../paridade.json");
 
 /// Pasta dos dados pessoais: BRANIAC_DADOS ou ./dados. Nunca vai junto do codigo.
@@ -346,7 +369,6 @@ static LONGAS: LazyLock<(Arc<Mutex<estudio3d::Estudio>>, Arc<Mutex<criacao::Esta
 
 /// Passo de empresa a pedido: quem esta trabalhando agora e o que o ultimo passo de cada uma devolveu.
 static PASSOS: Mutex<(Vec<String>, std::collections::BTreeMap<String, String>)> = Mutex::new((Vec::new(), std::collections::BTreeMap::new()));
-const SEM_COMMIT: &str = "commit e build não ligados no Braniac em Rust; o código proposto ficou guardado em texto na pasta do projeto";
 const SEM_ORQUESTRADOR: &str = "O orquestrador da esteira não roda no Braniac em Rust: só a fila e a meta foram gravadas, nenhum vídeo é feito por aqui.";
 
 fn travar<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -373,10 +395,10 @@ fn status(dados: &Path, rot: &Roteador, ts: f64) -> Value {
 }
 
 fn retrato(dados: &Path, rot: &Roteador, agora: &tempo::Agora, ts: f64) -> Value {
-    let publico = link_lote_magno::publico(dados, &[], &|_| None);
+    let publico = link_lote_parceiro::publico(dados, &[], &|_| None);
     let esteira = publico["cidades"].as_object().is_some_and(|o| !o.is_empty()).then_some(publico);
     sauraki::snapshot(dados, &status(dados, rot, ts), ts, agora, &sauraki::Extras { esteira, recursos: liga_telas::recursos(),
-        link_conversa: link_integracao::resumo(dados, ts, "Xandao"), loja_conversa: elo_loja::resumo(dados, ts), ..Default::default() })
+        link_conversa: link_integracao::resumo(dados, ts, "Aliado"), loja_conversa: elo_loja::resumo(dados, ts), ..Default::default() })
 }
 
 /// Modelo LOCAL ("<sistema><SEP><pedido>", ou so o pedido). So provedor de tipo "local": o que a pessoa diz nunca vai a IA de fora.
@@ -403,7 +425,7 @@ fn prompt_extra(dados: &Path, completo: bool, agora: &tempo::Agora) -> String {
     let mut s = personalidade::bloco(&personalidade::niveis(dados), dono);
     s += &format!("\n\nAGORA: {}\n{}", contexto::agora_texto(agora), contexto::diretriz_humor(ctx.humor()));
     if completo {
-        let voz = voz_do_carlos::guia(dados, dono);
+        let voz = voz_do_usuarios::guia(dados, dono);
         if !voz.is_empty() {
             s += &format!("\n\nJEITO DE FALAR DO DONO:\n{voz}");
         }
@@ -484,12 +506,12 @@ fn abrir_no_pc(alvo: &str) -> Result<(), String> {
     if !cfg!(windows) {
         return Err(executor::NAO_LIGADO.into());
     }
-    std::process::Command::new("explorer.exe").arg(alvo).spawn().map(drop).map_err(|e| e.to_string())
+    crate::oculto::cmd("explorer.exe").arg(alvo).spawn().map(drop).map_err(|e| e.to_string())
 }
 
 /// Temperatura da placa de video pelo nvidia-smi (so leitura).
 fn temperatura_gpu() -> Result<String, String> {
-    let o = std::process::Command::new("nvidia-smi").args(["--query-gpu=temperature.gpu", "--format=csv,noheader,nounits"]).output().map_err(|e| e.to_string())?;
+    let o = crate::oculto::cmd("nvidia-smi").args(["--query-gpu=temperature.gpu", "--format=csv,noheader,nounits"]).output().map_err(|e| e.to_string())?;
     if o.status.success() { Ok(String::from_utf8_lossy(&o.stdout).into_owned()) } else { Err("o nvidia-smi não respondeu".into()) }
 }
 
@@ -569,23 +591,10 @@ fn passo_empresa(dados: &Path, rot: &Arc<Roteador>, chave: &str, agora: &tempo::
     let Some(nome) = ferramenta_da_empresa(chave).filter(|n| *n != "investimentos") else { return "Essa empresa não tem passo para fazer.".into() };
     let (amb, ctx) = (ambiente(dados, rot, agora, ts, false), contexto::Ctx::ler(dados));
     let p = Pedido { origem: "pc", conv: jarvis::CONV_UNICA, original: "", armada: false, ctx: &ctx, familia: &[] };
-    let no_dev = |estados: &[&str]| -> Vec<String> {
-        if nome != "nexodev" {
-            return vec![];
-        }
-        empresa_dev::tickets(dados).iter().filter(|t| estados.contains(&t["estado"].as_str().unwrap_or(""))).filter_map(|t| t["id"].as_str().map(str::to_string)).collect()
-    };
-    let antes = no_dev(&["novo", "desenvolvimento"]);
     let r = executor::executar(&amb, &p, nome, &json!({ "acao": "trabalhar", "passos": 1 })).map(|(r, _)| r).unwrap_or_default();
     let mut linhas: Vec<String> = amb.saida_direta.borrow_mut().drain(..).collect();
     if linhas.is_empty() {
         linhas.push(r);
-    }
-    for id in no_dev(&["revisao"]).into_iter().filter(|id| antes.contains(id)) {
-        linhas.push(match empresa_dev::parar(dados, &id, SEM_COMMIT, ts) {
-            Ok(()) => format!("{id} parado em desenvolvimento: {SEM_COMMIT}."),
-            Err(e) => format!("{id}: {e}"),
-        });
     }
     linhas.join("\n")
 }
@@ -613,7 +622,7 @@ fn comando_esteira(dados: &Path, acao: &str, quantos: i64, agora: &tempo::Agora,
     if !["status", "parar", "continuar", "mais"].contains(&acao) {
         return Err("acao: status, parar, continuar ou mais (quantos)".into());
     }
-    let r = link_lote_magno::esteira(dados, acao, quantos, &|| 0, &|| {}, ts, agora)?;
+    let r = link_lote_parceiro::esteira(dados, acao, quantos, &|| 0, &|| {}, ts, agora)?;
     // tambem no status: sem isto "Esteira rodando" passava por verdade aqui, onde nenhuma esteira roda
     Ok(format!("{r}\n{SEM_ORQUESTRADOR}"))
 }
@@ -813,6 +822,27 @@ fn depois(dados: &Path, rot: &Roteador, conv: &str, texto: &str, resposta: &str,
 
 /// O que roda a cada minuto alem do Compasso e do bom dia. `ultimo_recado` = maior id do barramento ja contado.
 /// Nada aqui usa rede nem processo externo (vagas e freelas ficaram de fora por isso); pendencias tambem nao: so quando perguntam.
+static SITES_EM_CURSO: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Codigo HTTP de um site, com 2 tentativas (um soluco de rede nao vira alarme). Resposta abaixo de 500 = no ar.
+fn ping_http(url: &str) -> Result<u16, String> {
+    let mut r = Err(String::new());
+    for i in 0..2 {
+        if i > 0 {
+            std::thread::sleep(std::time::Duration::from_secs(10));
+        }
+        r = match ureq::get(url).set("User-Agent", "leitor-de-feed/1.0").timeout(std::time::Duration::from_secs(20)).call() {
+            Ok(x) => Ok(x.status()),
+            Err(ureq::Error::Status(c, _)) => Ok(c),
+            Err(e) => Err(e.to_string()),
+        };
+        if matches!(r, Ok(c) if c < 500) {
+            break;
+        }
+    }
+    r
+}
+
 fn relogio(dados: &Path, rot: &Roteador, agora: &tempo::Agora, ts: f64, minuto: u32, ultimo_recado: &mut i64) {
     liga_atendimento::tick(dados, rot, agora, ts, minuto);
     liga_esteira::tick(dados, rot, agora, ts, minuto);
@@ -901,6 +931,9 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
         return ponte::atender(req, rot, &dados, caminho);
     }
     if *req.method() == Method::Get {
+        if let Some(r) = projetos::get(&dados, &url).or_else(|| pc_metricas::get(&url)).or_else(|| cerebro::get(&url)) {
+            return r;
+        }
         if let Some(r) = liga_telas::get(&dados, rot, &url) {
             return r;
         }
@@ -931,7 +964,7 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
             // agenda e financeiro sao pessoais: esta porta so atende a propria maquina
             "/api/painel" => {
                 let hoje = agenda::ferramenta(&dados.join("agenda.json"), &json!({ "acao": "listar" }), &agora);
-                dado(json!({ "painel": painel_claw::dados(&dados, Path::new("."), ts, &hoje), "bracos": painel::bracos(&dados, &status(&dados, rot, ts), &agora, ts),
+                dado(json!({ "painel": painel_claw::dados(&dados, dados.parent().unwrap_or(Path::new(".")), ts, &hoje), "bracos": painel::bracos(&dados, &status(&dados, rot, ts), &agora, ts),
                              "historico": painel::historico(&dados, 40, 200) }))
             }
             "/api/braincenter" => braincenter::painel(&dados, &travar(&BRAIN).clone().unwrap_or_default(), ts).map(dado).unwrap_or_else(|e| erro(e, 500)),
@@ -997,9 +1030,9 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
             }
             "/api/rede" => dado(pares_da_rede(&dados)),
             "/api/seguranca" => dado(ultimo_relatorio_seguranca(&dados)),
-            "/api/esteira" => dado(json!({ "publico": link_lote_magno::publico(&dados, &[], &|_| None), "resumo": link_lote_magno::resumo(&dados) })),
-            // o relatorio e remontado por codigo a partir da auditoria ja gravada (dados/magno/auditoria.json); nenhuma auditoria roda aqui
-            "/api/auditoria" => match empresa_dev::ler(&dados.join("magno").join("auditoria.json")).and_then(|v| v.as_object().cloned()) {
+            "/api/esteira" => dado(json!({ "publico": link_lote_parceiro::publico(&dados, &[], &|_| None), "resumo": link_lote_parceiro::resumo(&dados) })),
+            // o relatorio e remontado por codigo a partir da auditoria ja gravada (dados/parceiro/auditoria.json); nenhuma auditoria roda aqui
+            "/api/auditoria" => match empresa_dev::ler(&dados.join("parceiro").join("auditoria.json")).and_then(|v| v.as_object().cloned()) {
                 Some(conf) => link_auditar::relatorio(&dados, &conf, &agora, &[]).and_then(|p| std::fs::read_to_string(p).map_err(|e| e.to_string()))
                     .map(|t| dado(json!({ "relatorio": t, "cidades": conf.len() }))).unwrap_or_else(|e| erro(e, 500)),
                 None => dado(json!({ "relatorio": null, "cidades": 0 })),
@@ -1022,6 +1055,7 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
                 dado(json!({ "mensagens": mensagens, "conhecimento": conhecimento, "decisoes": decisoes, "fatos": fatos }))
             }
             "/api/guarda" => dado(json!({ "resumo": guarda::resumo(&dados) })),
+            "/api/ponte-agentes" => dado(ponte_agentes::estado(&dados, &agora.data.iso())),
             "/api/agentes/fatos" => dado(json!({ "fatos": fatos::todos(&dados, &parametro(&url, "id").unwrap_or_default(), fatos::agora_ts()) })),
             "/api/agentes" => dado(json!({ "agentes": agentes::listar(&dados).into_iter().map(|mut a| {
                     a["fatos"] = json!(fatos::validos(&dados, a["id"].as_str().unwrap_or(""), false, fatos::agora_ts()).len());
@@ -1062,7 +1096,7 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
                 Some(c) => codigo::ler(&pasta_codigo(), &c).map(dado).unwrap_or_else(|e| erro(e, 400)),
                 None => erro("falta ?caminho=", 400),
             },
-            _ => liga_painel::get(&dados, rot, &url).or_else(|| liga_atendimento::get(&dados, rot, &url)).or_else(|| wpp_laco::get(&dados, &url)).or_else(|| troca_rede::get(&dados, &url)).or_else(|| liga_esteira::get(&dados, rot, &url)).or_else(|| liga_casa::get(&dados, rot, &url)).or_else(|| liga_b2::get(&dados, rot, &url)).unwrap_or_else(|| erro("nao existe", 404)),
+            _ => nexodev::get(&dados, &url).or_else(|| app_painel::get(&dados, &url)).or_else(|| liga_painel::get(&dados, rot, &url)).or_else(|| liga_atendimento::get(&dados, rot, &url)).or_else(|| wpp_laco::get(&dados, &url)).or_else(|| troca_rede::get(&dados, &url)).or_else(|| liga_esteira::get(&dados, rot, &url)).or_else(|| liga_casa::get(&dados, rot, &url)).or_else(|| liga_b2::get(&dados, rot, &url)).unwrap_or_else(|| erro("nao existe", 404)),
         };
     }
     if *req.method() != Method::Post {
@@ -1082,8 +1116,24 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
     let mut corpo = String::new();
     let _ = req.as_reader().take(65536).read_to_string(&mut corpo);
     let v: Value = serde_json::from_str(&corpo).unwrap_or(Value::Null);
+    if let Some(r) = projetos::post(&dados, &|s, p| rot.neutro_em(s, p, false), caminho, &v) {
+        return r;
+    }
+    if let Some(r) = cerebro::post(caminho, &v) {
+        return r;
+    }
     if let Some(r) = liga_telas::post(&dados, rot, caminho, &v) {
         return r;
+    }
+    if let Some(r) = saudacao::post(&dados, rot, caminho, &v) {
+        return r;
+    }
+    if caminho.starts_with("/api/nexodev/") {
+        let rot_ia = rot.clone();
+        let ia: Arc<dyn Fn(&str, &str) -> Result<String, String> + Send + Sync> = Arc::new(move |sis, p| rot_ia.neutro_em(if sis.contains(' ') { sis } else { "Responda em portugues do Brasil, direto ao ponto." }, p, false));
+        if let Some(r) = nexodev::post(&dados, ia, caminho, &v) {
+            return r;
+        }
     }
     let texto = |k: &str| v[k].as_str().unwrap_or("").trim().to_string();
     match caminho {
@@ -1097,7 +1147,8 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
         }
         "/api/mudo" => {
             let ts = fatos::agora_ts() as f64;
-            dado(if v["mudo"] == false { mudo::desmutar(&dados, ts) } else { mudo::mutar(&dados, v["minutos"].as_f64(), ts) })
+            // as telas mandam {"mudo": false} (painel) ou {"acao": "desmutar"} (HUD)
+            dado(if v["mudo"] == false || v["acao"] == "desmutar" { mudo::desmutar(&dados, ts) } else { mudo::mutar(&dados, v["minutos"].as_f64(), ts) })
         }
         "/api/chat" if texto("texto").is_empty() => erro("mande {\"texto\": \"...\"}", 400),
         "/api/chat" => {
@@ -1133,6 +1184,19 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
         },
         // texto -> audio WAV. Primeiro a voz escolhida para o agente na tela Vozes (principal, depois as reservas); se nao houver
         // ou todas cairem, a ordem de sempre (voz.json). Texto sensivel nunca vai a voz da nuvem: fala a voz local
+        // amostra da tela Vozes: fala uma frase fixa com o motor/voz pedidos (so grava a escolha depois, em /api/vozes/escolher)
+        "/api/vozes/amostra" => {
+            const FRASE: &str = "Olá, esta é a minha voz. Posso falar assim com você.";
+            let (m, vz) = (texto("motor"), texto("voz"));
+            let estilo = vozes_agentes::escolha(&dados, &texto("agente"))["ajustes"]["estilo"].as_str().unwrap_or("").to_string();
+            match vozes_catalogo::amostra(&|| voz::gerar(&*rot.ler_chave, &m, &vz, FRASE, &estilo)) {
+                Ok((audio, seg)) => {
+                    let r = Response::from_data(audio).with_header(Header::from_bytes("Content-Type", "audio/wav").unwrap());
+                    r.with_header(Header::from_bytes("X-Segundos", seg.to_string()).unwrap())
+                }
+                Err(e) => erro(e, 503),
+            }
+        }
         "/api/voz" => {
             let (t, agente) = (texto("texto"), texto("agente"));
             let nuvem = !rot.sensivel(&t);
@@ -1215,6 +1279,13 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
         "/api/relatorio" => {
             if bomdia::registrar(&dados, &tempo::agora(), &texto("texto")) { dado(json!({ "ok": true })) } else { erro("mande {\"texto\": \"...\"}", 400) }
         }
+        // reconhecimento de rosto local: cadastrar (fotos -> 128 numeros), quem (olha a camera agora), pessoas (so nomes e quantidade)
+        "/api/rosto/cadastrar" => {
+            let fotos: Vec<String> = v["fotos"].as_array().map(|a| a.iter().filter_map(|x| x.as_str().map(String::from)).collect()).unwrap_or_default();
+            (if v["camera"].as_bool().unwrap_or(false) { rosto::cadastrar_camera(&dados, &texto("nome")) } else { rosto::cadastrar(&dados, &texto("nome"), &fotos) }).map(dado).unwrap_or_else(|e| erro(e, 400))
+        }
+        "/api/rosto/quem" => rosto::quem(&dados).map(|r| dado(json!({ "visto": format!("{:?}", r), "fala": rosto::fala(&r, "") }))).unwrap_or_else(|e| erro(e, 500)),
+        "/api/rosto/pessoas" => dado(json!({ "pessoas": rosto::pessoas(&dados).iter().map(|p| json!({ "nome": p.nome, "vetores": p.vetores.len() })).collect::<Vec<_>>(), "ligado": rosto::config(&dados).ligado })),
         "/api/conselho" => conselho::convocar(rot, &texto("tema")).map(dado).unwrap_or_else(|e| erro(e, 400)),
         "/api/banco/fato" => {
             let val = v["validade"].as_f64().or_else(|| fatos::validade_do_texto(&texto("texto"), &tempo::agora(), fatos::agora_ts()));
@@ -1252,18 +1323,20 @@ fn atender(req: &mut Request, rot: &Arc<Roteador>) -> Resp {
         "/api/vm/abas/mostrar" => feito(vm::mostrar_aba(&texto("id"))),
         "/api/vm/abas-fixas" => feito(abas_fixas::garantir(&dados).map(|a| json!({ "abertas": a }))),
         "/api/vm/abas/fechar" => feito(vm::fechar_aba(&dados, &texto("id"))),
-        _ => liga_painel::post(&dados, caminho, &v).or_else(|| liga_atendimento::post(&dados, rot, caminho, &v)).or_else(|| troca_rede::post(&dados, caminho, &v)).or_else(|| wpp_laco::post(&dados, caminho, &v)).or_else(|| importar_antigo::post(&dados, caminho, &v)).or_else(|| liga_esteira::post(&dados, rot, caminho, &v)).or_else(|| liga_casa::post(&dados, rot, caminho, &v)).or_else(|| liga_b2::post(&dados, rot, caminho, &v)).unwrap_or_else(|| erro("nao existe", 404)),
+        _ => app_painel::post(&dados, caminho, &v).or_else(|| liga_painel::post(&dados, caminho, &v)).or_else(|| liga_atendimento::post(&dados, rot, caminho, &v)).or_else(|| troca_rede::post(&dados, caminho, &v)).or_else(|| wpp_laco::post(&dados, caminho, &v)).or_else(|| importar_antigo::post(&dados, caminho, &v)).or_else(|| liga_esteira::post(&dados, rot, caminho, &v)).or_else(|| liga_casa::post(&dados, rot, caminho, &v)).or_else(|| liga_b2::post(&dados, rot, caminho, &v)).unwrap_or_else(|| erro("nao existe", 404)),
     }
 }
 
 fn main() {
+    oculto::log_em_arquivo(&pasta_dados());
     // so a propria maquina: nada de fora alcanca esta porta
-    let servidor = Server::http(("127.0.0.1", PORTA))
-        .unwrap_or_else(|e| panic!("porta {PORTA} ocupada (ja tem um Braniac Rust rodando?): {e}"));
+    let servidor = Server::http(("127.0.0.1", porta()))
+        .unwrap_or_else(|e| panic!("porta {} ocupada (ja tem um Braniac Rust rodando?): {e}", porta()));
     let rot = Arc::new(roteador().unwrap_or_else(|e| panic!("nao abri os bancos em {}: {e}", pasta_dados().display())));
     println!("Braniac Rust em http://127.0.0.1:{PORTA}  dados: {}", pasta_dados().display());
     // uma pergunta a IA demora segundos: sem isto as telas travavam enquanto ela pensava
     let servidor = Arc::new(servidor);
+    saudacao::boot(&pasta_dados(), rot.clone()); // so fala se o Windows acabou de iniciar (dados/logon.flag novo)
     // relogio do Compasso: a cada minuto ve se ha lembrete da agenda ou rotina na hora
     let rot_relogio = rot.clone();
     std::thread::spawn(move || {
@@ -1273,6 +1346,9 @@ fn main() {
         loop {
         std::thread::sleep(std::time::Duration::from_secs(60));
         let (dados, agora) = (pasta_dados(), tempo::agora());
+        if power::pausado(&dados) {
+            continue; // servidor pausado: nenhuma rotina do relogio roda ate retomar
+        }
         // curador dos fatos: a cada 30 min vence o que passou do prazo; cada contradicao entra UMA vez no relatorio do bom dia
         if minuto % 30 == 0 {
             for (ag, x, y) in fatos::curar(&dados, fatos::agora_ts()).1.into_iter().take(3) {
@@ -1291,6 +1367,17 @@ fn main() {
             let _ = barramento::enviar(&dados, "Compasso", "Jarvis", "alerta", "lembrete ou rotina na hora", 0, None);
             avisos::registrar(&dados, &agora, para, texto)
         });
+        // servidor do celular: pinga os 3 sites 1x por dia (a partir das 9h); se algum nao responder, o Jarvis avisa o dono no WhatsApp
+        if guarda::sites_pendente(&dados, agora.data.0, agora.hora) && !SITES_EM_CURSO.swap(true, std::sync::atomic::Ordering::SeqCst) {
+            std::thread::spawn(|| {
+                let (dados, agora, ts) = (pasta_dados(), tempo::agora(), fatos::agora_ts());
+                let dono = dono_de(&dados);
+                guarda::sites_do_dia(&dados, agora.data.0, agora.hora, &ping_http, &|t| {
+                    drop(funil::filtrar(&dados, &dono, &dono, t, "guarda", &agora, ts, &|para, x| saida::registrar(&dados, "guarda", para, x)));
+                });
+                SITES_EM_CURSO.store(false, std::sync::atomic::Ordering::SeqCst);
+            });
+        }
         }
     });
     // atendimento do WhatsApp: sempre em sombra, a menos que o dono ligue a chave (dados/troca.json)
@@ -1301,7 +1388,7 @@ fn main() {
     despacho::iniciar(rot.clone());
     ponte::iniciar(); // so sobe o filho Python com a chave "loja" ou "link" ligada
     aparelho::iniciar(rot.clone()); // microfone e alto-falante: so abrem com a chave "voz"; a bandeja sobe sempre
-    abas_fixas::depois_de_ligar(30); // se a VM ja estava ligada, repoe as abas que faltam
+    reconcilia_abas::iniciar(); // reusa as abas que ja existem, fecha as repetidas e repoe as que faltam (na partida e a cada 2 min)
     let fios: Vec<_> = (0..4).map(|_| {
         let (servidor, rot) = (servidor.clone(), rot.clone());
         std::thread::spawn(move || {
@@ -1471,7 +1558,7 @@ mod tests {
         let (mut rot, c2) = (rot_so_online(Arc::new(AtomicUsize::new(0))), chamadas.clone());
         rot.chamar = Box::new(move |_, _, _, _| {
             c2.fetch_add(1, Ordering::SeqCst);
-            Ok("Foto de pão quentinho saindo do forno, luz quente da manhã, balcão de madeira, sem texto na imagem.".into())
+            Ok("Foto de pão quenexemplo saindo do forno, luz quente da manhã, balcão de madeira, sem texto na imagem.".into())
         });
         let rot = Arc::new(rot);
         let (ts, amb) = (fatos::agora_ts(), Ambiente::seguro(&d));
@@ -1479,22 +1566,21 @@ mod tests {
         let p = Pedido { origem: "pc", conv: jarvis::CONV_UNICA, original: "", armada: false, ctx: &c, familia: &[] };
         let abrir = |nome: &str, v: Value| executor::executar(&amb, &p, nome, &v).unwrap().0;
         assert!(passo_empresa(&d, &rot, "inv", &em(10), ts).contains("não tem passo") && passo_empresa(&d, &rot, "nada", &em(10), ts).contains("não tem passo"));
-        // NexoDev: UM passo; a entrega fica em texto e o ticket estaciona em "desenvolvimento" (sem commit e build nao ha revisao)
+        // NexoDev: UM passo por vez; commit e build agora estao ligados (nexodev.rs), entao a entrega segue para a revisao
         assert!(abrir("nexodev", json!({ "acao": "abrir", "projeto": "loja", "titulo": "Tela de estoque", "descricao": "lista de itens" })).starts_with("T001"));
         let r = passo_empresa(&d, &rot, "dev", &em(10), ts);
         let t = empresa_dev::tickets(&d).remove(0);
-        assert!(r.contains("T001 parado em desenvolvimento") && t["estado"] == "desenvolvimento" && t["parado"] == SEM_COMMIT, "{r} {t}");
-        assert!(t["historico"].as_array().unwrap().iter().any(|h| h["txt"].as_str().unwrap().contains("não ligados")), "{t}");
-        let entregas = std::fs::read_dir(d.join("empresa_dev").join("projetos").join("loja")).unwrap().count();
+        assert!(r.contains("T001") && t["estado"] == "revisao" && t["parado"].is_null(), "{r} {t}");
+        let entregas = std::fs::read_dir(d.join("empresa_dev").join("projetos").join("loja")).unwrap().flatten().filter(|e| e.file_name().to_string_lossy().ends_with(".md")).count();
         assert_eq!((entregas, chamadas.load(Ordering::SeqCst)), (1, 1));
-        // pedir de novo nao gasta IA com o ticket estacionado, e ele nao aparece como pronto para aprovar
-        assert!(passo_empresa(&d, &rot, "dev", &em(10), ts).starts_with("Nada na fila"));
-        assert_eq!(chamadas.load(Ordering::SeqCst), 1);
+        // o passo seguinte e a revisao (uma IA): resposta que nao comeca com APROVADO reprova e o ticket volta ao dev
+        assert!(passo_empresa(&d, &rot, "dev", &em(10), ts).contains("reprovado na revisão"));
+        assert_eq!(chamadas.load(Ordering::SeqCst), 2);
         assert_eq!(esperando_ok(&d), json!({ "dev": [], "inv": [], "cortes": [] }));
         // Fornalha: o passo do prompt usa a IA; o de gerar a arte depende do navegador e para com o motivo no historico
         std::fs::create_dir_all(d.join("empresa_mkt")).unwrap();
         std::fs::write(d.join("empresa_mkt").join("equipe.json"), r#"{"empresa": "Fornalha", "agentes": [], "limites": {}, "clientes": {"padaria": {"marca": "Padaria"}}}"#).unwrap();
-        assert!(abrir("marketing", json!({ "acao": "abrir", "cliente": "Padaria", "tipo": "imagem", "briefing": "pão quentinho" })).contains("P001"));
+        assert!(abrir("marketing", json!({ "acao": "abrir", "cliente": "Padaria", "tipo": "imagem", "briefing": "pão quenexemplo" })).contains("P001"));
         let (a, b) = (passo_empresa(&d, &rot, "mkt", &em(10), ts), passo_empresa(&d, &rot, "mkt", &em(10), ts));
         let ped = empresa_mkt::pedidos(&d).remove(0);
         assert!(a.contains("→ prompt") && b.contains(executor::NAO_LIGADO) && ped["estado"] == "prompt", "{a} | {b} | {ped}");

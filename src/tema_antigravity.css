@@ -1,0 +1,100 @@
+/* Temas do B.R.A.N.I: Original (sem atributo), Antigravity e Codex. So variaveis e pele; nao muda estrutura.
+   O tema ativo fica em <html data-tema="..."> (posto por tema_antigravity.js, guardado em localStorage brani_tema).
+   Ajuste de visual: mexa so aqui. */
+:root{ /* base dos dialogos/menus (vale em qualquer tema) = Antigravity */
+ --ag-bg:#0b0b0e;--ag-panel:#131317;--ag-panel2:#1a1a20;--ag-line:#26262d;--ag-tx:#e7e7ec;--ag-mu:#8c8c98;--ag-ac:#6b9bff;--ag-ac2:#8bb0ff;--ag-r:14px;
+ --ag-sombra:0 6px 24px rgba(0,0,0,.35);--ag-acfg:#06101f;--ag-ok:#4ade80;--ag-warn:#fbbf24;--ag-er:#f87171;--ag-font:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+html[data-tema=codex]{ /* cinza neutro, cantos bem redondos, letra do sistema */
+ --ag-bg:#181818;--ag-panel:#212121;--ag-panel2:#2b2b2b;--ag-line:#303030;--ag-tx:#ececec;--ag-mu:#9a9a9a;--ag-ac:#4c9aff;--ag-ac2:#73b0ff;--ag-r:20px;
+ --ag-sombra:0 8px 28px rgba(0,0,0,.4);--ag-font:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif}
+html[data-tema]{
+ /* painel_b1 / hud_b1 */
+ --bg:var(--ag-bg);--bg2:var(--ag-bg);--glow:transparent;--glow2:transparent;
+ --glass:var(--ag-panel);--glass-hover:var(--ag-panel2);--glass-strong:var(--ag-panel2);--hair:var(--ag-line);--hair-strong:var(--ag-line);
+ --card:var(--ag-panel);--border:var(--ag-line);--border-strong:var(--ag-line);--bg-accent:var(--ag-panel2);--bg-elevated:var(--ag-panel2);--bg-hover:var(--ag-panel2);
+ --text:var(--ag-tx);--text-strong:#fff;--muted:var(--ag-mu);
+ --accent:var(--ag-ac);--accent-hover:var(--ag-ac2);--accent-2:var(--ag-ac);--accent-subtle:rgba(107,155,255,.15);--accent-fg:var(--ag-acfg);
+ --r-sm:10px;--r-md:12px;--r-lg:var(--ag-r);--r-card:var(--ag-r);--shadow:var(--ag-sombra);--font:var(--ag-font);
+ /* projetos */
+ --pn:var(--ag-panel);--pn2:var(--ag-panel2);--bd:var(--ag-line);--mu:var(--ag-mu);--ac:var(--ag-ac);
+ /* alma / pendencias */
+ --tx:var(--ag-tx);--mut:var(--ag-mu);
+ /* parceiro */
+ --fundo:var(--ag-bg);--campo:var(--ag-panel);--campo2:var(--ag-panel2);--tinta:var(--ag-tx);--apagado:var(--ag-mu)}
+html[data-tema],html[data-tema] body{background:var(--ag-bg)!important;background-image:none!important;color:var(--ag-tx);font-family:var(--ag-font);-webkit-font-smoothing:antialiased}
+html[data-tema] button,html[data-tema] input,html[data-tema] select,html[data-tema] textarea{font-family:inherit}
+html[data-tema] input,html[data-tema] select,html[data-tema] textarea{background:var(--ag-panel2);color:var(--ag-tx);border:1px solid var(--ag-line);border-radius:10px}
+html[data-tema] input:focus,html[data-tema] select:focus,html[data-tema] textarea:focus{outline:none;border-color:var(--ag-ac);box-shadow:0 0 0 3px rgba(107,155,255,.18)}
+html[data-tema] ::placeholder{color:var(--ag-mu)}
+html[data-tema] ::-webkit-scrollbar-thumb{background:var(--ag-line)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--ag-ac);outline-offset:2px}
+/* conversa_cmd usa cores fixas: repinta pelos ids */
+html[data-tema] #top{border-bottom:1px solid var(--ag-line)!important}
+html[data-tema] #top select,html[data-tema] #top button{background:var(--ag-panel2)!important;border:1px solid var(--ag-line)!important;color:var(--ag-tx)!important;border-radius:10px!important}
+html[data-tema] #nav{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* Antigravity: lateral um tom acima, conteudo quase preto */
+html[data-tema=antigravity] #nav{background:var(--ag-panel)!important}
+/* Codex: lateral mais escura que o conteudo, item ativo em pilula, campo de conversa bem redondo */
+html[data-tema=codex] #nav{background:#111!important;border-right-color:#222!important}
+html[data-tema=codex] .item,html[data-tema=codex] .conv{border-radius:10px}
+html[data-tema=codex] textarea,html[data-tema=codex] #txt{border-radius:18px}
+html[data-tema=codex] .logo{background:#2b2b2b;box-shadow:none}
+/* Claude: escuro quente, destaque terracota */
+html[data-tema=claude]{--ag-bg:#262624;--ag-panel:#30302e;--ag-panel2:#3a3a37;--ag-line:#45443f;--ag-tx:#f3f1ea;--ag-mu:#a8a59b;--ag-ac:#d97757;--ag-ac2:#e59378;--ag-r:14px;
+ --ag-font:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;--accent-subtle:rgba(217,119,87,.18);--ag-acfg:#1f1410}
+html[data-tema=claude] #nav{background:#1f1e1d!important}
+/* menu popover e dialogos (tema_antigravity.js) */
+.ag-fundo{position:fixed;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:9999;animation:agf .12s ease-out}
+.ag-modal{width:min(420px,calc(100vw - 32px));background:var(--ag-panel);border:1px solid var(--ag-line);border-radius:var(--ag-r);box-shadow:var(--ag-sombra);padding:20px;color:var(--ag-tx);font:14px/1.5 var(--ag-font)}
+.ag-modal h3{margin:0 0 6px;font-size:16px;font-weight:600;color:#fff}.ag-modal p{margin:0 0 12px;color:var(--ag-mu)}
+.ag-modal input{width:100%;padding:10px 12px;margin:8px 0 4px;background:var(--ag-panel2);color:var(--ag-tx);border:1px solid var(--ag-line);border-radius:10px}
+.ag-bts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.ag-b,.ag-it{border:1px solid var(--ag-line);background:var(--ag-panel2);color:var(--ag-tx);padding:8px 14px;border-radius:10px;cursor:pointer}
+.ag-b:hover,.ag-it:hover,.ag-mi:hover{filter:brightness(1.25)}
+.ag-it{display:block;width:100%;text-align:left;margin-bottom:6px}
+.ag-pri{background:var(--ag-ac);border-color:var(--ag-ac);color:var(--ag-acfg);font-weight:600}
+.ag-perigo.ag-b{background:#d94a4a;border-color:#d94a4a;color:#fff}
+.ag-menu{position:fixed;z-index:9999;min-width:200px;padding:6px;background:var(--ag-panel);border:1px solid var(--ag-line);border-radius:12px;box-shadow:var(--ag-sombra);animation:agf .12s ease-out}
+.ag-mi{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--ag-tx);padding:8px 10px;border-radius:8px;cursor:pointer;text-align:left;font:inherit}
+.ag-mi svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ag-mi:hover,.ag-mi:focus-visible{outline:none;background:var(--ag-panel2)}
+.ag-mi.ag-dest{color:var(--ag-ac);font-weight:600}.ag-mi.ag-perigo{color:#f26b6b}
+@keyframes agf{from{opacity:0;transform:translateY(3px)}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* campo de conversa do painel: tinha azul fixo, agora segue o tema */
+html[data-tema] #composer{background:linear-gradient(transparent,var(--ag-bg) 26%)!important}
+html[data-tema] .comp{background:var(--ag-panel)!important;border-color:var(--ag-line)!important}
+/* botao flutuante do Jarvis: sem degrade nem brilho colorido, uma cor so do tema */
+html[data-tema] #fabBtn{background:var(--ag-ac)!important;color:var(--ag-acfg)!important;box-shadow:0 4px 14px rgba(0,0,0,.4)!important;width:48px;height:48px;font-size:18px}
+html[data-tema] .logo,html[data-tema] .mascote{background:var(--ag-ac)!important;box-shadow:none!important}
+/* controles nativos no escuro e rolagem fina */
+html[data-tema]{color-scheme:dark;accent-color:var(--ag-ac);scrollbar-width:thin;scrollbar-color:var(--ag-line) transparent}
+html[data-tema] .mascote,html[data-tema] .logo{color:var(--ag-acfg)!important}
+/* topo: tema + selo do servidor, no mesmo formato dos selos de status */
+#brani-srv{display:none!important} /* pilula flutuante antiga do app: o selo do topo a substitui */
+.ag-topo{display:flex;align-items:center;gap:8px;margin-right:8px}
+body>header .ag-topo{margin-left:auto;margin-right:0}
+.ag-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair-strong,var(--ag-line));border-radius:99px;padding:3px 11px;font:inherit;font-size:12px;line-height:1.5;background:var(--glass,var(--ag-panel));color:var(--text,var(--ag-tx));cursor:pointer;white-space:nowrap}
+.ag-pill:hover{background:var(--glass-hover,var(--ag-panel2))}
+.ag-mut{color:var(--muted,var(--ag-mu))}
+.ag-dot{width:8px;height:8px;border-radius:50%;background:var(--ag-mu);display:inline-block}
+.ag-dot.ok{background:var(--ag-ok)}.ag-dot.warn{background:var(--ag-warn)}.ag-dot.er{background:var(--ag-er)}
+.ag-sw{display:inline-flex;margin-right:6px}.ag-sw i{width:12px;height:12px;border-radius:50%;border:1px solid rgba(255,255,255,.3);margin-right:-4px}
+.ag-ck{margin-left:auto;padding-left:12px;color:var(--ag-ac);min-width:14px}
+.ag-mi[aria-selected=true]{font-weight:600}
+/* botao flutuante "Conversar" e o painel dele (ao lado do botao do Jarvis, sem cobrir) */
+.ag-conv{position:fixed;right:18px;bottom:78px;width:420px;height:560px;max-width:95vw;max-height:calc(100vh - 150px);z-index:21;border:1px solid var(--hair-strong,var(--ag-line));border-radius:var(--ag-r);box-shadow:var(--ag-sombra);background:var(--ag-bg)}
+/* conversa_cmd e projetos tinham cores fixas */
+html[data-tema] #log>.m.u{background:color-mix(in srgb,var(--ag-ac) 14%,var(--ag-panel2))!important;color:var(--ag-tx)!important;border:1px solid var(--ag-line)}
+html[data-tema] #log>.m.b{background:var(--ag-panel)!important;border:1px solid var(--ag-line)}
+html[data-tema] #acoes button{background:var(--ag-panel)!important;color:var(--ag-mu)!important;border-color:var(--ag-line)!important}
+html[data-tema] #cx{border-top-color:var(--ag-line)!important}
+html[data-tema] #cx button{background:var(--ag-ac)!important;color:var(--ag-acfg)!important}
+html[data-tema] #cx .p{background:#d94a4a!important;color:#fff!important}
+html[data-tema] body>header{background:var(--ag-bg)!important;backdrop-filter:none!important}
+/* painel: balao do usuario discreto, do tamanho do texto, a direita */
+html[data-tema] #msgs .m.u .b{width:fit-content;max-width:85%;margin-left:auto;background:color-mix(in srgb,var(--ag-ac) 12%,var(--ag-panel2));color:var(--ag-tx)}
+html[data-tema] #msgs .m.u .q{justify-content:flex-end;text-align:right}
+/* botao redondo "J" do canto: fora da tela em todos os temas (pedido do Dono, 24/11) */
+#fab{display:none!important}
+.ag-conv{bottom:18px;max-height:calc(100vh - 90px)}

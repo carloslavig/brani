@@ -51,7 +51,7 @@ pub fn padrao() -> Value {
         "similaridade_duplicata": 0.85, "similaridade_conflito": 0.6,
         "arquivar_apos_dias": 90, "arquivar_score_abaixo": 0.25, "importante_a_partir_de": 0.8, "meia_vida_dias": 30,
         "pesos": { "frequencia": 0.2, "recencia": 0.2, "projeto_ativo": 0.15, "importancia": 0.25, "confianca": 0.1, "repeticao": 0.1 },
-        "confianca_fonte": { "dono": 1.0, "dono": 1.0, "dossie": 0.9, "usuario": 1.0, "jarvis": 0.6, "agente": 0.6, "ia": 0.5, "desconhecida": 0.4 },
+        "confianca_fonte": { "dono": 1.0, "usuarios": 1.0, "dossie": 0.9, "usuario": 1.0, "jarvis": 0.6, "agente": 0.6, "ia": 0.5, "desconhecida": 0.4 },
         "projetos_ativos": ["global"],
         "permissoes": { "*": { "projetos": ["global"] } },
     })

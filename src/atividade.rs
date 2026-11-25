@@ -63,8 +63,8 @@ pub fn do_barramento(recados: &[Value]) -> (i64, Vec<String>, i64) {
     let (mut auto, mut agentes, mut pedem) = (0, Vec::new(), 0);
     for m in recados {
         let tipo = m["tipo"].as_str().unwrap_or("");
-        // "carlos_disse" e o tipo que o barramento do Braniac em Python grava; "dono_disse" e o nome neutro
-        if matches!(tipo, "dono_disse" | "carlos_disse") || m["de"] == "Alma" {
+        // "usuarios_disse" e o tipo que o barramento do Braniac em Python grava; "dono_disse" e o nome neutro
+        if matches!(tipo, "dono_disse" | "usuarios_disse") || m["de"] == "Alma" {
             continue;
         }
         auto += 1;

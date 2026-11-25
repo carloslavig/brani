@@ -28,8 +28,8 @@ pub fn rota(metodo: &str, caminho: &str) -> Rota {
         return Rota::NaoExiste;
     }
     match caminho.split('?').next().unwrap_or("") {
-        "/" | "/magno" => Rota::Tela,
-        "/api/magno" => Rota::Dados,
+        "/" | "/parceiro" => Rota::Tela,
+        "/api/parceiro" => Rota::Dados,
         "/manifest.webmanifest" => Rota::Manifesto,
         "/icone-192.png" => Rota::Icone(192),
         "/icone-512.png" => Rota::Icone(512),
@@ -51,16 +51,16 @@ pub fn endereco_fixo(arq_fixo: &Path) -> Option<String> {
     texto(arq_fixo)
 }
 
-/// Link provisorio do tunel rapido, guardado em dados/magno/painel_url.txt.
+/// Link provisorio do tunel rapido, guardado em dados/parceiro/painel_url.txt.
 pub fn url_publica(dados: &Path) -> Option<String> {
-    texto(&dados.join("magno").join("painel_url.txt"))
+    texto(&dados.join("parceiro").join("painel_url.txt"))
 }
 
 /// Resposta quando o DONO pede o link do painel. E o unico jeito de o endereco sair.
 pub fn endereco(arq_fixo: &Path, dados: &Path) -> String {
     if let Some(f) = endereco_fixo(arq_fixo) {
         let base = f.trim_end_matches('/');
-        return format!("Braniac de qualquer lugar: {base}/  · painel da esteira dentro dele: {base}/magno  · só o painel: {base}:8443/");
+        return format!("Braniac de qualquer lugar: {base}/  · painel da esteira dentro dele: {base}/parceiro  · só o painel: {base}:8443/");
     }
     match url_publica(dados) {
         Some(u) => format!("Painel da esteira (link provisório, o fixo ainda não foi ativado): {u}"),
@@ -80,7 +80,7 @@ pub fn anotar_tunel(dados: &Path, linha: &str) -> Option<String> {
     if url_publica(dados).as_deref() == Some(&url) {
         return None;
     }
-    let arq = dados.join("magno").join("painel_url.txt");
+    let arq = dados.join("parceiro").join("painel_url.txt");
     std::fs::create_dir_all(arq.parent()?).ok()?;
     std::fs::write(arq, &url).ok()?;
     Some(url)
@@ -92,13 +92,13 @@ mod tests {
 
     #[test]
     fn so_a_lista_branca_responde() {
-        assert!(rota("GET", "/") == Rota::Tela && rota("GET", "/magno?x=1") == Rota::Tela && rota("GET", "/api/magno") == Rota::Dados);
+        assert!(rota("GET", "/") == Rota::Tela && rota("GET", "/parceiro?x=1") == Rota::Tela && rota("GET", "/api/parceiro") == Rota::Dados);
         assert!(rota("GET", "/manifest.webmanifest") == Rota::Manifesto && rota("GET", "/icone-512.png") == Rota::Icone(512));
-        for fora in ["/api/status", "/api/chat", "/b2", "/api/magno/../status", "/icone-999.png", "//", "/magno/", "/api/sauraki"] {
+        for fora in ["/api/status", "/api/chat", "/b2", "/api/parceiro/../status", "/icone-999.png", "//", "/parceiro/", "/api/sauraki"] {
             assert_eq!(rota("GET", fora), Rota::NaoExiste, "{fora}");
         }
         for m in ["POST", "PUT", "DELETE"] {
-            assert_eq!(rota(m, "/api/magno"), Rota::NaoExiste); // so leitura
+            assert_eq!(rota(m, "/api/parceiro"), Rota::NaoExiste); // so leitura
         }
         assert_eq!(manifesto()["icons"].as_array().unwrap().len(), 2);
     }
@@ -116,7 +116,7 @@ mod tests {
         assert!(endereco(&fixo, &d).contains("provisório") && endereco(&fixo, &d).contains("abc-def-1"));
         std::fs::write(&fixo, "\u{feff}https://meu-pc.exemplo.ts.net/\n").unwrap();
         let e = endereco(&fixo, &d);
-        assert!(e.contains("https://meu-pc.exemplo.ts.net/magno") && e.contains(":8443/") && !e.contains("trycloudflare") && !deve_subir_tunel(&fixo));
+        assert!(e.contains("https://meu-pc.exemplo.ts.net/parceiro") && e.contains(":8443/") && !e.contains("trycloudflare") && !deve_subir_tunel(&fixo));
         let _ = std::fs::remove_dir_all(&d);
     }
 }

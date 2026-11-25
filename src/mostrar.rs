@@ -43,7 +43,7 @@ fn tem(n: &str, padrao: &str) -> bool {
 // o Whisper escreve "estreia" para "esteira". Ordem importa: o mais especifico primeiro.
 const TELAS: [(&str, &str, Assunto); 8] = [
     (r"\b(time|andar|equipe|pessoal|estacoes?) da (esteira|estreia)\b", "/sauraki?andar=esteira", Assunto::Estacoes),
-    (r"\b(esteira|lote)\b", "/magno", Assunto::Lote),
+    (r"\b(esteira|lote)\b", "/parceiro", Assunto::Lote),
     (r"\b(nexo ?dev|nexus ?dev|nexo de?v|time de programacao)\b", "/sauraki?andar=nexodev", Assunto::Andar("NexoDev", 2)),
     (r"\b(fornalha|marketing)\b", "/sauraki?andar=marketing", Assunto::Andar("Fornalha", 3)),
     (r"\b(claquete|cortes)\b", "/sauraki?andar=cortes", Assunto::Andar("Claquete", 5)),
@@ -193,7 +193,7 @@ mod tests {
         assert_eq!(intencao("como está o time da esteira?", &ap).map(|x| x.0), Some("/sauraki?andar=esteira"));
         assert_eq!(intencao("como anda a estreia?", &ap), None); // "estreia" sozinha nao e a esteira
         assert_eq!(intencao("como tá a esteira?", &ap).map(|x| x.1), Some(Assunto::Lote));
-        assert_eq!(intencao("me mostra os vídeos do Bento", &ap).map(|x| x.0), Some("/magno"));
+        assert_eq!(intencao("me mostra os vídeos do Bento", &ap).map(|x| x.0), Some("/parceiro"));
         assert_eq!(intencao("me mostra os vídeos do Bento", &[]), None);
         assert_eq!(intencao("abre o prédio", &ap), Some(("/sauraki", Assunto::Predio)));
         assert_eq!(intencao("status dos investimentos", &ap).map(|x| x.1), Some(Assunto::Andar("Quantix", 4)));

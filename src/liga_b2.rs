@@ -59,7 +59,7 @@ pub fn post(dados: &Path, rot: &Arc<Roteador>, caminho: &str, v: &Value) -> Opti
     let (agora, ts) = (tempo::agora(), fatos::agora_ts());
     // igual ao /api/chat: desligado, so os comandos sao atendidos e nada e observado
     let ligado = !power::pausado(dados);
-    let r = chat(dados, v, ts, &|conv, fala| crate::conversar(dados, rot, conv, fala, v["ferramentas"] != false, &agora, ts));
+    let r = chat(dados, v, ts, &|conv, fala| crate::conversa_cmd::tentar(dados, rot, conv, fala).unwrap_or_else(|| crate::conversar(dados, rot, conv, fala, v["ferramentas"] != false, &agora, ts)));
     Some(match r {
         Ok(r) => {
             if ligado {

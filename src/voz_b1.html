@@ -153,9 +153,9 @@ function pintarMudo(m){
   if(!m) return; mudoAtual = m;
   const selo = $('#selo');
   selo.className = m.mudo ? 'on' : '';
-  selo.textContent = m.mudo ? ('Silenciado ' + (m.ate_desmutar ? 'até você voltar' : 'por mais ' + m.restante_min + ' min') + (m.whatsapp_carlos ? ', sem áudio no WhatsApp' : '') + '. O texto continua aparecendo.') : '';
+  selo.textContent = m.mudo ? ('Silenciado ' + (m.ate_desmutar ? 'até você voltar' : 'por mais ' + m.restante_min + ' min') + (m.whatsapp_usuarios ? ', sem áudio no WhatsApp' : '') + '. O texto continua aparecendo.') : '';
   $('#bMudo').textContent = m.mudo ? 'Voltar a falar (M)' : 'Silenciar (M)';
-  if(document.activeElement !== $('#mWpp')) $('#mWpp').checked = !!m.whatsapp_carlos;
+  if(document.activeElement !== $('#mWpp')) $('#mWpp').checked = !!m.whatsapp_usuarios;
 }
 function alternarMudo(rapido){
   if(mudoAtual.mudo){ $('#menuMudo').className = ''; return mudoApi({acao:'desmutar'}); }
@@ -164,7 +164,7 @@ function alternarMudo(rapido){
 }
 $('#bMudo').onclick = () => alternarMudo(false);
 document.querySelectorAll('#menuMudo button').forEach(b => b.onclick = () => { $('#menuMudo').className = ''; mudoApi({acao:'mutar', minutos:+b.dataset.min}); });
-$('#mWpp').onchange = e => mudoApi({whatsapp_carlos: e.target.checked});
+$('#mWpp').onchange = e => mudoApi({whatsapp_usuarios: e.target.checked});
 addEventListener('keydown', e => {
   if((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.altKey && !e.metaKey && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)){ e.preventDefault(); alternarMudo(true); }
   if(e.key === 'Escape') $('#menuMudo').className = '';

@@ -59,7 +59,7 @@ impl Voz<'_> {
 #[derive(Default)]
 pub struct Sessao {
     pub ativa: bool,
-    pub nivel: i64, // 0 repouso; 1 cantinho; 2 conversa; 3 atencao
+    pub nivel: i64, // 0 repouso; 1 canexemplo; 2 conversa; 3 atencao
     pub estado: &'static str, // idle | pensando | ouvindo | interrompida
     pub historico: Vec<(char, String)>, // ('a' = ela, 'u' = ele)
     pub legenda: String,
@@ -100,6 +100,7 @@ impl Sessao {
     }
 
     fn turno(&mut self, v: &Voz, texto: &str, fechar: bool) {
+        let texto = &crate::tratamento::alma_dono(texto);
         self.historico.push(('a', texto.to_string()));
         let n = self.historico.len();
         if n > 30 {
@@ -318,7 +319,7 @@ pub fn abordagem(nivel: i64, r: &Value, ap: &str) -> (String, bool) {
     let horas = ((pn(r, "min_humano") + pn(r, "min_supervisionado")) as f64 / 60.0).round() as i64;
     let ap = maiuscula(ap);
     match nivel {
-        3.. => (format!("{ap}, para um minutinho comigo. Já são umas {horas} horas de trabalho hoje, quase sem pausa. Quer que eu veja o que dá pra tirar das suas costas?"), true),
+        3.. => (format!("{ap}, para um minuexemplo comigo. Já são umas {horas} horas de trabalho hoje, quase sem pausa. Quer que eu veja o que dá pra tirar das suas costas?"), true),
         2 => (format!("{ap}, posso falar uma coisinha? Percebi que você está há bastante tempo trabalhando e resolvendo várias coisas ao mesmo tempo. Quer que eu veja o que posso assumir para aliviar um pouco?"), true),
         _ => (format!("{ap}, posso falar uma coisinha? Você está há bastante tempo trabalhando. Como estão as coisas por aí?"), false),
     }
@@ -582,7 +583,7 @@ mod tests {
         assert_eq!(decidir(&av("HIGH", 40, h, &a), &q, &a, "", &n), 1);
         let (t, oferta) = abordagem(2, &json!({ "min_humano": 420 }), "querido");
         assert!(t.starts_with("Querido, posso falar uma coisinha?") && oferta && am::inventado(&t, "", &[]).is_empty());
-        assert!(abordagem(3, &json!({ "min_humano": 420 }), "amor").0.contains("7 horas") && !abordagem(1, &n, "amor").1);
+        assert!(abordagem(3, &json!({ "min_humano": 420 }), "senhor").0.contains("7 horas") && !abordagem(1, &n, "senhor").1);
     }
 
     #[test]
@@ -600,12 +601,12 @@ mod tests {
         assert!(!tarde(&r, &q, &noite_, "", &n));
         assert!(!tarde(&r, &p, &em(17, 1, 0), "", &json!({ "noite": "2026-11-16", "n": 2, "ultima": 0 }))); // teto da noite
         let f = fala_tarde(&noite_, "querido", 0);
-        assert!(f.contains("23:40") && am::inventado(&f.replace("23:40", ""), "", &[]).is_empty() && fala_tarde(&noite_, "amor", 1).starts_with("Amor, ainda por aqui?"));
+        assert!(f.contains("23:40") && am::inventado(&f.replace("23:40", ""), "", &[]).is_empty() && fala_tarde(&noite_, "senhor", 1).starts_with("Senhor, ainda por aqui?"));
         assert_eq!((dura(45), dura(60), dura(125), dura(480)), ("45 minutos".into(), "1 hora".into(), "2 horas e 5".into(), "8 horas".into()));
         assert!(fala_manha("querido", None, 7).ends_with("Como você dormiu essa noite?"));
         let curto = fala_manha("querido", Some(&json!({ "min": 300, "parou": "02:10", "voltou": "07:10" })), 7);
         assert!(curto.contains("02:10") && curto.contains("no máximo 5 horas") && curto.contains("7 a 9 horas"));
-        assert!(fala_manha("amor", Some(&json!({ "min": 480, "parou": "23:00", "voltou": "07:00" })), 7).contains("umas 8 horas longe"));
+        assert!(fala_manha("senhor", Some(&json!({ "min": 480, "parou": "23:00", "voltou": "07:00" })), 7).contains("umas 8 horas longe"));
     }
 
     #[test]

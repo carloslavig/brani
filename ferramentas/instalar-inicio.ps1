@@ -9,7 +9,7 @@ New-Item -ItemType Directory -Force $Pasta | Out-Null
 $atalho = Join-Path $Pasta 'B.R.A.N.I.lnk'
 $s = (New-Object -ComObject WScript.Shell).CreateShortcut($atalho)
 $s.TargetPath = "$env:WINDIR\System32\wscript.exe"
-$s.Arguments = "//B //NoLogo `"$vbs`""
+$s.Arguments = "//B //NoLogo `"$vbs`" /logon"
 $s.WorkingDirectory = Split-Path $PSScriptRoot -Parent
 $s.WindowStyle = 7
 $s.Description = 'Sobe o B.R.A.N.I escondido no logon'

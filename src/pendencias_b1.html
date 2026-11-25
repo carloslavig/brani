@@ -10,12 +10,12 @@ h1{font-size:22px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin-bot
 .n-ok{background:#3a2e12;color:var(--ok)}.n-er{background:#3d1a17;color:var(--er)}.n-ca{background:#142a40;color:var(--ca)}
 h2{font-size:15px;color:var(--mut);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.06em}
 .c{background:var(--card);border-left:6px solid;border-radius:12px;padding:12px 14px;margin-bottom:10px}
-.c.ok{border-color:var(--ok)}.c.erro{border-color:var(--er)}.c.dono{border-color:var(--ca)}
+.c.ok{border-color:var(--ok)}.c.erro{border-color:var(--er)}.c.usuarios{border-color:var(--ca)}
 .t{font-weight:600}.d{color:var(--mut);font-size:13px;margin-top:4px;word-break:break-word}
 .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#26352c;margin-bottom:6px}
 .vazio{text-align:center;color:var(--good);padding:28px;font-size:18px}
 @media(max-width:520px){.res{grid-template-columns:1fr}}
-</style></head><body>
+</style><link rel="stylesheet" href="/tema-antigravity.css"><script src="/tema-antigravity.js"></script></head><body>
 <h1>Pendências e erros</h1><div class="sub" id="sub">carregando…</div>
 <div class="res"><div class="num n-ok"><b id="a">–</b>esperando seu OK</div><div class="num n-er"><b id="e">–</b>com erro</div><div class="num n-ca"><b id="c">–</b>só você pode fazer</div></div>
 <h2>⏳ Esperando seu OK</h2><div id="la"></div>
@@ -26,7 +26,7 @@ const esc=s=>String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt
 const card=(x,k)=>`<div class="c ${k}"><span class="tag">${esc(x.agente)}</span><div class="t">${esc(x.titulo)}</div>${x.detalhe?`<div class="d">${esc(x.detalhe)}</div>`:""}</div>`;
 const lista=(l,k,v)=>l.length?l.map(x=>card(x,k)).join(""):`<div class="vazio">${v}</div>`;
 async function ler(){try{const d=await (await fetch("/api/pendencias")).json();
-a.textContent=d.aguardando.length;c.textContent=(d.so_carlos||[]).length;lc.innerHTML=lista(d.so_carlos||[],"dono","✓ Nada só com você");e.textContent=d.erros.length;
+a.textContent=d.aguardando.length;c.textContent=(d.so_usuarios||[]).length;lc.innerHTML=lista(d.so_usuarios||[],"usuarios","✓ Nada só com você");e.textContent=d.erros.length;
 la.innerHTML=lista(d.aguardando,"ok","✓ Nada esperando");le.innerHTML=lista(d.erros,"erro","✓ Nenhum erro");
 sub.textContent="Atualizado às "+new Date(d.ts*1000).toLocaleTimeString("pt-BR");}catch(_){sub.textContent="Braniac fora do ar";}}
 ler();setInterval(ler,15000);

@@ -98,7 +98,7 @@
  {
   "modulo": "artes_loja",
   "linhas": 304,
-  "o_que_faz": "ARTES DA LIBANO ESFIHARIA para o Instagram, feitas 100% pelo Braniac (sem gastar tokens do Claude): fotos da pasta do Dono -> posts de feed (4:5),",
+  "o_que_faz": "ARTES DA LOJA ESFIHARIA para o Instagram, feitas 100% pelo Braniac (sem gastar tokens do Claude): fotos da pasta do Dono -> posts de feed (4:5),",
   "estado": "em andamento"
  },
  {
@@ -170,7 +170,7 @@
  {
   "modulo": "busca_pedido",
   "linhas": 268,
-  "o_que_faz": "BUSCA A PEDIDO + PROATIVIDADE (05/11/2026, pedido do Dono). A Tia Mae pediu por audio \"quanto custa uma ressonancia em Itabuna\". Agora, quando a familia",
+  "o_que_faz": "BUSCA A PEDIDO + PROATIVIDADE (05/11/2026, pedido do Dono). A Mae pediu por audio \"quanto custa uma ressonancia em Itabuna\". Agora, quando a familia",
   "estado": "portado"
  },
  {
@@ -344,7 +344,7 @@
  {
   "modulo": "dono",
   "linhas": 432,
-  "o_que_faz": "Vigia o WhatsApp do Dono (contato 'Eu(BH)', o outro numero dele): TODA mensagem dele ao Jarvis e respondida,",
+  "o_que_faz": "Vigia o WhatsApp do Dono (contato 'Eu', o outro numero dele): TODA mensagem dele ao Jarvis e respondida,",
   "estado": "portado"
  },
  {
@@ -482,7 +482,7 @@
  {
   "modulo": "gratis",
   "linhas": 112,
-  "o_que_faz": "IAs GRATIS EXTRAS no Braniac (24/10/2026), vindas do FreeLLMAPI (MIT, nosso fork usuario/freellmapi): catalogo de modelos gratis com os limites de",
+  "o_que_faz": "IAs GRATIS EXTRAS no Braniac (24/10/2026), vindas do FreeLLMAPI (MIT, nosso fork usuarioslavig/freellmapi): catalogo de modelos gratis com os limites de",
   "estado": "portado"
  },
  {
@@ -500,7 +500,7 @@
  {
   "modulo": "guia_pai",
   "linhas": 80,
-  "o_que_faz": "Zelo, agente que ajuda o pai do Dono (Tio Moises, contato 'Munzes') a entender mensagens.",
+  "o_que_faz": "Zelo, agente que ajuda o pai do Dono (Pai, contato 'Munzes') a entender mensagens.",
   "estado": "portado"
  },
  {
@@ -590,19 +590,19 @@
  {
   "modulo": "link/concluidos",
   "linhas": 111,
-  "o_que_faz": "Vídeos do Cliente já CONCLUÍDOS: publicados no site exemplo.com.br (Dono, 16/11/2026).",
+  "o_que_faz": "Vídeos do Parceiro já CONCLUÍDOS: publicados no site parceiro-exemplo.com.br (Dono, 16/11/2026).",
   "estado": "portado"
  },
  {
   "modulo": "link/conferir",
   "linhas": 58,
-  "o_que_faz": "Conferencia visual contra o GABARITO do Cliente: monta uma folha lado a lado (Cliente | nosso) nos mesmos 10 pontos do video",
+  "o_que_faz": "Conferencia visual contra o GABARITO do Parceiro: monta uma folha lado a lado (Parceiro | nosso) nos mesmos 10 pontos do video",
   "estado": "em andamento"
  },
  {
   "modulo": "link/conferir_capitais",
   "linhas": 203,
-  "o_que_faz": "Conferência periódica da esteira das capitais (Dono, 15/11/2026: \"verificação periódica se as informações estão sendo usadas direitinho e",
+  "o_que_faz": "Conferência periódica da esteira das capitais (Dono, 15/11/2026: \"verificação periódica se as informações estão sendo usadas direiexemplo e",
   "estado": "em andamento"
  },
  {
@@ -644,7 +644,7 @@
  {
   "modulo": "link/docs_cap/go",
   "linhas": 58,
-  "o_que_faz": "992 Cidade (TCM-GO): consultas do Portal do Cidadão (Power BI do tribunal, gravadas em tcm-go/*.json pelo leitor) -> um .txt por ano e tipo.",
+  "o_que_faz": "992 Goiânia (TCM-GO): consultas do Portal do Cidadão (Power BI do tribunal, gravadas em tcm-go/*.json pelo leitor) -> um .txt por ano e tipo.",
   "estado": "em andamento"
  },
  {
@@ -716,7 +716,7 @@
  {
   "modulo": "link/docs_capitais",
   "linhas": 398,
-  "o_que_faz": "Documentos do tribunal de contas ao lado dos números das capitais (pedido do Cliente pelo Parceiro, 16/11/2026).",
+  "o_que_faz": "Documentos do tribunal de contas ao lado dos números das capitais (pedido do Parceiro pelo Aliado, 16/11/2026).",
   "estado": "em andamento"
  },
  {
@@ -756,15 +756,15 @@
   "estado": "portado"
  },
  {
-  "modulo": "link/lote_magno",
+  "modulo": "link/lote_parceiro",
   "linhas": 544,
-  "o_que_faz": "Lupa: agente dos videos do Cliente (orcamento de prefeituras, TCM-BA). Guarda o andamento de cada cidade e as PENDENCIAS (prefeitura que nao",
+  "o_que_faz": "Lupa: agente dos videos do Parceiro (orcamento de prefeituras, TCM-BA). Guarda o andamento de cada cidade e as PENDENCIAS (prefeitura que nao",
   "estado": "portado"
  },
  {
   "modulo": "link/municipios",
   "linhas": 182,
-  "o_que_faz": "Situacao das cidades da Bahia nos videos do Cliente, para o Braniac e o Xandao conversarem na mesma lingua.",
+  "o_que_faz": "Situacao das cidades da Bahia nos videos do Parceiro, para o Braniac e o Aliado conversarem na mesma lingua.",
   "estado": "portado"
  },
  {
@@ -782,11 +782,11 @@
  {
   "modulo": "link/predio",
   "linhas": 183,
-  "o_que_faz": "Predio por predio entre o Braniac e o Xandao (Cliente), pela FILA do Link (pedidos assinados), nos dois sentidos (14/11/2026).",
+  "o_que_faz": "Predio por predio entre o Braniac e o Aliado (Parceiro), pela FILA do Link (pedidos assinados), nos dois sentidos (14/11/2026).",
   "estado": "em andamento"
  },
  {
-  "modulo": "link/preparar_magno",
+  "modulo": "link/preparar_parceiro",
   "linhas": 458,
   "o_que_faz": "",
   "estado": "em andamento"
@@ -794,13 +794,13 @@
  {
   "modulo": "link/processo",
   "linhas": 212,
-  "o_que_faz": "BANCO DO PROCESSO dos videos do Cliente (PROMPT-AUTOMACAO do Xandao, 13/11/2026): etapas, regras, pedidos, execucoes e aprovacoes num SQLite,",
+  "o_que_faz": "BANCO DO PROCESSO dos videos do Parceiro (PROMPT-AUTOMACAO do Aliado, 13/11/2026): etapas, regras, pedidos, execucoes e aprovacoes num SQLite,",
   "estado": "portado"
  },
  {
   "modulo": "link/producao",
   "linhas": 247,
-  "o_que_faz": "FILA DE PRODUCAO do BRANIAC LINK (pedido \"producao_completa\" do Xandao): o Braniac pesquisa, escreve, narra e renderiza sozinho.",
+  "o_que_faz": "FILA DE PRODUCAO do BRANIAC LINK (pedido \"producao_completa\" do Aliado): o Braniac pesquisa, escreve, narra e renderiza sozinho.",
   "estado": "portado"
  },
  {
@@ -812,7 +812,7 @@
  {
   "modulo": "link/puxar",
   "linhas": 84,
-  "o_que_faz": "O Braniac PEDE ao Xandao o proximo video quando esta livre (pull; conselho de IAs, 13/11/2026: mensagem estruturada + trava local).",
+  "o_que_faz": "O Braniac PEDE ao Aliado o proximo video quando esta livre (pull; conselho de IAs, 13/11/2026: mensagem estruturada + trava local).",
   "estado": "portado"
  },
  {
@@ -828,9 +828,9 @@
   "estado": "em andamento"
  },
  {
-  "modulo": "link/render_magno",
+  "modulo": "link/render_parceiro",
   "linhas": 285,
-  "o_que_faz": "Pedido do Xandao no formato do PACOTE do Cliente (Solrac Estudio, 13/11/2026): chega UM zip por cidade (video-NNN.zip, o que o",
+  "o_que_faz": "Pedido do Aliado no formato do PACOTE do Parceiro (Dono Estudio, 13/11/2026): chega UM zip por cidade (video-NNN.zip, o que o",
   "estado": "em andamento"
  },
  {
@@ -1070,7 +1070,7 @@
  {
   "modulo": "painel_rede",
   "linhas": 159,
-  "o_que_faz": "Painel da esteira do Cliente na rede local (celular, tablet), SO leitura.",
+  "o_que_faz": "Painel da esteira do Parceiro na rede local (celular, tablet), SO leitura.",
   "estado": "portado"
  },
  {
@@ -1652,7 +1652,7 @@
  {
   "modulo": "tratamento",
   "linhas": 55,
-  "o_que_faz": "Tratamento obrigatorio (decisao do Dono): a Parceira Mendes e SEMPRE 'Deusa Parceira'. Nunca 'Parceira', nem 'Parceira' sozinho.",
+  "o_que_faz": "Tratamento obrigatorio (decisao do Dono): a Parceira Lima e SEMPRE 'Parceira'. Nunca 'Parceira', nem 'Parceira' sozinho.",
   "estado": "portado"
  },
  {
@@ -1692,7 +1692,7 @@
   "estado": "portado"
  },
  {
-  "modulo": "voz_do_carlos",
+  "modulo": "voz_do_usuarios",
   "linhas": 135,
   "o_que_faz": "VOZ DO DONO (27/10/2026): o bloco da Alma que guarda COMO o Dono fala e entrega isso ao Jarvis como um trecho de prompt (\"guia de voz\").",
   "estado": "portado"

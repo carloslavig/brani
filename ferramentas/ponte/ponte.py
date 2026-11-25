@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """PONTE TEMPORARIA entre o B.R.A.N.I (Rust) e os dois elos de rede que ele ainda nao sabe abrir: a loja e o Link com o outro Braniac.
 
-Usa SO a parte de rede do Braniac antigo (C:\\Users\\carlo\\Projetos\\Agente\\braniac) como biblioteca: rede.py, par_webrtc.py, rede_jarvis.py,
+Usa SO a parte de rede do Braniac antigo (C:\\Users\\usuario\\Projetos\\Agente\\braniac) como biblioteca: rede.py, par_webrtc.py, rede_jarvis.py,
 link/no.py, link/confianca.py, link/identidade.py, link/avisos.py e link/fila.py (so a parte de autenticacao). NAO sobe servidor 8765, Chrome,
 atendimento, rotinas, vigia nem voz. O Python antigo NAO e alterado: o estado vive em E:\\braniac-rs\\dados (store.DATA e redirecionado antes de
 importar o resto). Quem pensa e responde e o B.R.A.N.I: a ponte so leva e traz (POST /api/ponte/* com o token em X-Ponte-Token).
@@ -25,7 +25,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.dont_write_bytecode = True      # nunca grava __pycache__ na pasta do Python antigo
-AGENTE = os.environ.get("PONTE_BRANIAC_PY", r"%USERPROFILE%\Projetos\Agente")
+AGENTE = os.environ.get("PONTE_BRANIAC_PY", r"C:\Users\usuario\Projetos\Agente")
 DADOS = Path(os.environ.get("PONTE_DADOS", r"E:\braniac-rs\dados"))
 URL = os.environ.get("PONTE_URL", "http://127.0.0.1:8865")
 TOKEN = os.environ.get("PONTE_TOKEN", "")

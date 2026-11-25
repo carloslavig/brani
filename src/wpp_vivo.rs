@@ -236,7 +236,7 @@ fn defeituoso(t: &str) -> bool {
         || t.starts_with("não consegui concluir isso agora")
 }
 
-/// "+55 11 90000-0000" -> Some("5511900000000"). So digitos/+/espaco/-/() com 10-13 digitos; 10-11 ganham o 55.
+/// "+55 21 90000-0000" -> Some("5521900000000"). So digitos/+/espaco/-/() com 10-13 digitos; 10-11 ganham o 55.
 pub fn numero_telefone(nome: &str) -> Option<String> {
     let t = nome.trim();
     if t.is_empty() || !t.chars().all(|c| c.is_ascii_digit() || " +-()".contains(c)) {
@@ -357,10 +357,10 @@ pub(crate) mod tests {
 
     #[test]
     fn detecta_numero_de_telefone() {
-        assert_eq!(numero_telefone("+55 11 90000-0000").as_deref(), Some("5511900000000"));
-        assert_eq!(numero_telefone("(11) 90000-0000").as_deref(), Some("5511900000000"));
+        assert_eq!(numero_telefone("+55 21 90000-0000").as_deref(), Some("5521900000000"));
+        assert_eq!(numero_telefone("(21) 90000-0000").as_deref(), Some("5521900000000"));
         assert_eq!(numero_telefone("2164993321").as_deref(), Some("552164993321"));
-        assert_eq!(numero_telefone("Maria 11 90000-0000"), None);
+        assert_eq!(numero_telefone("Maria 21 90000-0000"), None);
         assert_eq!(numero_telefone("12345"), None);
     }
 

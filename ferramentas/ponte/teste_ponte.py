@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Testes da ponte com PAR DE MENTIRA (nada vai a loja, a Xandao nem a rede): um B.R.A.N.I falso local, texto sintetico, pasta temporaria.
+"""Testes da ponte com PAR DE MENTIRA (nada vai a loja, a Aliado nem a rede): um B.R.A.N.I falso local, texto sintetico, pasta temporaria.
 Roda:  py -3 E:\\braniac-rs\\ferramentas\\ponte\\teste_ponte.py
 NAO prova a conexao real com os pares (WebRTC/ntfy/Radmin): isso so se prova na troca, com o Python antigo parado."""
 import hashlib

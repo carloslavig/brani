@@ -42,27 +42,14 @@ pub fn faltando(vivas: &Value, lista: &[(String, String)]) -> Vec<(String, Strin
     lista.iter().filter(|(a, _)| !tem(a)).cloned().collect()
 }
 
-/// Reabre o que falta. Devolve os agentes abertos. Com a VM fora do ar devolve erro (nada e aberto).
+/// Reconcilia: reusa o que ja existe (pela URL), fecha repetidas e abre so o que falta. Devolve os agentes abertos.
+/// Com a VM fora do ar devolve erro (nada e aberto).
 pub fn garantir(dados: &Path) -> Result<Vec<String>, String> {
-    let mut abertos = vec![];
-    for (agente, url) in faltando(&crate::vm::abas(dados)?, &lista(dados)) {
-        let mut ok = false;
-        for _ in 0..4 {
-            if crate::vm::abrir_aba(dados, &agente, &url).is_ok() {
-                ok = true;
-                break;
-            }
-            std::thread::sleep(std::time::Duration::from_secs(3)); // ex.: gravando audio no WhatsApp
-        }
-        if ok {
-            abertos.push(agente);
-            std::thread::sleep(std::time::Duration::from_millis(1500));
-        }
-    }
-    Ok(abertos)
+    let r = crate::reconcilia_abas::passo(dados)?;
+    Ok(r["abertas"].as_array().into_iter().flatten().filter_map(|x| x.as_str().map(String::from)).collect())
 }
 
-/// Espera o navegador da VM responder (ate `espera_s`) e entao garante as abas. Uma execucao por vez.
+/// Espera o navegador da VM responder (ate `espera_s`) e entao reconcilia as abas. Uma execucao por vez.
 pub fn depois_de_ligar(espera_s: u64) {
     if OCUPADO.swap(true, Ordering::SeqCst) {
         return;

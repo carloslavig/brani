@@ -233,7 +233,7 @@ pub fn cidade(dados: &Path, fila: &str, nome: &str, agora: f64) -> Value {
 mod tests {
     use super::*;
 
-    const FILA: &str = "# Fila\n## Prontos (com vídeo)\n017 Itabuna · 150 Salvador\n## Em produção / refazer\n143 Itatim (lado A: rascunho)\n## Próximos (na ordem)\n152 Aurelino Leal · 153 Barra do Proprietaria\n";
+    const FILA: &str = "# Fila\n## Prontos (com vídeo)\n017 Itabuna · 150 Salvador\n## Em produção / refazer\n143 Itatim (lado A: rascunho)\n## Próximos (na ordem)\n152 Cidade B · 153 Barra do Rocha\n";
 
     fn pasta(nome: &str) -> std::path::PathBuf {
         let p = std::env::temp_dir().join(format!("braniac-link_municipios-{nome}-{}", std::process::id()));
@@ -262,13 +262,13 @@ mod tests {
         assert_eq!(reservar(&d, FILA, "Itabuna", "ana", "", t)["motivo"], "ja esta finalizado");
         assert_eq!(proxima_livre(&d, FILA, t).unwrap()["numero"], "152");
         assert_eq!(reservar(&d, FILA, "152", "bia", "", t)["ok"], true);
-        let r = reservar(&d, FILA, "aurelino leal", "ana", "", t);
+        let r = reservar(&d, FILA, "cidade b", "ana", "", t);
         assert!(r["ok"] == false && r["quem"] == "bia");
-        assert_eq!(reservar(&d, FILA, "Aurelino Leal", "bia", "", t)["ok"], true); // o mesmo lado renova
+        assert_eq!(reservar(&d, FILA, "Cidade B", "bia", "", t)["ok"], true); // o mesmo lado renova
         assert_eq!(proxima_livre(&d, FILA, t).unwrap()["numero"], "153");
         assert_eq!(passo(&d, FILA, "152", "ana", "concluir", "", t)["ok"], false); // o outro lado nao fecha a reserva alheia
         assert_eq!(passo(&d, FILA, "152", "bia", "concluir", "", t)["ok"], true);
-        assert_eq!(cidade(&d, FILA, "Aurelino Leal", t)["status"], "entregue");
+        assert_eq!(cidade(&d, FILA, "Cidade B", t)["status"], "entregue");
         assert_eq!(reservar(&d, FILA, "152", "ana", "", t)["motivo"], "ja esta entregue");
         assert_eq!(reservar(&d, FILA, "Gotham", "ana", "", t)["ok"], false);
         assert_eq!(passo(&d, FILA, "152", "ana", "apagar tudo", "", t)["ok"], false);

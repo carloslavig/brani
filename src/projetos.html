@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Projetos · B.R.A.N.I</title>
+<style>
+:root{--bg:#0e0f13;--pn:#15171d;--pn2:#1b1e26;--bd:#262a35;--tx:#e8eaf0;--mu:#8b91a1;--ac:#7c9cff;--ok:#4ade80;--av:#fbbf24;--rx:#f87171;
+--Sistemas:#7c9cff;--Clientes:#34d399;--Parceiro:#f59e0b;--Videos:#c084fc;--Pessoais:#f472b6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--ac);text-decoration:none}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--bd);display:flex;gap:16px;align-items:center;padding:14px 28px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:650;letter-spacing:-.01em}header .tot{color:var(--mu);font-size:13px}
+.busca{flex:1;min-width:200px;max-width:380px;background:var(--pn);border:1px solid var(--bd);color:var(--tx);border-radius:10px;padding:9px 12px;font:inherit;outline:none}
+.busca:focus{border-color:var(--ac)}
+.filtros{display:flex;gap:6px;flex-wrap:wrap}
+.f{background:transparent;border:1px solid var(--bd);color:var(--mu);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.f.on{color:var(--tx);border-color:var(--ac);background:var(--pn2)}
+main{max-width:1280px;margin:0 auto;padding:24px 28px 60px}
+.agora{background:linear-gradient(180deg,var(--pn2),var(--pn));border:1px solid var(--bd);border-radius:16px;padding:20px 22px;margin-bottom:28px}
+.agora h2{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);font-weight:600}
+.ag{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--bd);cursor:pointer}
+.ag:first-of-type{border-top:0}
+.ag .n{width:28px;height:28px;border-radius:50%;background:var(--ac);color:#0b0d12;display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.ag b{display:block;font-size:16px;font-weight:600}.ag span{color:var(--mu);font-size:13px}
+.grupo{margin:0 0 30px}.grupo h3{display:flex;align-items:center;gap:10px;font-size:14px;margin:0 0 12px;font-weight:600}
+.grupo h3 i{width:9px;height:9px;border-radius:50%;display:inline-block}.grupo h3 small{color:var(--mu);font-weight:400}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{position:relative;background:var(--pn);border:1px solid var(--bd);border-radius:14px;padding:16px 16px 14px;cursor:pointer;transition:transform .12s,border-color .12s;overflow:hidden}
+.card:hover{transform:translateY(-2px);border-color:var(--c)}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c)}
+.card .t{display:flex;gap:10px;align-items:center}.card .e{font-size:22px}.card b{font-weight:600;font-size:15px;line-height:1.25}
+.card .m{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--mu)}
+.tag{border:1px solid var(--bd);border-radius:999px;padding:2px 9px}
+.st-andando{color:var(--ok);border-color:#1f4d33}.st-parado{color:var(--av);border-color:#5a4513}.st-pronto{color:var(--ac);border-color:#2b3a73}.st-conf{color:var(--mu)}
+.badge{margin-left:auto;background:var(--rx);color:#1a0b0b;font-weight:700;border-radius:999px;min-width:22px;text-align:center;padding:1px 7px;font-size:12px}
+.badge.z{background:#1f4d33;color:var(--ok)}
+aside{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--pn);border-left:1px solid var(--bd);transform:translateX(100%);transition:transform .2s;z-index:10;overflow:auto;padding:24px}
+aside.on{transform:none;box-shadow:-20px 0 60px rgba(0,0,0,.5)}
+aside h2{margin:0;font-size:20px;letter-spacing:-.01em}aside h4{margin:22px 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu)}
+aside .x{position:absolute;top:14px;right:16px;background:none;border:0;color:var(--mu);font-size:22px;cursor:pointer}
+aside .kv{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;font-size:13px;margin-top:12px}.kv dt{color:var(--mu)}.kv dd{margin:0;word-break:break-word}
+.pe{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--bd)}
+.pe input{margin-top:4px;width:17px;height:17px;accent-color:var(--ok);flex:none;cursor:pointer}
+.pe.f span{text-decoration:line-through;color:var(--mu)}
+ul.l{margin:0;padding-left:18px}ul.l li{margin:4px 0}
+.vazio{color:var(--mu);font-size:13px}
+#vel{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9;display:none}#vel.on{display:block}
+.sug{background:var(--pn);border:1px solid var(--av);border-radius:14px;padding:14px 18px;margin-bottom:22px}
+.sug h2{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--av);font-weight:600}
+.sug .si{display:flex;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--bd)}.sug .si:first-of-type{border-top:0}
+.sug .si div{flex:1;min-width:0}.sug .si b{display:block;font-weight:600;font-size:14px}.sug .si span{color:var(--mu);font-size:12px}
+.bt{background:var(--pn2);border:1px solid var(--bd);color:var(--tx);border-radius:10px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.bt:hover{border-color:var(--ac)}.bt.pri{background:var(--ac);border-color:var(--ac);color:#0b0d12;font-weight:600}.bt.ok{border-color:var(--ok);color:var(--ok)}
+.agoraP{background:var(--pn2);border:1px solid var(--ac);border-radius:12px;padding:12px 14px;margin-top:16px}
+.agoraP small{color:var(--ac);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:11px}.agoraP p{margin:4px 0 10px;font-weight:600}
+.op{border-top:1px solid var(--bd);padding:10px 0}.op b{font-size:14px}.op p{margin:4px 0 6px;font-size:13px;color:var(--mu)}.op .bs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+#dlg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:none;place-items:center;padding:16px}#dlg.on{display:grid}
+#dlg .cx{background:var(--pn);border:1px solid var(--bd);border-radius:16px;padding:22px;width:min(420px,100%)}
+#dlg h3{margin:0 0 4px;font-size:17px}#dlg p{margin:0 0 12px;color:var(--mu);font-size:13px}
+#dlg textarea{width:100%;min-height:64px;resize:vertical;padding:9px 11px;font:inherit;font-size:13px;margin-bottom:14px}
+#dlg .bs{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:640px){header,main{padding-left:16px;padding-right:16px}}
+</style><link rel="stylesheet" href="/tema-antigravity.css"><script src="/tema-antigravity.js"></script><style>
+/* embutida no painel: sem topo proprio (o "←" e o titulo ficam com o painel) */
+html[data-emb] header>a:first-child,html[data-emb] header>h1{display:none}
+html[data-emb] header{padding:0 0 14px;border-bottom:0;background:transparent!important;position:static}
+html[data-emb],html[data-emb] body{background:transparent!important}
+html[data-emb] main{padding-left:0;padding-right:0}
+</style><script>/* dentro do painel = embutida; aberta direto = abre o painel ja na aba Projetos */
+if(window.top!==window.self)document.documentElement.setAttribute("data-emb","1");else location.replace("/#/projetos");</script></head><body>
+<header><a href="/" title="Voltar ao painel" style="font-size:20px;color:var(--mu)">←</a><h1>Projetos</h1><span class="tot" id="tot"></span>
+<input class="busca" id="q" placeholder="Buscar projeto, pasta, pendência…" autocomplete="off"><div class="filtros" id="fl"></div></header>
+<main><div id="sug"></div><div class="agora" id="agora"></div><div id="gr"></div></main>
+<div id="vel"></div><aside id="as"></aside>
+<div id="dlg"><div class="cx"><h3>Foi realmente finalizado?</h3><p id="dt"></p><textarea id="dn" maxlength="200" placeholder="Nota (opcional)"></textarea>
+<div class="bs"><button class="bt" onclick="dlgFim('nao')">Ainda não</button><button class="bt" onclick="dlgFim('andando')">Em andamento</button><button class="bt pri" onclick="dlgFim('sim')">Sim, finalizado</button></div></div></div>
+<script>
+var D=[],G="Todos",Q="",ABERTO=decodeURIComponent(location.hash.slice(1))||null;
+var COR={Sistemas:"#7c9cff",Clientes:"#34d399",Parceiro:"#f59e0b",Videos:"#c084fc",Pessoais:"#f472b6"};
+var ORD=["Sistemas","Clientes","Parceiro","Videos","Pessoais"];
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function cor(g){return COR[g]||"#8b91a1"}
+function stc(e){return e=="andando"?"st-andando":e=="parado"?"st-parado":e=="pronto"?"st-pronto":"st-conf"}
+function ok(p){return p.pendencias.some(function(x){return !x.feita})}
+function carregar(){fetch("/api/projetos").then(function(r){return r.json()}).then(function(j){D=j.projetos||[];desenhar();sugestoes();if(ABERTO)abrir(ABERTO)}).catch(function(){document.getElementById("gr").innerHTML='<p class="vazio">Não consegui ler o registro de projetos.</p>'})}
+function visivel(p){
+ if(G!="Todos"&&p.grupo!=G)return false;
+ if(!Q)return true;var t=(p.nome+" "+p.grupo+" "+p.dono+" "+p.pasta+" "+p.estado+" "+p.pendencias.map(function(x){return x.texto}).join(" ")).toLowerCase();return t.indexOf(Q)>=0}
+function agora(){
+ // projetos andando com mais pendencias primeiro; cada um traz a primeira pendencia aberta
+ var l=D.filter(function(p){return p.estado=="andando"&&p.abertas>0}).sort(function(a,b){return b.abertas-a.abertas}).slice(0,3);
+ if(l.length<3)l=l.concat(D.filter(function(p){return p.estado!="andando"&&p.abertas>0&&l.indexOf(p)<0}).sort(function(a,b){return b.abertas-a.abertas}).slice(0,3-l.length));
+ return '<h2>O que fazer agora</h2>'+(l.length?l.map(function(p,i){var pe=p.pendencias.filter(function(x){return !x.feita})[0];
+  return '<div class="ag" onclick="abrir(\''+p.id+'\')"><div class="n">'+(i+1)+'</div><div><b>'+p.emoji+' '+esc(p.nome)+'</b><span>Agora: '+esc(pe?pe.texto:"")+'</span></div></div>'}).join(""):'<p class="vazio">Nenhuma pendência aberta.</p>')}
+function desenhar(){
+ var g=["Todos"].concat(ORD.filter(function(x){return D.some(function(p){return p.grupo==x})}));
+ D.forEach(function(p){if(g.indexOf(p.grupo)<0)g.push(p.grupo)});
+ document.getElementById("fl").innerHTML=g.map(function(x){return '<button class="f'+(x==G?" on":"")+'" onclick="G=\''+x+'\';desenhar()">'+x+'</button>'}).join("");
+ var tot=D.reduce(function(s,p){return s+p.abertas},0);
+ document.getElementById("tot").textContent=D.length+" projetos · "+tot+" pendências";
+ document.getElementById("agora").innerHTML=agora();
+ var h="";g.slice(1).forEach(function(gn){var l=D.filter(function(p){return p.grupo==gn&&visivel(p)});if(!l.length)return;
+  h+='<section class="grupo"><h3><i style="background:'+cor(gn)+'"></i>'+esc(gn)+' <small>'+l.length+'</small></h3><div class="grade">'+l.map(function(p){
+   return '<div class="card" style="--c:'+cor(p.grupo)+'" onclick="abrir(\''+p.id+'\')"><div class="t"><span class="e">'+p.emoji+'</span><b>'+esc(p.nome)+'</b></div><div class="m"><span class="tag '+stc(p.estado)+'">'+esc(p.estado)+'</span><span>'+esc(p.dono)+'</span><span class="badge'+(p.abertas?"":" z")+'">'+(p.abertas||"✓")+'</span></div></div>'}).join("")+'</div></section>'});
+ document.getElementById("gr").innerHTML=h||'<p class="vazio">Nada encontrado.</p>'}
+function lista(a,v){return a&&a.length?'<ul class="l">'+a.map(function(x){return "<li>"+esc(x)+"</li>"}).join("")+"</ul>":'<div class="vazio">'+v+"</div>"}
+function abrir(id){ABERTO=id;var p=D.filter(function(x){return x.id==id})[0];if(!p)return;
+ var pe=p.pendencias.length?p.pendencias.map(function(x,i){return '<label class="pe'+(x.feita?" f":"")+'"><input type="checkbox" '+(x.feita?"checked":"")+' onchange="marcar(\''+p.id+'\','+i+',this.checked)"><span>'+esc(x.texto)+'</span></label>'}).join(""):'<div class="vazio">Sem pendências.</div>';
+ var ag=agoraDe(p),agh=ag?'<div class="agoraP"><small>Agora</small><p>'+esc(ag.t)+'</p><button class="bt" onclick="ajuda(\''+p.id+'\')">Como resolver</button><div id="aj"></div></div>':"";
+ document.getElementById("as").innerHTML='<button class="x" onclick="fechar()">×</button><h2>'+p.emoji+' '+esc(p.nome)+'</h2>'+agh+'<dl class="kv"><dt>Grupo</dt><dd>'+esc(p.grupo)+'</dd><dt>Dono</dt><dd>'+esc(p.dono)+'</dd><dt>Onde roda</dt><dd>'+esc(p.onde)+'</dd><dt>Estado</dt><dd><span class="tag '+stc(p.estado)+'">'+esc(p.estado)+'</span></dd><dt>Pasta</dt><dd>'+esc(p.pasta)+'</dd><dt>Última atividade</dt><dd>'+esc(p.ultima_atividade)+'</dd></dl><h4>Pendências ('+p.abertas+' abertas)</h4>'+pe+'<h4>Próximos passos</h4>'+lista(p.proximos,"Nenhum.")+'<h4>Bloqueios</h4>'+lista(p.bloqueios,"Nenhum.");
+ document.getElementById("as").classList.add("on");document.getElementById("vel").classList.add("on");naVista()}
+function fechar(){ABERTO=null;document.getElementById("as").classList.remove("on");document.getElementById("vel").classList.remove("on")}
+function post(u,o){return fetch(u,{method:"POST",headers:{"Content-Type":"application/json","X-Braniac":"painel"},body:JSON.stringify(o)}).then(function(r){return r.json()})}
+var PEND=null;
+function marcar(id,i,f){
+ if(!f){post("/api/projetos/pendencia",{id:id,i:i,feita:false}).then(carregar);return}
+ var p=D.filter(function(x){return x.id==id})[0];PEND={id:id,texto:p.pendencias[i].texto};
+ document.getElementById("dt").textContent=PEND.texto;document.getElementById("dn").value="";document.getElementById("dlg").classList.add("on")}
+function dlgFim(r){var d=document.getElementById("dlg");d.classList.remove("on");var q=PEND;PEND=null;
+ if(r=="nao"||!q){carregar();return}
+ post("/api/projetos/evento",{projeto:q.id,tarefa:q.texto,estado:r=="sim"?"feito":"andando",nota:document.getElementById("dn").value,origem:"usuarios"}).then(carregar)}
+function agoraDe(p){var pe=p.pendencias.filter(function(x){return !x.feita})[0];return pe?{t:pe.texto,k:"pendência"}:(p.proximos&&p.proximos[0]?{t:p.proximos[0],k:"próximo passo"}:null)}
+function ajuda(id,regen){var p=D.filter(function(x){return x.id==id})[0],a=agoraDe(p),el=document.getElementById("aj");if(!a)return;
+ el.innerHTML='<div class="vazio">Pensando…</div>';
+ post("/api/projetos/ajuda",{id:id,texto:a.t,regen:!!regen}).then(function(j){
+  if(!j.opcoes){el.innerHTML='<div class="vazio">Não consegui gerar opções agora ('+esc(j.erro||"erro")+').</div>';return}
+  window.OPS=j.opcoes;el.innerHTML=j.opcoes.map(function(o,i){return '<div class="op"><b>'+esc(o.titulo)+'</b><p>'+esc(o.como)+'</p><span class="tag">'+esc(o.esforco)+'</span> <span class="tag">'+esc(o.quem)+'</span><div class="bs"><button class="bt" onclick="copiar(\''+id+'\','+i+')">Copiar prompt</button><button class="bt" onclick="ticket(\''+id+'\','+i+',this)">Abrir ticket no NexoDev</button></div></div>'}).join("")+'<div class="bs" style="margin-top:8px"><button class="bt" onclick="ajuda(\''+id+'\',true)">Gerar de novo</button></div>'}).catch(function(){el.innerHTML='<div class="vazio">Sem resposta.</div>'})}
+function promptDe(id,i){var p=D.filter(function(x){return x.id==id})[0],a=agoraDe(p),o=window.OPS[i];return "Projeto "+p.nome+" ("+p.pasta+"). Tarefa: "+a.t+"\nJeito escolhido: "+o.titulo+" - "+o.como+"\nQuando terminar, registre no quadro: ferramentas\\registrar-tarefa.ps1 -Projeto "+p.id+" -Tarefa \""+a.t+"\" -Estado feito."}
+function copiar(id,i){var t=promptDe(id,i);(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).catch(function(){var x=document.createElement("textarea");x.value=t;document.body.appendChild(x);x.select();document.execCommand("copy");x.remove()})}
+function ticket(id,i,b){b.disabled=true;b.textContent="Abrindo…";var o=window.OPS[i],p=D.filter(function(x){return x.id==id})[0];
+ post("/api/nexodev/abrir",{projeto:p.id,titulo:o.titulo.slice(0,80),descricao:promptDe(id,i).slice(0,600)}).then(function(j){b.textContent=j.ok?"Ticket "+j.ticket.id+" aberto":"Falhou: "+(j.erro||"").slice(0,40)})}
+function sugestoes(){fetch("/api/projetos/sugestoes").then(function(r){return r.json()}).then(function(j){var l=j.itens||[];
+ document.getElementById("sug").innerHTML=l.length?'<div class="sug"><h2>Parece que isto foi feito: confirmar?</h2>'+l.map(function(s){return '<div class="si"><div><b>'+esc(s.nome)+': '+esc(s.tarefa)+'</b><span>'+esc(s.motivo)+'</span></div><button class="bt ok" onclick="sug(\''+esc(s.chave).replace(/'/g,"\\'")+'\',\'confirmar\')">Confirmar</button><button class="bt" onclick="sug(\''+esc(s.chave).replace(/'/g,"\\'")+'\',\'ignorar\')">Ignorar</button></div>'}).join("")+'</div>':""}).catch(function(){})}
+function sug(k,a){post("/api/projetos/sugestao",{chave:k,acao:a}).then(function(){carregar()})}
+document.getElementById("vel").onclick=fechar;document.addEventListener("keydown",function(e){if(e.key=="Escape")fechar()});
+document.getElementById("q").oninput=function(){Q=this.value.toLowerCase().trim();desenhar()};
+// dentro do app o quadro (iframe) pode ficar com o topo sob a barra do painel: traz o iframe inteiro para a vista
+function naVista(){try{if(window.frameElement)window.frameElement.scrollIntoView({block:"nearest"})}catch(e){}}
+window.addEventListener("load",naVista);window.addEventListener("hashchange",naVista);
+carregar();
+</script></body></html>

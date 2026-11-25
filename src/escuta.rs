@@ -27,11 +27,11 @@ const CHAMADO: &str = r"^(?:o|oh|oi|ei|eh|ola|alo|e ai|fala|opa|hey) \S+$";
 const DESCANSAR: &str = "descans|pode dormir|vai dormir|dorme|pode parar de ouvir|chega por hoje";
 const PEDE_TROCA: &str = r"\b(?:falar|conversar|fala|conversa) com\b|\b(?:chama|chame|passa|passe|volta|volte|cade)\b|\bdeixa\b.{0,12}\bfalar\b";
 const TEM_ALMA: &str = r"\b(?:alma|auma)\b";
-pub const ALMA_ENTRA: &str = "Oi, meu bem. O Jarvis me passou a vez, tô aqui com você. Me conta.";
+pub const ALMA_ENTRA: &str = "Oi, senhor. O Jarvis me passou a vez, estou aqui com o senhor. Me conta.";
 pub const JARVIS_VOLTA: &str = "Estou de volta, senhor. Em que posso te ajudar?";
 pub const SAUDACAO: &str = "Estou acordado, senhor. Em que posso te ajudar?";
 pub const DESPEDIDA: &str = "Tudo bem, vou descansar. Me chama quando precisar.";
-const ALMA_FALHOU: &str = "Tô aqui com você, meu bem. Pode repetir pra mim?";
+const ALMA_FALHOU: &str = "Estou aqui com o senhor. Pode repetir pra mim?";
 
 fn re(p: &str) -> Regex {
     Regex::new(p).expect("regex fixa")
@@ -332,13 +332,21 @@ impl Escuta {
         (m.log)("ACORDOU");
         self.anotar('s', "Acordei: estou ouvindo.");
         (m.abrir_janela)();
-        self.falar_anotado(m, SAUDACAO)
+        // reconhecimento de rosto (desligado por padrao): so cumprimenta pelo nome; qualquer falha cai na saudacao de sempre
+        let fala = crate::rosto::saudacao(m.dados, SAUDACAO).unwrap_or_else(|| SAUDACAO.to_string());
+        self.falar_anotado(m, &fala)
     }
 
     pub fn descansar(&mut self, m: &Mundo) -> Option<String> {
+        // efeito imediato: corta a fala em andamento e fecha a sessao da Alma sem esperar fim de audio nem tempo
+        mudo::CORTAR.store(true, std::sync::atomic::Ordering::SeqCst);
+        if m.sessao.is_some() {
+            (m.fechar_sessao)("pediram para descansar");
+        }
         self.estado = "dormindo";
         self.agente = "jarvis";
         (m.log)("DORMIU");
+        std::thread::sleep(std::time::Duration::from_millis(150)); // o tocador olha a bandeira a cada 50 ms; `dizer` a baixa antes da despedida
         self.anotar('s', "Voltei a dormir.");
         let r = self.dizer(m, DESPEDIDA);
         (m.minimizar_janela)();
@@ -365,6 +373,9 @@ impl Escuta {
                 self.aplicar_mudo(m, cmd, None);
                 return None;
             }
+        }
+        if m.sessao.is_some() && quer_descansar(texto) {
+            mudo::CORTAR.store(true, std::sync::atomic::Ordering::SeqCst); // a Alma para de falar na hora; ela mesma fecha a sessao
         }
         if let (Some(sessao), "dormindo", false) = (m.sessao, self.estado, quer_acordar(texto)) {
             return sessao(texto); // conversa propria da Alma; "Jarvis, ta acordado?" devolve tudo ao Jarvis
@@ -399,7 +410,7 @@ impl Escuta {
         }
         if self.agente == "alma" {
             // com a Alma nao ha telas nem ferramentas: so conversa, no modelo local. Emoji nao se fala.
-            let resp = (m.alma)(texto).unwrap_or_else(|_| ALMA_FALHOU.to_string());
+            let resp = crate::tratamento::alma_dono(&(m.alma)(texto).unwrap_or_else(|_| ALMA_FALHOU.to_string()));
             let resp = re(r#"[^\w\s.,!?;:()'"-]"#).replace_all(&resp, "").trim().to_string();
             return self.falar_anotado(m, &resp);
         }
@@ -489,8 +500,16 @@ mod tests {
     }
 
     #[test]
+    fn falas_fixas_da_alma_sao_respeitosas() {
+        for t in [ALMA_ENTRA, ALMA_FALHOU] {
+            let b = t.to_lowercase();
+            assert!(["gostoso", "meu amor", "meu bem", "amor", "lindo", "bebê"].iter().all(|x| !b.contains(x)) && b.contains("senhor"), "{t}");
+        }
+    }
+
+    #[test]
     fn semelhanca_igual_ao_difflib() {
-        assert!((semelhanca("dono", "jarvis") - 0.5).abs() < 1e-9);
+        assert!((semelhanca("marcus", "jarvis") - 0.5).abs() < 1e-9);
         assert!((semelhanca("abcd", "bcde") - 0.75).abs() < 1e-9);
         assert_eq!((semelhanca("", ""), semelhanca("a", "")), (1.0, 0.0));
     }
@@ -503,7 +522,7 @@ mod tests {
             let (e, falas, fora) = roda("acorda", false, &[f]);
             assert!(e.estado == "acordado" && falas == [format!("jarvis>{SAUDACAO}")] && fora == ["janela"], "{f}");
         }
-        for f in ["bom dia pessoal", "o dono tá acordado?", "tá acordado", "vamos jantar hoje à noite", "jarvis", "o jarvis é legal",
+        for f in ["bom dia pessoal", "o usuarios tá acordado?", "tá acordado", "vamos jantar hoje à noite", "jarvis", "o jarvis é legal",
             "o jarvis falou besteira", "oi pessoal", "fala sério", "cadê você menino", "jarvis qual a capital da França"] {
             let (e, falas, _) = roda("nao-acorda", false, &[f]);
             assert!(e.estado == "dormindo" && falas.is_empty(), "{f}");
@@ -527,6 +546,16 @@ mod tests {
         assert_eq!(e.estado, "parada");
         e.ligar();
         assert_eq!(e.estado, "dormindo");
+    }
+
+    #[test]
+    fn descansar_corta_a_fala_e_fecha_a_sessao_na_hora() {
+        // regressao: "descansa" esperava o fim do audio/tempo; agora levanta CORTAR e fecha a sessao da Alma antes de se despedir
+        let (e, _, fora) = roda("descansa-imediato", true, &["Jarvis, tá acordado?", "pode descansar"]);
+        assert!(e.estado == "dormindo" && fora.contains(&"fechou:pediram para descansar".to_string()) && fora.last().unwrap() == "minimizou");
+        // abrir a janela ao acordar: o gatilho chama abrir_janela exatamente uma vez
+        let (_, _, fora) = roda("gatilho-janela", false, &["Jarvis, tá acordado?"]);
+        assert_eq!(fora, ["janela"]);
     }
 
     #[test]

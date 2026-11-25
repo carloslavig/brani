@@ -111,7 +111,7 @@ fn local(texto: &str, feminina: bool) -> Result<(Vec<u8>, String), String> {
         $s.SetOutputToWaveFile($env:BRANIAC_WAV); $s.Speak([Console]::In.ReadToEnd()); $s.Dispose()";
     static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
     let arq = std::env::temp_dir().join(format!("braniac-voz-{}-{}.wav", std::process::id(), N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)));
-    let mut c = Command::new("powershell");
+    let mut c = crate::oculto::cmd("powershell");
     c.args(["-NoProfile", "-NonInteractive", "-Command", SCRIPT]).env("BRANIAC_WAV", &arq).env("BRANIAC_GENERO", if feminina { "Female" } else { "Male" }).stdin(Stdio::piped()).stdout(Stdio::null()).stderr(Stdio::null());
     #[cfg(windows)]
     {

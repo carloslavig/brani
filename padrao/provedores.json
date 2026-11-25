@@ -123,6 +123,25 @@
    "classe": "padrao"
   },
   {
+   "nome": "github-models",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://models.github.ai/inference/chat/completions",
+   "modelo": "openai/gpt-4.1-mini",
+   "chave_env": "GITHUB_MODELS_TOKEN",
+   "classe": "padrao",
+   "limite_dia": 150
+  },
+  {
+   "nome": "huggingface",
+   "tipo": "online",
+   "api": "openai",
+   "url": "https://router.huggingface.co/v1/chat/completions",
+   "modelo": "openai/gpt-oss-120b",
+   "chave_env": "HF_TOKEN",
+   "classe": "forte"
+  },
+  {
    "nome": "ollama",
    "tipo": "local",
    "api": "ollama",

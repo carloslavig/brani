@@ -246,10 +246,10 @@ function pintarMudo(m){
   if(!m) return; mudoAtual = m;
   $('#mudoBtn').textContent = m.mudo ? 'Voltar a falar' : 'Silenciar o Jarvis';
   const ind = $('#mudoInd');
-  ind.textContent = m.mudo ? ('Silenciado ' + (m.ate_desmutar ? 'até você voltar' : 'por mais ' + m.restante_min + ' min') + (m.whatsapp_carlos ? ', sem áudio no WhatsApp.' : '.')) : 'Falando normalmente.';
+  ind.textContent = m.mudo ? ('Silenciado ' + (m.ate_desmutar ? 'até você voltar' : 'por mais ' + m.restante_min + ' min') + (m.whatsapp_usuarios ? ', sem áudio no WhatsApp.' : '.')) : 'Falando normalmente.';
   ind.className = 'estado' + (m.mudo ? ' alerta' : '');
   $('#mudoTag').className = m.mudo ? 'on' : '';
-  $('#mudoWpp').checked = !!m.whatsapp_carlos;
+  $('#mudoWpp').checked = !!m.whatsapp_usuarios;
 }
 async function mudoApi(corpo){
   try{ const {ok, d} = await api('/api/mudo', corpo); if(ok) pintarMudo(d); else alert('Não funcionou: ' + (d.erro || 'erro')); }
@@ -258,7 +258,7 @@ async function mudoApi(corpo){
 const alternarMudo = () => mudoApi(mudoAtual.mudo ? {acao:'desmutar'} : {acao:'mutar'});
 $('#mudoBtn').onclick = alternarMudo;
 document.querySelectorAll('.mudoMin').forEach(b => b.onclick = () => mudoApi({acao:'mutar', minutos:+b.dataset.min}));
-$('#mudoWpp').onchange = e => mudoApi({whatsapp_carlos: e.target.checked});
+$('#mudoWpp').onchange = e => mudoApi({whatsapp_usuarios: e.target.checked});
 addEventListener('keydown', e => {
   const digitando = /INPUT|TEXTAREA/.test(document.activeElement.tagName);
   if((e.key === 'm' || e.key === 'M') && !e.altKey && !e.metaKey && (e.ctrlKey || !digitando)){ e.preventDefault(); alternarMudo(); }

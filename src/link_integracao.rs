@@ -557,7 +557,7 @@ mod tests {
     fn comandos_da_producao() {
         let marca = "[Ana, pela Bia] PEDIDO COMPLETO";
         assert_eq!(comando_producao(&format!("{marca} 144 Ituaçu/BA com as fontes"), marca, true), Comando::PedidoCompleto { numero: "144".into(), cidade: "Ituaçu".into(), uf: "BA".into() });
-        assert_eq!(comando_producao(&format!("{marca} 901 - BARRA DO GARÇAS - MT"), marca, true), Comando::PedidoCompleto { numero: "901".into(), cidade: "Cidade".into(), uf: "MT".into() });
+        assert_eq!(comando_producao(&format!("{marca} 901 - BARRA DO GARÇAS - MT"), marca, true), Comando::PedidoCompleto { numero: "901".into(), cidade: "Barra Do Garças".into(), uf: "MT".into() });
         assert_eq!(comando_producao(&format!("{marca} sem numero"), marca, true), Comando::PedidoCompleto { numero: "".into(), cidade: "".into(), uf: "BA".into() });
         assert_eq!(comando_producao(&format!("{marca} 144 Ituaçu"), marca, false), Comando::Nada); // sem fila nao ha onde criar
         assert_eq!(comando_producao("Fontes aprovado 0123456789ab, pode gravar", marca, true), Comando::FontesAprovado { id: Some("0123456789ab".into()) });
